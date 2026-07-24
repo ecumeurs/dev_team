@@ -1,0 +1,87 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "provider": {
+    "llmward": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "LLMWard (LiteLLM + Presidio DLP)",
+      "options": {
+        "baseURL": "http://127.0.0.1:4000/v1"
+      },
+      "models": {
+        "claude-sonnet": {
+          "name": "Claude Sonnet 5 (LLMWard)",
+          "limit": {
+            "context": 200000,
+            "output": 64000
+          }
+        },
+        "claude-opus": {
+          "name": "Claude Opus 4.8 (LLMWard)",
+          "limit": {
+            "context": 200000,
+            "output": 64000
+          }
+        },
+        "claude-haiku": {
+          "name": "Claude Haiku 4.5 (LLMWard)",
+          "limit": {
+            "context": 200000,
+            "output": 32000
+          }
+        },
+        "claude-sonnet-4-6": {
+          "name": "Claude Sonnet 4.6 · 1M ctx (LLMWard)",
+          "limit": {
+            "context": 1000000,
+            "output": 64000
+          }
+        },
+        "claude-fable": {
+          "name": "Claude Fable 5 (LLMWard)",
+          "limit": {
+            "context": 200000,
+            "output": 64000
+          }
+        },
+        "glm-5": {
+          "name": "GLM-5 (LLMWard)",
+          "limit": {
+            "context": 200000,
+            "output": 65536
+          }
+        },
+        "glm-4.7": {
+          "name": "GLM-4.7 (LLMWard)",
+          "limit": {
+            "context": 200000,
+            "output": 65536
+          }
+        },
+        "glm-4.7-flash": {
+          "name": "GLM-4.7 Flash · free tier (LLMWard)",
+          "limit": {
+            "context": 128000,
+            "output": 32000
+          }
+        },
+        "glm-5.2": {
+          "name": "GLM-5.2 · flagship (LLMWard)",
+          "limit": {
+            "context": 1000000,
+            "output": 65536
+          }
+        }
+      }
+    }
+  },
+  "model": "llmward/claude-sonnet",
+  "small_model": "llmward/claude-haiku",
+  "disabled_providers": [
+    "opencode",
+    "minimax",
+    "zai-coding-plan"
+  ],
+  "enabled_providers": [
+    "llmward"
+  ]
+}
