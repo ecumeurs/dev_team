@@ -72,3 +72,16 @@ the z.ai plan/balance side is sorted, then flip this agent's `model:` field.
 Edit files here directly — both `agents/` and `opencode/opencode.jsonc` are
 live via symlink from `~/.config/opencode/`, so changes take effect on the
 next `opencode` invocation with no extra sync step. Commit as usual.
+
+## Toggling the team on/off
+
+```
+scripts/hookup.sh    # symlink ~/.config/opencode/agents -> agents/ (team ON)
+scripts/hookoff.sh   # remove that symlink (team OFF, stock build/plan/explore/general only)
+```
+
+Both are idempotent and only ever touch a symlink they recognize — if
+`~/.config/opencode/agents` is ever a real directory instead of a symlink,
+they refuse to touch it rather than guess. Neither script touches
+`opencode.jsonc` / the `llmward`-only provider lock — that's a separate,
+permanent DLP-routing boundary, not part of "team presence".
