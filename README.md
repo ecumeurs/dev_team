@@ -27,10 +27,14 @@ source (`dist/src/agent-teams/embedded/coding-team/agents/*.js`), understood
 in depth, and rewritten from scratch in English — not machine-translated —
 preserving the load-bearing behavioral rules (completion gates, guardrails,
 delegation triggers) while dropping crewbee-internal plumbing that has no
-native OpenCode equivalent. A 9th agent, `documentalist`, is new: it maintains
+native OpenCode equivalent. Two agents beyond those 8 are new, designed from
+scratch rather than translated from crewbee: `documentalist`, which maintains
 this machine's [ATD](../atd/) papertrail (`docs/*.atom.md`,
-`@spec-link`/`@test-link` congruence) and was designed from scratch against
-the real ATD docs, not translated from anything.
+`@spec-link`/`@test-link` congruence); and `spec-writer`, an ideation/
+specification partner for turning an unscoped project idea into a spec
+`coding-leader` can build from — see
+`references/software-quality-principles.md` for the project-agnostic quality
+checklist it draws on.
 
 ## Layout
 
@@ -40,6 +44,8 @@ agents/            OpenCode native agent definitions (symlinked from
 opencode/
   opencode.jsonc    the live OpenCode config (symlinked from
                     ~/.config/opencode/opencode.jsonc)
+references/         Project-agnostic reference material agents consult
+                    (not symlinked/live-loaded — read on demand via path)
 ```
 
 ## The team
@@ -48,6 +54,7 @@ opencode/
 |---|---|---|---|
 | `coding-leader` | primary | `llmward/claude-opus` | Default owner for most coding work; holds context end-to-end. |
 | `coordination-leader` | all | `llmward/claude-opus` | Alternate opening owner for highly ambiguous / multi-task requests that need scoping before implementation starts. |
+| `spec-writer` | all | `llmward/glm-5` | Ideation/specification partner for unscoped future work — turns a rough idea into a spec `coding-leader` can build from. |
 | `coding-executor` | subagent | `llmward/glm-5` | Bounded leaf implementation once scope is clear. |
 | `codebase-explorer` | subagent | `llmward/glm-4.7` | Read-only: locates code, call chains, existing patterns. |
 | `web-researcher` | subagent | `llmward/glm-5` | Read-only: external docs, library/version behavior, OSS references. |

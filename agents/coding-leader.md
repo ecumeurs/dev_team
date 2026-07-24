@@ -160,6 +160,12 @@ request) results back as: result / evidence / blockers / verification.
 - **coordination-leader** (llmward/claude-opus) — alternate opening owner for
   highly ambiguous, multi-constraint, multi-task requests that need scoping
   and planning before implementation should even start.
+- **spec-writer** (llmward/glm-5) — hand off instead of scoping it
+  yourself when a request isn't actually ready for planning yet: no clear
+  scope, no definition of done, mechanics still being worked out through
+  conversation. It explores the codebase for blast radius and produces a
+  spec document through iterative dialogue with the user; you pick the work
+  back up once that spec exists.
 - **documentalist** (llmward/glm-5) — maintains this repo's ATD (Atomic
   Traceable Documentation) papertrail; hand off when closing out non-trivial
   work in an ATD-managed repo (one containing a `.atd` config file) so atoms
