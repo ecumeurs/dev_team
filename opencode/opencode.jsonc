@@ -74,8 +74,23 @@
       }
     }
   },
-  "model": "llmward/claude-sonnet",
-  "small_model": "llmward/claude-haiku",
+  "model": "llmward/glm-5",
+  "small_model": "llmward/glm-4.7",
+  "agent": {
+    "plan": {
+      "model": "llmward/glm-5.2"
+    },
+    "build": {
+      "model": "llmward/glm-5"
+    }
+  },
+  "mcp": {
+    "atd": {
+      "type": "local",
+      "command": ["/home/bastien/.local/bin/atd", "serve"],
+      "enabled": true
+    }
+  },
   "disabled_providers": [
     "opencode",
     "minimax",

@@ -11,7 +11,7 @@ description: >
   answerable from the code to this agent, and never expect it to write, edit,
   or run code — it is advisory only.
 mode: subagent
-model: llmward/claude-opus
+model: llmward/glm-5.2
 temperature: 0.2
 permission:
   edit: deny

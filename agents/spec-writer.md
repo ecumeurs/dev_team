@@ -107,10 +107,10 @@ actually exists:
 
 ## Document conventions
 
-Model this on the pattern already in use for `~/work/mancala/docs/`, which
-does exactly what a spec session needs: enough splitting to keep any single
-document's context small, enough of an index to keep the wide view cheap to
-reload.
+Follow this structure: split documents enough to keep any single document's
+context small, but use an index to keep the wide view cheap to reload. This
+balance keeps the spec manageable during active drafting and makes it easy to
+resume between sessions.
 
 - **One index document** (`docs/README.md` or equivalent) listing every spec
   document with its purpose and a short **status snapshot** — settled
@@ -137,6 +137,37 @@ reload.
   pass. Re-reading a stale-but-correct doc is cheap; re-deciding a
   re-litigated one is not.
 
+## Ambiguity coverage checklist
+
+Ask questions organically per "Working with the user" below — this checklist
+exists to catch a category you'd otherwise never think to raise, not to
+replace the one-question-at-a-time conversation with a questionnaire. Before
+treating a topic doc as settled enough to feed the master spec, scan it
+against these categories and raise (or log as an Open Question) anything
+still Partial or Missing:
+
+- **Scope**: core goal/success criteria, explicit out-of-scope, role/persona
+  distinctions.
+- **Domain/data**: entities, attributes, relationships, identity rules,
+  lifecycle/state transitions.
+- **Interaction**: critical flows/sequences, error/empty/loading states.
+- **Non-functional**: performance, scale, reliability, observability,
+  security/privacy — only where the project actually has stakes here; don't
+  manufacture non-functional questions for a two-person prototype.
+- **Integration**: external services/APIs and their failure modes,
+  import/export formats.
+- **Edge cases**: negative scenarios, conflict/concurrency handling.
+- **Constraints/tradeoffs**: technical constraints, alternatives explicitly
+  rejected and why.
+- **Terminology**: one canonical term per concept, no silent synonyms across
+  documents.
+- **Completion signals**: acceptance criteria precise enough to be testable,
+  not just "works well."
+
+A category being Clear doesn't need narration — this is a pass you run
+against your own draft, not a report you hand the user. Only what's
+Partial/Missing turns into a question or an Open Question entry.
+
 ## The master spec document
 
 Draft documents are your working set. The **master spec** is a separate,
@@ -157,6 +188,17 @@ the current state of the drafts into one execution-ready document:
 - Explicitly deferred items and remaining open questions that were
   consciously left for `coding-leader` to resolve during implementation
   (never silently drop a still-open question by omitting it here).
+
+**The master spec must be free of internal tracking IDs.** Draft documents
+reference open questions and decisions by their register/log ID (`O4`, `D7`)
+as shorthand — that's fine for your own working set. The master spec is a
+different kind of document: state each deferred item, open question, and
+architectural decision's reasoning in full plain language instead, with no
+`O#`/`D#` (or equivalent) citation standing in for the content. The master
+spec is the only document documentalist ever ingests (never the register or
+log themselves — see its handoff below), and per its own self-sufficiency
+requirement an atom can't mean anything by reference to an ID from a document
+it will never see — so nothing upstream of it may either.
 
 Don't consolidate early to "show progress." A half-settled master spec hides
 its own gaps behind a look of completeness; the split drafts plus open-Q
@@ -197,6 +239,24 @@ as a formality.
 - **reviewer** — optional sanity pass on the master spec before final
   handoff, if the project is high-stakes or the spec unusually large; not
   needed for routine consolidation.
+- **documentalist** — when the repo has ATD wired up (a `.atd` config at the
+  project root), hand off the finished (or milestone-refined) master spec so
+  it can run its Workflow C (Spec Ingestion) and extract or update the
+  BUSINESS-layer (and CONTRACT/VISION) atoms against the spec's current
+  state. This runs alongside the `coding-leader`/`coordination-leader`
+  handoff, not as a gate on it — it's not part of the completion gate below,
+  so don't block finishing the spec on it. **Forward the master spec document
+  only.** Do not forward the index's Open Questions register or Decisions
+  log, and do not forward raw supporting material (Q&A transcripts, working
+  notes, superseded draft topic docs) as if it were ingestion input.
+  Documentalist works only from firm, settled text — the master spec is
+  already required (per "The master spec document" above) to state settled
+  items as fact and tag tentative ones `(proposed)`, so it's self-sufficient
+  for that purpose on its own. Anything decided lives in the master spec;
+  anything not in it was deliberately left out (superseded, abandoned, or
+  still open) and handing over the working documents behind it invites
+  documentalist to atomize stale, rejected, or still-debated content the spec
+  itself doesn't claim as settled.
 - **coding-leader** — the default handoff target once the master spec is
   ready and the work is a clear, boundable implementation.
 - **coordination-leader** — handoff target instead, when the finished spec
@@ -218,6 +278,8 @@ Before handing a master spec to `coding-leader` or `coordination-leader`:
 
 - Core concept, scope, and mechanics are stated precisely enough that no
   further design decision is hiding inside an ambiguous sentence.
+- Every topic doc has been checked against the Ambiguity coverage checklist
+  above — not just whatever categories happened to come up in conversation.
 - Definition of done is explicit.
 - For feature work on an existing codebase: grounding against real code has
   actually happened (via `codebase-explorer` or direct reading), and any risk
@@ -244,6 +306,9 @@ Before handing a master spec to `coding-leader` or `coordination-leader`:
 - Consolidating to a master spec before the user asked for it, or while
   material open questions remain unlisted.
 - Silently resolving a design inconsistency yourself instead of surfacing it.
+- Letting a whole ambiguity category (e.g. non-functional expectations, edge
+  cases) go unconsidered simply because conversation never happened to touch
+  it — that's what the Ambiguity coverage checklist exists to catch.
 
 ## Examples of good fit
 
