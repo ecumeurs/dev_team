@@ -41,12 +41,56 @@ checklist it draws on.
 ```
 agents/            OpenCode native agent definitions (symlinked from
                     ~/.config/opencode/agents/)
+claude-agents/      Claude Code subagent definitions, ported from agents/
+                    (symlinked from ~/.claude/agents/ — user-scoped, all
+                    projects on this machine)
 opencode/
   opencode.jsonc    the live OpenCode config (symlinked from
                     ~/.config/opencode/opencode.jsonc)
 references/         Project-agnostic reference material agents consult
                     (not symlinked/live-loaded — read on demand via path)
 ```
+
+## The Claude Code fork (`claude-agents/`)
+
+`claude-agents/` is a parallel port of the same team for Claude Code's native
+subagent system (`.claude/agents/*.md`), which uses a different frontmatter
+schema than OpenCode's and has no direct equivalent for `mode:
+primary|subagent|all`. Practical differences from `agents/`:
+
+- **Frontmatter**: `name`/`description`/`model`/`tools` (flat allowlist)
+  instead of OpenCode's `mode`/`model`/`permission` (nested per-tool
+  allow/deny/ask object). The `tools:` lists here are a best-effort
+  translation of each persona's OpenCode permission intent, not a byte-for-
+  byte reproduction — Claude Code's allowlist is coarser (no per-bash-command
+  patterns, no three-state ask/allow/deny).
+- **Models**: every agent runs on a real Claude model (`opus`/`sonnet`/
+  `haiku`) rather than the mixed GLM/Claude lineup `agents/` uses, per
+  explicit instruction — GLM models burn through their coding-plan token
+  budget fast and aren't meant to be the default here. Roughly: former
+  `glm-5.2` roles (coding-leader, coordination-leader, principal-advisor,
+  reviewer) → `opus`; former `glm-5` roles (coding-executor, documentalist,
+  web-researcher, spec-writer) → `sonnet`; former `glm-4.7` roles
+  (codebase-explorer, multimodal-looker) → `haiku`.
+- **No `primary`/`all` mode**: `coding-leader`, `coordination-leader`, and
+  `spec-writer` were OpenCode opening-owner agents (`mode: primary`/`all`) —
+  usable as the whole session's persona, not just a delegate. Claude Code has
+  no equivalent; all ten are reachable only as subagents via the `Agent`
+  tool (or by asking the top-level session to invoke one by name). None of
+  them can be "the persona you start `claude` as."
+- **Routing**: like `agents/` → the LLMWard LiteLLM proxy via OpenCode's
+  provider config, Claude Code itself is routed through the same proxy via
+  `~/.claude/settings.json`'s `env.ANTHROPIC_BASE_URL` (see
+  `~/deploy/llmward/scripts/claude-code-litellm-on.sh` and
+  `docs/architecture/litellm-client-routing.md` in that repo, Mode 1 —
+  subscription OAuth forwarded upstream). No extra setup needed on the
+  Claude Code side; DLP still runs on every request.
+- Any find/replace needed for OpenCode-tool-specific prose (`todowrite` →
+  the task-tracking tools, the `task` tool → `Agent`, `read`/`glob`/`grep` →
+  `Read`/`Bash`, dropped `lsp`) was applied by hand when porting — if you
+  edit `agents/*.md` going forward, re-check whether the same substitutions
+  are needed in the matching `claude-agents/*.md` file; there's no automated
+  sync between the two.
 
 ## The team
 
