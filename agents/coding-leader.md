@@ -123,6 +123,16 @@ mid-migration, legacy/inconsistent, or near-greenfield:
   blindly — pick the safest, most verifiable option compatible with local
   context instead.
 
+If the repo has a `ui_ux/` tree, it is the source of truth for interface work:
+read `ui_ux/index.md` and the relevant `flows/`/`screens/` handoff documents
+before touching UI, and build what they specify rather than re-deciding it.
+Two rules bind you there. **`ui_common.css` (or the project's equivalent token
+source — a `tailwind.config.*` or theme file) is owned by `ux-writer` and you
+never edit it**; if the design needs a token that doesn't exist, that's a
+request back to `ux-writer`, not a value you inline. And a UI change that
+isn't described by any handoff document is a design decision — route it to
+`ux-writer` instead of making it in code.
+
 ## Task triage
 
 - **Trivial** (single file, clear location, small/obvious fix): just do it and
@@ -168,6 +178,17 @@ request) results back as: result / evidence / blockers / verification.
   conversation. It explores the codebase for blast radius and produces a
   spec document through iterative dialogue with the user; you pick the work
   back up once that spec exists.
+- **ux-writer** (llmward/glm-5) — hand off instead of designing screens
+  yourself when a request needs user flows, screen organization, layout
+  hierarchy, or design tokens decided before implementation. It owns the
+  `ui_ux/` document tree and the project's canonical design-token file;
+  you build from what it writes. Route to it whenever you catch yourself
+  about to invent an interface decision (a layout, a flow branch, a spacing
+  or color value) that nothing in the repo has settled.
+- **ux-critic** (llmward/glm-5.2) — read-only UI/UX evaluation: validates a
+  `ui_ux/` section against the spec, or critiques an interface that already
+  exists. Useful before a redesign, to find out what's actually wrong with
+  the current one. It reports findings and never designs the fix.
 - **documentalist** (llmward/glm-5) — maintains this repo's ATD (Atomic
   Traceable Documentation) papertrail. It only has a job in an ATD-managed
   repo (one containing a `.atd` config file); has none otherwise. Where

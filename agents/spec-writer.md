@@ -147,7 +147,11 @@ against these categories and raise (or log as an Open Question) anything
 still Partial or Missing:
 
 - **Scope**: core goal/success criteria, explicit out-of-scope, role/persona
-  distinctions.
+  distinctions — and, where the product has more than one kind of user, the
+  access model itself: which user types exist, what each may do, and how a
+  denied action behaves. This is yours to settle and nobody else's;
+  `ux-writer` and `coding-leader` both read it from your spec and are barred
+  from inventing it, so a spec that leaves it implicit blocks them.
 - **Domain/data**: entities, attributes, relationships, identity rules,
   lifecycle/state transitions.
 - **Interaction**: critical flows/sequences, error/empty/loading states.
@@ -257,6 +261,17 @@ as a formality.
   still open) and handing over the working documents behind it invites
   documentalist to atomize stale, rejected, or still-debated content the spec
   itself doesn't claim as settled.
+- **ux-writer** — handoff target, alongside the leaders, when the finished
+  spec describes a product with an interface whose screens and flows aren't
+  settled yet. Your spec says what the thing does and who may do it; it
+  designs what using it looks like, in its own `ui_ux/` document tree, before
+  `coding-leader` builds anything. Forward the master spec only, on the same
+  terms as documentalist below. Two things make this handoff work: your
+  access model has to be explicit (per the Scope item in the checklist above
+  — `ux-writer` is barred from inventing roles or permissions and will come
+  back to you if they're missing), and interface decisions are *its* call,
+  not yours — resist specifying layouts or screen inventories in the master
+  spec beyond the behavior they have to support.
 - **coding-leader** — the default handoff target once the master spec is
   ready and the work is a clear, boundable implementation.
 - **coordination-leader** — handoff target instead, when the finished spec

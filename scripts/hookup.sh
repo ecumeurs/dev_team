@@ -25,6 +25,11 @@ fi
 
 ln -s "$AGENTS_SRC" "$AGENTS_LINK"
 echo "Hooked up: $AGENTS_LINK -> $AGENTS_SRC"
-echo "dev_team agents (coding-leader, coding-executor, codebase-explorer, web-researcher,"
-echo "reviewer, principal-advisor, multimodal-looker, coordination-leader, documentalist)"
-echo "are now live for OpenCode."
+echo "dev_team agents are now live for OpenCode:"
+names=()
+for f in "$AGENTS_SRC"/*.md; do
+  [ -e "$f" ] || continue
+  n="${f##*/}"
+  names+=("${n%.md}")
+done
+printf '%s\n' "${names[@]}" | paste -sd, - | sed 's/,/, /g' | fold -sw 74 | sed 's/^/  /'
