@@ -1,27 +1,46 @@
 #!/usr/bin/env bash
-# Turn the dev_team agent set OFF: remove the ~/.config/opencode/agents
-# symlink so OpenCode falls back to its own stock agents (build/plan/explore/
-# general) only. Idempotent, and only ever removes a symlink it recognizes.
+# Turn the dev_team agent set OFF for both harnesses: remove the
+# ~/.config/opencode/agents and ~/.claude/agents symlinks so each falls back
+# to its own stock agents. Idempotent, and only ever removes a symlink it
+# recognizes — real content in either location is left untouched.
+#
+# Deliberately does NOT remove ~/.local/share/dev_team/references, which
+# hookup.sh publishes: those are inert reference docs when nothing reads them,
+# and keeping them means re-running hookup.sh is the only step needed to come
+# back up. Remove that link by hand if you really want it gone.
 #
 # Deliberately does NOT touch opencode.jsonc / the llmward provider lock —
 # that's a separate, permanent DLP-routing boundary, not "team presence".
-#
-# Also deliberately does NOT remove ~/.local/share/dev_team/references, which
-# hookup.sh publishes: the Claude Code agent set reads those same files and
-# would break if OpenCode team presence took them down. They are inert docs
-# when nothing reads them; remove that link by hand if you really want it gone.
 set -euo pipefail
 
-AGENTS_LINK="$HOME/.config/opencode/agents"
+failed=0
 
-if [ -L "$AGENTS_LINK" ]; then
-  target="$(readlink -f "$AGENTS_LINK")"
-  rm "$AGENTS_LINK"
-  echo "Hooked off: removed symlink $AGENTS_LINK (was -> $target)"
-  echo "OpenCode now falls back to its stock built-in agents (build/plan/explore/general) only."
-elif [ -e "$AGENTS_LINK" ]; then
-  echo "Refusing to touch $AGENTS_LINK: it exists and is not a symlink (real content present)." >&2
+# remove_link <dst> <label>
+remove_link() {
+  local dst="$1" label="$2"
+
+  if [ -L "$dst" ]; then
+    local target
+    target="$(readlink -f "$dst")"
+    rm "$dst"
+    echo "$label: removed $dst (was -> $target)"
+  elif [ -e "$dst" ]; then
+    echo "$label: refusing to touch $dst — it exists and is not a symlink (real content present)." >&2
+    return 1
+  else
+    echo "$label: already off ($dst does not exist)"
+  fi
+}
+
+remove_link "$HOME/.config/opencode/agents" "OpenCode"    || failed=1
+remove_link "$HOME/.claude/agents"          "Claude Code" || failed=1
+
+if [ "$failed" -ne 0 ]; then
+  echo >&2
+  echo "One or more links could not be removed; see above." >&2
   exit 1
-else
-  echo "Already hooked off: $AGENTS_LINK does not exist."
 fi
+
+echo
+echo "Both harnesses now fall back to their stock built-in agents only."
+echo "Re-run scripts/hookup.sh to bring the dev_team set back."

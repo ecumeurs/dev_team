@@ -1,73 +1,66 @@
 #!/usr/bin/env bash
-# Turn the dev_team agent set ON: symlink ~/.config/opencode/agents to this
-# repo's agents/ dir so OpenCode loads coding-leader & co. Idempotent.
+# Turn the dev_team agent set ON for both harnesses:
+#   ~/.config/opencode/agents -> repo agents/        (OpenCode dialect)
+#   ~/.claude/agents          -> repo claude-agents/ (Claude Code dialect)
+# Idempotent. hookoff.sh removes both again.
 #
 # Also publishes references/ to ~/.local/share/dev_team/references, the stable
 # path the personas cite for shared reference docs (software-quality
-# principles, the access-model layout). That link is harness-independent —
-# the Claude Code agent set reads the same files — so it is established here
-# but deliberately NOT removed by hookoff.sh, which only governs OpenCode
-# team presence.
+# principles, the access-model layout). Both agent sets read those same files,
+# so that link is deliberately NOT removed by hookoff.sh — see the note there.
 #
 # Deliberately does NOT touch opencode.jsonc / the llmward provider lock —
 # that's a separate, permanent DLP-routing boundary, not "team presence".
 set -euo pipefail
 
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-AGENTS_SRC="$REPO_DIR/agents"
-AGENTS_LINK="$HOME/.config/opencode/agents"
-REFS_SRC="$REPO_DIR/references"
-REFS_LINK="$HOME/.local/share/dev_team/references"
+failed=0
 
-# --- shared reference docs (both harnesses) --------------------------------
-link_refs() {
-  if [ ! -d "$REFS_SRC" ]; then
-    echo "Warning: $REFS_SRC does not exist; skipping reference publish." >&2
+# ensure_link <src> <dst> <label>
+# Idempotent symlink. Refuses to clobber real (non-symlink) content.
+ensure_link() {
+  local src="$1" dst="$2" label="$3"
+
+  if [ ! -d "$src" ]; then
+    echo "Warning: $src does not exist; skipping $label." >&2
     return 0
   fi
-  mkdir -p "$(dirname "$REFS_LINK")"
-  if [ -L "$REFS_LINK" ]; then
-    if [ "$(readlink -f "$REFS_LINK")" = "$(readlink -f "$REFS_SRC")" ]; then
-      echo "References already published: $REFS_LINK -> $REFS_SRC"
+
+  mkdir -p "$(dirname "$dst")"
+
+  if [ -L "$dst" ]; then
+    if [ "$(readlink -f "$dst")" = "$(readlink -f "$src")" ]; then
+      echo "$label: already linked ($dst -> $src)"
       return 0
     fi
-    echo "Reference symlink points elsewhere ($(readlink -f "$REFS_LINK")); replacing."
-    rm "$REFS_LINK"
-  elif [ -e "$REFS_LINK" ]; then
-    echo "Refusing to touch $REFS_LINK: it exists and is not a symlink." >&2
-    echo "Move it aside manually if you want the dev_team references published." >&2
+    echo "$label: symlink points elsewhere ($(readlink -f "$dst")); replacing."
+    rm "$dst"
+  elif [ -e "$dst" ]; then
+    echo "$label: refusing to touch $dst — it exists and is not a symlink." >&2
+    echo "  Move it aside manually if you want dev_team to manage it." >&2
     return 1
   fi
-  ln -s "$REFS_SRC" "$REFS_LINK"
-  echo "References published: $REFS_LINK -> $REFS_SRC"
+
+  ln -s "$src" "$dst"
+  echo "$label: linked $dst -> $src"
 }
 
-# --- OpenCode agent set ----------------------------------------------------
-link_agents() {
-  if [ -L "$AGENTS_LINK" ]; then
-    if [ "$(readlink -f "$AGENTS_LINK")" = "$(readlink -f "$AGENTS_SRC")" ]; then
-      echo "Already hooked up: $AGENTS_LINK -> $AGENTS_SRC"
-      return 0
-    fi
-    echo "Existing symlink points elsewhere ($(readlink -f "$AGENTS_LINK")); replacing."
-    rm "$AGENTS_LINK"
-  elif [ -e "$AGENTS_LINK" ]; then
-    echo "Refusing to touch $AGENTS_LINK: it exists and is not a symlink." >&2
-    echo "Move it aside manually first if you want to hook up the dev_team agents." >&2
-    return 1
-  fi
+ensure_link "$REPO_DIR/references"    "$HOME/.local/share/dev_team/references" "References"   || failed=1
+ensure_link "$REPO_DIR/agents"        "$HOME/.config/opencode/agents"          "OpenCode"     || failed=1
+ensure_link "$REPO_DIR/claude-agents" "$HOME/.claude/agents"                   "Claude Code"  || failed=1
 
-  ln -s "$AGENTS_SRC" "$AGENTS_LINK"
-  echo "Hooked up: $AGENTS_LINK -> $AGENTS_SRC"
-  echo "dev_team agents are now live for OpenCode:"
-  local names=() f n
-  for f in "$AGENTS_SRC"/*.md; do
+if [ "$failed" -eq 0 ]; then
+  echo
+  echo "dev_team agents are now live for OpenCode and Claude Code:"
+  names=()
+  for f in "$REPO_DIR/agents"/*.md; do
     [ -e "$f" ] || continue
     n="${f##*/}"
     names+=("${n%.md}")
   done
   printf '%s\n' "${names[@]}" | paste -sd, - | sed 's/,/, /g' | fold -sw 74 | sed 's/^/  /'
-}
-
-link_refs
-link_agents
+else
+  echo >&2
+  echo "One or more links could not be established; see above." >&2
+  exit 1
+fi
