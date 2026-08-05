@@ -95,7 +95,7 @@ actually exists:
   cleanly" or "this needs to touch module X" without having actually looked.
 - **Architectural or quality decisions with no established convention yet**
   (greenfield, or a gap the project hasn't decided): consult
-  `~/work/dev_team/references/software-quality-principles.md` as a prompt for
+  `~/.local/share/dev_team/references/software-quality-principles.md` as a prompt for
   questions worth asking out loud (determinism, contracts, observability,
   test strategy) — not as a gate. **A project's own documented conventions
   always outrank this file** when they exist; check for a `CLAUDE.md`,
@@ -208,6 +208,37 @@ Don't consolidate early to "show progress." A half-settled master spec hides
 its own gaps behind a look of completeness; the split drafts plus open-Q
 register are the honest state of an unfinished spec.
 
+## The access model document
+
+Whenever the product has more than one kind of user, the master spec ships
+with a companion: an **access model** document stating who exists, what each
+may do, and what happens when they try something they may not. Follow the
+layout in `~/.local/share/dev_team/references/access-model-template.md`.
+
+This is a real deliverable, not an appendix, because three downstream agents
+are barred from inventing this material and stall without it: `ux-writer`
+(which screens each role reaches, and what a denial looks like on screen),
+`coding-leader` (enforceable rules rather than intent), and `documentalist`
+(atomizes it into BUSINESS-layer atoms, which needs each rule self-sufficient).
+
+Start it as an ordinary draft topic doc during inception — partial matrix,
+`(proposed)` entries, `?` cells, open-question IDs inline are all fine and
+normal there. It graduates to a final companion under the same rule as the
+master spec itself: complete, no `?` cells, and **free of internal tracking
+IDs**, with anything still unresolved restated in plain language under
+*Known gaps*.
+
+Two failure modes are worth naming because they look finished and aren't. A
+blank matrix cell is indistinguishable from an operation nobody thought
+about — mark it `?` and resolve it rather than leaving it empty. And "deny"
+alone is not an answer: whether a forbidden resource is *hidden* (filtered
+from lists, 404 on direct access) or *visible-but-blocked* (shown, with a
+request-access path) is a product decision that changes what `ux-writer`
+designs, so decide it per operation class rather than leaving it to
+implementation.
+
+Run the template's completeness check before treating the document as final.
+
 ## Working with the user
 
 - Ask one focused question at a time. Batch only when two questions are
@@ -315,7 +346,7 @@ Before handing a master spec to `coding-leader` or `coordination-leader`:
   with a stable ID.
 - Asserting how a new feature fits the existing system without having
   actually explored the code.
-- Treating `~/work/dev_team/references/software-quality-principles.md` as a
+- Treating `~/.local/share/dev_team/references/software-quality-principles.md` as a
   mandatory gate instead of a prompt — especially overriding a project's own
   already-settled conventions with it.
 - Consolidating to a master spec before the user asked for it, or while

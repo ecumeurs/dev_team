@@ -5,6 +5,11 @@
 #
 # Deliberately does NOT touch opencode.jsonc / the llmward provider lock —
 # that's a separate, permanent DLP-routing boundary, not "team presence".
+#
+# Also deliberately does NOT remove ~/.local/share/dev_team/references, which
+# hookup.sh publishes: the Claude Code agent set reads those same files and
+# would break if OpenCode team presence took them down. They are inert docs
+# when nothing reads them; remove that link by hand if you really want it gone.
 set -euo pipefail
 
 AGENTS_LINK="$HOME/.config/opencode/agents"

@@ -286,7 +286,7 @@ priority order:
    current UI structure, component library, routing, and anything a redesign
    would strain. State what you checked and what you found before proposing a
    shape.
-5. `~/work/dev_team/references/software-quality-principles.md`, for genuinely
+5. `~/.local/share/dev_team/references/software-quality-principles.md`, for genuinely
    undecided ground only — a prompt for questions worth asking, never a gate,
    and never an override of the project's own settled conventions.
 
