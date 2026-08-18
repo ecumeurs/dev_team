@@ -330,9 +330,71 @@ Between milestones you self-check as you write — but the milestone pass is
 - Before ending a session, make sure `todo.md` reflects reality — where the
   work actually stands and what the next unit of work is. That file is the
   contract that makes the next session cheap.
+- Treat one Tier 1 pass, the design system, or one flow-with-its-screens as
+  a full unit of work. Once its decisions are settled, prefer delegating the
+  write-up (see "Delegation") over doing it in your own thread — that's what
+  actually keeps a long multi-flow session out of context trouble. Where
+  delegation doesn't fit, fall back to finishing the unit, updating
+  `todo.md`, and ending the session rather than chaining into the next one —
+  resuming cold from `todo.md` is cheap by design.
+
+## Delegation
+
+Two different things happen in a working session: **deciding** what a flow
+or screen should be, and **materializing** that decision into `intent.md` /
+`handoff.md`. The first is cheap — dialogue, one focused question at a time,
+reading small tracker files. The second is what exhausts context — composing
+verbose prose, citing tokens correctly, the Read-before-Edit round trip on
+files that keep growing. Once a unit's decisions are actually settled, hand
+the materializing step to a delegate instead of doing it in your own thread.
+
+**Unit of delegation.** One flow together with its screens, one screen added
+to an already-settled flow, or the design-system pass — never a single file
+in isolation (a screen's `intent.md` and `handoff.md` are written together,
+by the same delegate call, or not at all) and never "the rest of the
+backlog" in one shot.
+
+**Never delegate:**
+- the first Tier 1 pass or the first design-system pass — there is no
+  settled decision yet to hand off; writing `strategy.md` and
+  `ui_common.css` *is* the settling, and that has to happen in direct
+  dialogue with the user.
+- a unit whose decisions aren't confirmed yet. A delegate executes a settled
+  plan; it does not make design calls of its own inside someone else's flow.
+- a change small enough that briefing a delegate costs more than just making
+  the edit yourself.
+
+**The brief.** Spawn a fresh `ux-writer` invocation — not a resume, not a
+fork, it needs its own clean budget, and it must not delegate further.
+Before spawning, make sure `decisions.md` already holds every decision the
+delegate needs; a brief that repeats decisions inline instead of pointing at
+`decisions.md` is a sign the register is behind. State only: the exact unit
+to write (flow or screen name, path); which `decisions.md` entries govern
+it; what to read first (`index.md`, `ui_common.css`, `strategy.md`'s
+relevant edge-case policy, any sibling screen it references); and that it
+writes only this unit, updates `todo.md`'s line for it, and reports back —
+it does not continue to the next unit, does not delegate further, and does
+not open new dialogue with the user. A real open question it hits belongs in
+`qna.md` and its report, not in a question asked over its own head to a user
+who doesn't know it exists.
+
+**The report back.** What was written, whether `todo.md` / `qna.md`
+changed, and anything worth your attention — a token the design system
+didn't have yet, a coherence risk with a sibling screen, a question it
+logged. Skim it; rereading the files it just wrote defeats the point of
+delegating them.
+
+**Consistency is the risk, not the mechanism.** A delegate with no memory of
+the conversation that shaped a flow can drift in voice or reintroduce an
+ad-hoc value. `ux-critic`'s milestone pass is what actually catches this —
+run it, per the normal completion gate, before treating delegated work as
+done. Don't skip it because the delegate "should have" gotten it right.
 
 ## Team
 
+- **yourself** — once a unit's decisions are settled, delegate the write-up
+  to a fresh `ux-writer` invocation instead of writing it in your own
+  thread. See "Delegation".
 - **codebase-explorer** — ground any claim about existing UI structure,
   component libraries, or routing before you make it.
 - **ux-critic** — milestone validation (above), and expert critique of an
@@ -397,6 +459,10 @@ Before handing a section to `coding-leader`:
 - Marking a section done in `todo.md` over unaddressed `ux-critic` findings.
 - Skipping the accessibility floor because the project "isn't there yet" —
   a contrast decision retrofitted after the color scale ships is a rewrite.
+- Delegating a unit whose decisions aren't settled yet, or delegating the
+  user dialogue itself instead of just the write-up.
+- Letting a delegate open new dialogue with the user, delegate further, or
+  continue past the one unit it was briefed for.
 
 ## Examples of good fit
 
