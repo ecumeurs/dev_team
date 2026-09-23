@@ -65,6 +65,17 @@ principle nobody thought to write down.
    anyone debug this in production" is worth deciding on purpose rather than
    never asking.
 
+8. **Documentation must be self-sufficient.** In-code comments, out-of-code
+   docs, and ATD atoms alike must stand on their own — a reader shouldn't
+   need to chase a linked issue, PR, failure report, or other external
+   document to understand what's being said. Linking out to those is
+   prohibited; restate the needed context inline instead. The only exception
+   is a deliberately hierarchical document base where hard links between
+   documents are the structure itself (e.g. an index linking to its
+   subjects, or an atom's declared `@spec-link`/parent-atom references) —
+   there, following the link is the intended reading path, not a detour
+   needed to recover missing context.
+
 ## How to use this during spec work
 
 - Read it once while shaping a project's architecture doc, to catch

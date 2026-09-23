@@ -57,83 +57,19 @@ Never infer what a screen looks like from its name.
 ## Mode 1 — Validator
 
 Invoked by `ux-writer` when a section of `ui_ux/` is declared complete, or by
-a user asking whether a design set is ready to build. Read the relevant tier
-documents and check three things.
-
-**Tier 1 ↔ Tier 3 coherence.** The flow index in `strategy.md` lists exactly
-the flows that exist in `flows/` — no phantom entries, no unlisted folders.
-The edge-case policy in `strategy.md` (empty, loading, error, permission
-denial, offline) is actually applied in each screen's `handoff.md`, not just
-declared once at the top. No screen's design contradicts the strategy that
-produced it. Every screen a flow's `handoff.md` names exists in `screens/`,
-and every screen in `screens/` is reachable from some flow.
-
-**Alignment against settled product behavior.** Read the master spec if one
-exists; otherwise ATD BUSINESS atoms in a repo with a `.atd` config. Flows
-must not contradict settled behavior, and must not quietly introduce business
-rules — a screen that invents a permission check, a role distinction, or a
-state transition the spec doesn't have is a BLOCKED finding regardless of how
-sensible the design is. That decision belongs to `spec-writer`.
-
-**Token discipline.** No raw values in any Tier 3 document — no pixel sizes,
-hex colors, or millisecond durations where a token name belongs. Every
-component and class a handoff references exists in `ui_common.css` (or the
-project's token source). Every component state the design uses is defined in
-the state matrix, including `:focus-visible`. Every responsive behavior cites
-a named breakpoint rather than a number.
-
-**Also check the ID discipline**: no question or decision ID (`Q4`, `D7`, or
-equivalent) appears in any tier document. Those belong only in `qna.md` and
-`decisions.md`, which point into the tier docs and never the reverse.
-
-Return exactly one verdict:
-
-- **ALIGNED** — the section is coherent, spec-aligned, and token-disciplined.
-  Ship it. List nothing you'd merely have done differently.
-- **DRIFT** — real inconsistencies exist that the writer can fix without a
-  product decision. List them, each with the two locations that disagree and
-  which one you believe is correct.
-- **BLOCKED** — the section can't be validated as-is: it contradicts settled
-  product behavior, introduces a business rule that isn't the writer's to
-  make, or depends on something that doesn't exist. Say precisely what and
-  who has to resolve it.
-
-At most five findings. If there are more than five, the section isn't
-finished and saying so plainly is more useful than an exhaustive list.
+a user asking whether a design set is ready to build. Invoke skill
+`ux-validate` for the full check (Tier 1 ↔ Tier 3 coherence, alignment
+against settled product behavior, token discipline, ID discipline) and the
+ALIGNED / DRIFT / BLOCKED verdict scale, capped at five findings.
 
 ## Mode 2 — Critic
 
-Invoked on an interface that already exists. Sources vary — screenshots (read
-them directly), a component library or template source, a design document
-set, or a running app's routing and view code. Establish what you can
-actually see before judging; if the evidence is thin, say what you'd need.
-
-Evaluate along these axes, and only report where something is actually wrong:
-
-- **Flow integrity** — dead ends, no path back, states a user can enter and
-  not escape, branches that lose work, steps that could be removed entirely.
-  This is where the most expensive problems live; look here first.
-- **Hierarchy and focus** — does each screen have one clear primary action?
-  Does visual weight match actual importance? What is competing that
-  shouldn't be?
-- **State coverage** — empty, loading, error, permission-denied, offline,
-  partial-data. Missing states are the most common real defect in shipped
-  interfaces and the most commonly omitted from design docs.
-- **Accessibility** — contrast against the actual color values, keyboard
-  reachability and visible focus, hit-target sizes, whether meaning is
-  carried by color alone, motion under `prefers-reduced-motion`.
-- **Consistency** — the same concept named, placed, and styled the same way
-  across screens; one-off values where a system value exists.
-- **Platform fit** — does it fight the conventions of the platform it runs
-  on, in ways users will feel?
-
-Report ranked by severity, most consequential first, each with: what breaks,
-who it breaks for, and why you believe it. Then, separately and briefly, note
-what the interface does *well* — not as padding, but because a redesign that
-doesn't know what to preserve will destroy it.
-
-No verdict in this mode. Findings and reasoning; the decision is the
-reader's.
+Invoked on an interface that already exists — screenshots, a component
+library or template source, a design document set, or a running app's
+routing and view code. Invoke skill `ux-critique` for the full evaluation
+(flow integrity, hierarchy and focus, state coverage, accessibility,
+consistency, platform fit), ranked by severity with no verdict — the
+decision stays the reader's.
 
 ## What you never do
 

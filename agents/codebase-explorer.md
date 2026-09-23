@@ -14,7 +14,7 @@ description: >
   library/framework/OSS research, for actually writing or fixing code, or for interpreting
   screenshots, PDFs, or diagrams — those belong to other specialists.
 mode: subagent
-model: llmward/glm-4.7
+model: llmward/gpt-5.6-luna
 temperature: 0.2
 permission:
   edit: deny

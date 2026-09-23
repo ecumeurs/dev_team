@@ -1,13 +1,21 @@
 #!/usr/bin/env bash
-# Turn the dev_team agent set ON for both harnesses:
+# Turn the dev_team agent set ON for all supported harnesses:
 #   ~/.config/opencode/agents -> repo agents/        (OpenCode dialect)
 #   ~/.claude/agents          -> repo claude-agents/ (Claude Code dialect)
-# Idempotent. hookoff.sh removes both again.
+#   ~/.codex/agents           -> repo codex-agents/  (Codex custom agents)
+# Idempotent. hookoff.sh removes them again.
 #
 # Also publishes references/ to ~/.local/share/dev_team/references, the stable
 # path the personas cite for shared reference docs (software-quality
-# principles, the access-model layout). Both agent sets read those same files,
+# principles, the access-model layout). Agent personas read those same files,
 # so that link is deliberately NOT removed by hookoff.sh — see the note there.
+#
+# Also symlinks each skills/<name> subdirectory into ~/.claude/skills/<name>,
+# one skill at a time (never the whole skills/ directory onto ~/.claude/skills
+# itself, which may hold skills dev_team doesn't manage). OpenCode discovers
+# ~/.claude/skills natively, so this single location covers both harnesses.
+# Unlike references, hookoff.sh DOES remove these links again — skills are
+# active automation an agent invokes, not inert reference docs.
 #
 # Deliberately does NOT touch opencode.jsonc / the llmward provider lock —
 # that's a separate, permanent DLP-routing boundary, not "team presence".
@@ -48,10 +56,25 @@ ensure_link() {
 ensure_link "$REPO_DIR/references"    "$HOME/.local/share/dev_team/references" "References"   || failed=1
 ensure_link "$REPO_DIR/agents"        "$HOME/.config/opencode/agents"          "OpenCode"     || failed=1
 ensure_link "$REPO_DIR/claude-agents" "$HOME/.claude/agents"                   "Claude Code"  || failed=1
+ensure_link "$REPO_DIR/codex-agents"  "$HOME/.codex/agents"                    "Codex"        || failed=1
+
+# Skills are symlinked one subdirectory at a time into ~/.claude/skills, never
+# as a whole-directory link onto ~/.claude/skills itself — that location can
+# hold skills dev_team doesn't manage (e.g. hand-installed ones), and a
+# parent-directory symlink would either clobber them or refuse to link at all.
+# OpenCode natively discovers ~/.claude/skills too, so this one location covers
+# both OpenCode and Claude Code without a separate OpenCode-specific target.
+if [ -d "$REPO_DIR/skills" ]; then
+  for skill_dir in "$REPO_DIR/skills"/*/; do
+    [ -d "$skill_dir" ] || continue
+    name="$(basename "$skill_dir")"
+    ensure_link "${skill_dir%/}" "$HOME/.claude/skills/$name" "Skill:$name" || failed=1
+  done
+fi
 
 if [ "$failed" -eq 0 ]; then
   echo
-  echo "dev_team agents are now live for OpenCode and Claude Code:"
+  echo "dev_team agents are now live for OpenCode, Claude Code, and Codex:"
   names=()
   for f in "$REPO_DIR/agents"/*.md; do
     [ -e "$f" ] || continue
@@ -59,6 +82,18 @@ if [ "$failed" -eq 0 ]; then
     names+=("${n%.md}")
   done
   printf '%s\n' "${names[@]}" | paste -sd, - | sed 's/,/, /g' | fold -sw 74 | sed 's/^/  /'
+  if [ -d "$REPO_DIR/skills" ]; then
+    skill_names=()
+    for d in "$REPO_DIR/skills"/*/; do
+      [ -d "$d" ] || continue
+      skill_names+=("$(basename "$d")")
+    done
+    if [ "${#skill_names[@]}" -gt 0 ]; then
+      echo
+      echo "Skills linked into ~/.claude/skills (also discovered by OpenCode):"
+      printf '%s\n' "${skill_names[@]}" | paste -sd, - | sed 's/,/, /g' | fold -sw 74 | sed 's/^/  /'
+    fi
+  fi
 else
   echo >&2
   echo "One or more links could not be established; see above." >&2

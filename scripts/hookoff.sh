@@ -1,18 +1,25 @@
 #!/usr/bin/env bash
-# Turn the dev_team agent set OFF for both harnesses: remove the
-# ~/.config/opencode/agents and ~/.claude/agents symlinks so each falls back
-# to its own stock agents. Idempotent, and only ever removes a symlink it
-# recognizes — real content in either location is left untouched.
+# Turn the dev_team agent set OFF for all supported harnesses: remove the
+# ~/.config/opencode/agents, ~/.claude/agents, and ~/.codex/agents symlinks so
+# each falls back to its own stock agents. Idempotent, and only ever removes
+# symlinks — real content in any location is left untouched.
 #
 # Deliberately does NOT remove ~/.local/share/dev_team/references, which
 # hookup.sh publishes: those are inert reference docs when nothing reads them,
 # and keeping them means re-running hookup.sh is the only step needed to come
 # back up. Remove that link by hand if you really want it gone.
 #
+# DOES remove each skills/<name> symlink hookup.sh placed in ~/.claude/skills
+# — unlike references, skills are active automation an agent can invoke, so
+# turning the team off should turn its skills off too. Only ever removes a
+# symlink pointing back into this repo's skills/ directory; any other skill
+# living in ~/.claude/skills (hand-installed, unrelated) is left untouched.
+#
 # Deliberately does NOT touch opencode.jsonc / the llmward provider lock —
 # that's a separate, permanent DLP-routing boundary, not "team presence".
 set -euo pipefail
 
+REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 failed=0
 
 # remove_link <dst> <label>
@@ -34,6 +41,15 @@ remove_link() {
 
 remove_link "$HOME/.config/opencode/agents" "OpenCode"    || failed=1
 remove_link "$HOME/.claude/agents"          "Claude Code" || failed=1
+remove_link "$HOME/.codex/agents"           "Codex"       || failed=1
+
+if [ -d "$REPO_DIR/skills" ]; then
+  for skill_dir in "$REPO_DIR/skills"/*/; do
+    [ -d "$skill_dir" ] || continue
+    name="$(basename "$skill_dir")"
+    remove_link "$HOME/.claude/skills/$name" "Skill:$name" || failed=1
+  done
+fi
 
 if [ "$failed" -ne 0 ]; then
   echo >&2
@@ -42,5 +58,5 @@ if [ "$failed" -ne 0 ]; then
 fi
 
 echo
-echo "Both harnesses now fall back to their stock built-in agents only."
+echo "All supported harnesses now fall back to their stock built-in agents only."
 echo "Re-run scripts/hookup.sh to bring the dev_team set back."

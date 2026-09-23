@@ -8,6 +8,43 @@
         "baseURL": "http://127.0.0.1:4000/v1"
       },
       "models": {
+        "gpt-5.3-codex": {
+          "name": "GPT-5.3 Codex (LLMWard)",
+          "limit": {
+            "context": 400000,
+            "output": 128000
+          }
+        },
+        "gpt-5.6-sol": {
+          "name": "GPT-5.6 Sol · flagship (LLMWard)",
+          "provider": {
+            "npm": "@ai-sdk/openai"
+          },
+          "limit": {
+            "context": 1050000,
+            "output": 128000
+          }
+        },
+        "gpt-5.6-terra": {
+          "name": "GPT-5.6 Terra · balanced (LLMWard)",
+          "provider": {
+            "npm": "@ai-sdk/openai"
+          },
+          "limit": {
+            "context": 1050000,
+            "output": 128000
+          }
+        },
+        "gpt-5.6-luna": {
+          "name": "GPT-5.6 Luna · economical (LLMWard)",
+          "provider": {
+            "npm": "@ai-sdk/openai"
+          },
+          "limit": {
+            "context": 1050000,
+            "output": 128000
+          }
+        },
         "claude-sonnet": {
           "name": "Claude Sonnet 5 (LLMWard)",
           "limit": {
@@ -42,46 +79,18 @@
             "context": 200000,
             "output": 64000
           }
-        },
-        "glm-5": {
-          "name": "GLM-5 (LLMWard)",
-          "limit": {
-            "context": 200000,
-            "output": 65536
-          }
-        },
-        "glm-4.7": {
-          "name": "GLM-4.7 (LLMWard)",
-          "limit": {
-            "context": 200000,
-            "output": 65536
-          }
-        },
-        "glm-4.7-flash": {
-          "name": "GLM-4.7 Flash · free tier (LLMWard)",
-          "limit": {
-            "context": 128000,
-            "output": 32000
-          }
-        },
-        "glm-5.2": {
-          "name": "GLM-5.2 · flagship (LLMWard)",
-          "limit": {
-            "context": 1000000,
-            "output": 65536
-          }
         }
       }
     }
   },
-  "model": "llmward/glm-5",
-  "small_model": "llmward/glm-4.7",
+  "model": "llmward/gpt-5.6-terra",
+  "small_model": "llmward/gpt-5.6-luna",
   "agent": {
     "plan": {
-      "model": "llmward/glm-5.2"
+      "model": "llmward/gpt-5.6-sol"
     },
     "build": {
-      "model": "llmward/glm-5"
+      "model": "llmward/gpt-5.6-terra"
     }
   },
   "mcp": {

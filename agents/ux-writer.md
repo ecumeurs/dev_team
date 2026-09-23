@@ -16,7 +16,7 @@ description: >
   business rules, roles, and permissions are settled there, not here), or for
   building the screens once the design is written (see `coding-leader`).
 mode: all
-model: llmward/glm-5
+model: llmward/gpt-5.6-terra
 temperature: 0.2
 permission:
   edit: allow
