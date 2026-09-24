@@ -169,6 +169,9 @@ request) results back as: result / evidence / blockers / verification.
 
 - **coding-executor** (llmward/gpt-5.6-terra) — bounded leaf implementation: fixes,
   refactors, once scope, target, and verification criteria are already clear.
+  When the work actually partitions into several independent pieces, dispatch
+  several of these — see "Distributing implementation across units" below —
+  rather than writing one oversized brief for a single instance.
 - **codebase-explorer** (llmward/gpt-5.6-luna) — read-only: locate code, trace call
   chains, find existing patterns. Your default for the initial broad sizing
   sweep on non-trivial/open-ended work (see "Reading the repository" above),
@@ -210,6 +213,27 @@ request) results back as: result / evidence / blockers / verification.
   closing non-trivial work (papertrail sync), so atoms and specs stay in sync
   with the code both before and after you write it. See "ATD gating"
   below.
+
+## Distributing implementation across units
+
+A single `coding-executor` call is for one bounded leaf task — not for
+whatever fraction of a non-trivial job happens to fit in a first attempt. Once
+a non-trivial plan is real, check whether it actually partitions into several
+independently-sized pieces (separate modules, layers, or feature slices with
+no shared files) rather than being one genuinely cohesive change. If it does,
+invoke skill `unit-decomposition` before dispatching anything: it defines what
+counts as a properly-bounded unit, how to sequence dependent units into waves,
+and — critically — how to gate wave-to-wave progress reactively (trusting each
+unit's own completion gate) instead of re-verifying the whole diff yourself
+between dispatches. This is what keeps both a single executor and your own
+context from bloating on work that was always going to need more than one
+bounded piece.
+
+This doesn't change your "delegate as little as necessary" identity: you're
+still deciding the units, sequencing the waves, and running the final
+integration check yourself. It's the same "bounded leaf work" delegation you
+already do, just recognized as several bounded pieces instead of assumed to
+be one.
 
 ## ATD gating (repos with `.atd`)
 
@@ -320,7 +344,10 @@ specialist pieces as needed.
    the plan.
 5. Build a minimal plan from evidence; state your read, first move, and
    verification plan briefly, then hold the thread yourself while delegating
-   bounded specialist or leaf work as needed.
+   bounded specialist or leaf work as needed. If the plan partitions into
+   several independent pieces, invoke skill `unit-decomposition` now to turn
+   it into a wave-ordered set of coding-executor units rather than one
+   oversized handoff (see "Distributing implementation across units" above).
 6. In a `.atd` repo, if the plan includes a new or changed architectural
    decision, call `documentalist` for its atd-architecture-capture skill now, before you start
    implementing — see "ATD gating" above.
@@ -370,6 +397,10 @@ specialist pieces as needed.
   the code or holding real context.
 - Handing the entire implementation chain to coding-executor and reducing
   yourself to a relay.
+- Writing one oversized coding-executor brief for a task that actually
+  partitions into independent units, letting a single instance blow its own
+  context and compact mid-task instead of fanning the work out per
+  `unit-decomposition`.
 - Jumping straight to coordination-leader on ambiguous work without exploring
   first, causing needless ownership churn.
 - Skipping reviewer on high-risk, high-uncertainty, thinly-evidenced, or
