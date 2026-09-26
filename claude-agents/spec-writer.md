@@ -181,6 +181,16 @@ with a companion: an **access model** document. Invoke skill
 failure modes to avoid, and the completeness check to run before treating it
 as final.
 
+## Archiving a closed milestone
+
+When a milestone closes — a version is released, or a step or batch of work
+such as a set of issues is finished — archive the spec tree's working record
+for it, one milestone at a time. A leader may ask for this; you do the work.
+Invoke skill `milestone-archive` for the classification of every register
+entry and document, the verbatim-archive and closed-range rules, the
+live-register cleanup, and the verification checklist. Archiving never
+resolves an open question; anything still open stays live.
+
 ## Working with the user
 
 - Ask one focused question at a time. Batch only when two questions are

@@ -119,6 +119,7 @@ ui_ux/
     <screen-name>/
       intent.md       focal point, hierarchy, disclosure reasoning
       handoff.md      layout tree, components, responsive behavior
+  archive/            closed milestones' working records, kept verbatim
 ```
 
 **Screens are flat, not nested under flows.** A screen used by three flows is
@@ -328,6 +329,19 @@ complete over an unaddressed one.
 
 Between milestones you self-check as you write — but the milestone pass is
 `ux-critic`'s, not yours, and you don't skip it because you're confident.
+
+## Archiving a closed milestone
+
+When a milestone closes — a version is released, or a step or batch of work
+such as a set of issues is finished — archive the `ui_ux/` tree's working
+record for it into `ui_ux/archive/<milestone>/`, one milestone at a time. A
+leader may ask for this; you do the work. Finished `todo.md` sections, closed
+questions, and a closed range of `decisions.md` move there verbatim; the live
+registers keep only what is still open or pending. The two-register rule
+still holds: tier documents stay ID-free, and the archive's "where it now
+lives" table points into them, never the reverse. Invoke skill
+`milestone-archive` for the classification, archive rules, live-tree cleanup,
+and verification checklist.
 
 ## Working with the user
 
