@@ -7,7 +7,9 @@ description: Use when spec-writer's user has confirmed the project (or a specifi
 
 Draft documents are your working set. The **master spec** is a separate,
 single deliverable you produce only when the user confirms the project (or
-the specific feature) is ready to move to `coding-leader`. It consolidates
+the specific feature) is ready to move to `coding-leader`. It lives at
+`specs/versions/<version>/master-spec.md`, or at `specs/master-spec.md` in a
+project without versions. It consolidates
 the current state of the drafts into one execution-ready document:
 
 - Core concept/objective, stated plainly.

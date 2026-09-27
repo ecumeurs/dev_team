@@ -16,8 +16,10 @@ can be found from an index, and every open item stays live.
 the tree's own writer does the work. Run it for **one milestone at a time**,
 and name that milestone first, for example `v1` or `2026-09-26 v1.0 gate`. The
 name gives the archive folder its slug (`archive/v1/`,
-`archive/2026-09-26-v1.0-gate/`). If the tree already has an archive, follow
-its naming, even where that means date-prefixed flat files.
+`archive/2026-09-26-v1.0-gate/`). Name everything as
+`~/.local/share/dev_team/references/doc-tree-conventions.md` sets out.
+An existing archive in another shape stays as it is: renaming it is a
+migration the user asks for, not part of an archive pass.
 
 **Where the archive lives.**
 
@@ -33,7 +35,8 @@ Before you move anything, list every candidate:
 
 - Every entry in the decisions log (`specs/decisions.md`, `ui_ux/decisions.md`).
 - Every entry in the open-questions register (`specs/open-questions.md`,
-  `ui_ux/qna.md`), including closed-question prose that is still sitting in it.
+  `ui_ux/open-questions.md`), including closed-question prose that is still
+  sitting in it.
 - The sections and items of `ui_ux/todo.md`.
 - Every document tied to the milestone: version folders, execution reports,
   feasibility reviews, plans, and superseded snapshots.
@@ -106,12 +109,12 @@ resolved fit findings against a closed version) follows the classes above.
   what was found true and says it is new text.
 - **Append-only logs are archived as a closed, contiguous range.** Move the
   entries verbatim to `archive/<milestone>/decisions-D<first>-D<last>.md`, and
-  do the same for a question history (`qna-Q<first>-Q<last>.md`). Every entry
-  in the range must be class (a) or (b). If one isn't, end the range before
-  it.
+  do the same for a question history (`open-questions-Q<first>-Q<last>.md`).
+  Every entry in the range must be class (a) or (b). If one isn't, end the
+  range before it.
   - When closed entries are interleaved with still-open ones (common in a
     question register), don't force a range. Extract each closed entry to its
-    own file (`qna-Q15.md`), and name each one in the live header.
+    own file (`open-questions-Q15.md`), and name each one in the live header.
   - The live log keeps a header that names each archived range and its link,
     says that archived IDs keep their meaning, and gives the next ID
     ("Numbering continues from D45"). Never renumber anything.
@@ -136,13 +139,13 @@ resolved fit findings against a closed version) follows the classes above.
 
 ## 4. Clean up the live tree
 
-- **Trim the live registers.** The open-questions register or `qna.md` keeps
+- **Trim the live registers.** The open-questions register keeps
   only questions that are truly open, with their original IDs. The decisions
   log keeps its header and any entries after the archived range.
 - **Mark the milestone's status in the tree's index files.**
   - Spec tree: the `specs/README.md` status snapshot, the versions index
     table, and the version README's `Status:` line.
-  - UI/UX tree: `ui_ux/index.md` (a tier doc, so no IDs; name the archive in
+  - UI/UX tree: `ui_ux/README.md` (a tier doc, so no IDs; name the archive in
     its map) and `todo.md`.
   - Bump the `Status: draft vN` line of every live spec document you edit.
 - **Record the archive action in a live log only if that tree already does

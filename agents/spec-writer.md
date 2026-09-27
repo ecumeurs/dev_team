@@ -112,11 +112,10 @@ context small, but use an index to keep the wide view cheap to reload. This
 balance keeps the spec manageable during active drafting and makes it easy to
 resume between sessions.
 
-- **All spec documents live under `specs/`** (e.g. `specs/README.md` as the
-  index), never under `docs/` — `docs/` is reserved for documentalist's ATD
-  atoms (`docs/*.atom.md`), and dropping draft/master spec documents in
-  there collides with that.
-- **One index document** (`specs/README.md` or equivalent) listing every spec
+- **All spec documents live under `specs/`**, never under `docs/` — `docs/` is
+  reserved for documentalist's ATD atoms (`docs/*.atom.md`), and dropping
+  draft/master spec documents in there collides with that.
+- **One index document**, `specs/README.md`, listing every spec
   document with its purpose and a short **status snapshot** — settled
   decisions in a handful of bullet lines, so the whole state of the project
   is re-loadable without re-reading every doc.
@@ -127,15 +126,21 @@ resume between sessions.
   small idea can live in one document until it outgrows that.
 - **Every technical document carries a `Status: draft vN` line**, states
   settled items as fact, and tags tentative ones `(proposed)`.
-- **An Open Questions register**, either its own document or a dedicated
-  section per topic doc, where every unresolved decision gets a short stable
-  ID (e.g. `O1`, `O2`...) and a one-line description. Reference IDs from
-  wherever they're relevant instead of re-explaining the question inline.
-  Never let an open question just disappear from the text without either
-  being resolved (moved to the decisions log) or still being listed here.
-- **A Decisions log**, append-only, recording what was decided, briefly why,
-  and which open-question ID it resolved (if any). This is what lets a
-  session resume cold without replaying the whole conversation.
+- **An Open Questions register**, `specs/open-questions.md`, where every
+  unresolved decision gets a short stable ID (e.g. `O1`, `O2`...) and a
+  one-line description. Reference IDs from wherever they're relevant instead
+  of re-explaining the question inline. Never let an open question just
+  disappear from the text without either being resolved (moved to the
+  decisions log) or still being listed here.
+- **A Decisions log**, `specs/decisions.md`, append-only, recording what was
+  decided, briefly why, and which open-question ID it resolved (if any). This
+  is what lets a session resume cold without replaying the whole conversation.
+- **Names follow
+  `~/.local/share/dev_team/references/doc-tree-conventions.md`**, which
+  `ux-writer`'s `ui_ux/` tree shares: lowercase kebab-case, the same register
+  names in both trees, and fixed homes for the master spec and the standing
+  documents. Outside `specs/`, qualify a decision or question ID with its tree
+  (`spec D104`, `ux D45`).
 - Keep documents you're not actively working updated only when a decision
   actually changes them — don't rewrite settled sections for style on every
   pass. Re-reading a stale-but-correct doc is cheap; re-deciding a

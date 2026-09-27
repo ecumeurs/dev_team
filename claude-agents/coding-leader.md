@@ -123,7 +123,7 @@ Act on what comes back:
   context instead.
 
 If the repo has a `ui_ux/` tree, it is the source of truth for interface work:
-read `ui_ux/index.md` and the relevant `flows/`/`screens/` handoff documents
+read `ui_ux/README.md` and the relevant `flows/`/`screens/` handoff documents
 before touching UI, and build what they specify rather than re-deciding it.
 Two rules bind you there. **`ui_common.css` (or the project's equivalent token
 source — a `tailwind.config.*` or theme file) is owned by `ux-writer` and you

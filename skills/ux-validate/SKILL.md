@@ -23,11 +23,11 @@ state transition the spec doesn't have is a BLOCKED finding regardless of how
 sensible the design is. That decision belongs to `spec-writer`.
 
 **Persona alignment.** When the spec has a personas document (usually in
-`specs/`), read it. `strategy.md` designs for its personas, primary first,
-and draws its context of use and mental models from them; each flow's
-`intent.md` names the persona goals it serves; and every goal the master
-spec assigns to the milestone that needs an interface is served by some flow
-or logged in `qna.md`. A missing citation or an unserved goal is DRIFT. A
+`specs/`), read it. `strategy.md` designs for its personas, primary first, and
+draws its context of use and mental models from them; each flow's `intent.md`
+names the persona goals it serves; and every goal the master spec assigns to
+the milestone that needs an interface is served by some flow or logged in
+`open-questions.md`. A missing citation or an unserved goal is DRIFT. A
 persona, or a persona trait — a goal, a context of use — that the personas
 document doesn't have is BLOCKED, routed to `spec-writer`, exactly like an
 invented business rule. With no personas document, don't manufacture a
@@ -42,10 +42,10 @@ the state matrix, including `:focus-visible`. Every responsive behavior cites
 a named breakpoint rather than a number.
 
 **Also check the ID discipline**: no question or decision ID (`Q4`, `D7`, or
-equivalent) appears in any tier document. Those belong only in `qna.md` and
-`decisions.md`, which point into the tier docs and never the reverse. Persona
-and goal IDs (`P1`, `P1.G2`) are not tracking IDs — they are defined in the
-spec's personas document — and are allowed.
+equivalent) appears in any tier document. Those belong only in
+`open-questions.md` and `decisions.md`, which point into the tier docs and
+never the reverse. Persona and goal IDs (`P1`, `P1.G2`) are not tracking IDs —
+they are defined in the spec's personas document — and are allowed.
 
 Return exactly one verdict:
 
