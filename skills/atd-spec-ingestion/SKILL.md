@@ -12,7 +12,7 @@ master spec document from spec-writer — sometimes on a project with no code
 yet (cold-start extraction), sometimes mid-project, where spec-writer has
 refined objectives or mechanics for the next milestone and code already
 exists. Adapt the cold-start shape — run the Manual Dissection Protocol
-(core agent instructions) against the *document* instead of code, materialize
+(ATD manual, `~/.local/share/dev_team/references/atd-atoms.md`) against the *document* instead of code, materialize
 or update DRAFT atoms, verify, report. Either way this workflow stays at the
 BUSINESS layer: it never originates `@spec-link`/`@test-link` tags or
 ARCHITECTURE/IMPLEMENTATION atoms itself — origination of those happens once
@@ -20,13 +20,15 @@ a leader settles the architecture (atd-architecture-capture, before code) or,
 for anything that slips past planning, once implementation catches up
 (atd-cold-start/atd-post-task-sync).
 
-1. **Bootstrap if needed.** `atd init` if no `.atd` exists. Don't fight the
+1. **Bootstrap if needed.** `atd init` if no `.atd` exists, then add the
+   `## Declared intent` section to the project instructions (see the core
+   agent instructions). Don't fight the
    pre-commit hook or the `req_tech_debt_backlog` atom it installs. On a
    milestone refinement `.atd` will already exist; this step is a no-op then.
 2. **Work from the master spec document alone.** You should only ever be
    handed the master spec itself — never spec-writer's index, Open Questions
    register, Decisions log, Q&A transcripts, or other working material (see
-   Ground Truth 3a in the core agent instructions). The master spec is
+   principle 4, decided state, in the core agent instructions). The master spec is
    required to carry its own `Status: draft vN` line and to state settled
    items as fact while tagging tentative ones `(proposed)` inline, so it's
    sufficient on its own to sort its content into two buckets: **settled
@@ -57,8 +59,8 @@ for anything that slips past planning, once implementation catches up
 4. **Establish or reconcile CONTRACT and VISION.** Per ATD.md §1.4, exactly
    one of each must exist project-wide (query for existing ones first), and
    neither is ever a `parents:` target for any other atom — they're read for
-   governance, not linked as ancestry (see Hard Boundaries in the core agent
-   instructions). VISION and CONTRACT are separate axes and get built up
+   governance, not linked as ancestry (see ATD hard rules in the ATD
+   manual). VISION and CONTRACT are separate axes and get built up
    differently:
    - **VISION** (scope): draft it from the spec's core concept/objective +
      in-scope/out-of-scope framing, same as before — it doesn't gate on
@@ -96,7 +98,7 @@ for anything that slips past planning, once implementation catches up
    lint` enforces the CONTRACT-uniqueness rule and will catch a violation,
    but check this yourself before running lint, not after.
 5. **Dissect the relevant spec sections manually.** Run the Manual Dissection
-   Protocol (core agent instructions) directly against the spec document —
+   Protocol (ATD manual) directly against the spec document —
    `atd dissect` no longer exists, so there's no shortcut even though it used
    to accept `.md` files. On cold-start, that's the whole document; on a
    milestone refinement, focus on the sections spec-writer's handoff flagged
@@ -117,7 +119,7 @@ for anything that slips past planning, once implementation catches up
    parented to a real BUSINESS ancestor per "No Parent, No Code" (which
    applies here as "no parent, no atom" — every BUSINESS atom still needs a
    traceable root) — **never to `contract_atd`/`vision_atd` themselves** (see
-   Hard Boundaries); a fresh top-level concern parents to the nearest
+   ATD hard rules in the ATD manual); a fresh top-level concern parents to the nearest
    existing REQUIREMENT/DOMAIN atom, or, if truly nothing fits yet, stays
    flagged in your report as needing a new top-level BUSINESS atom rather
    than borrowing CONTRACT/VISION as a stand-in parent. Use `atd update --set
@@ -125,12 +127,12 @@ for anything that slips past planning, once implementation catches up
    --intent "..." --logic "..." --interface "..." --expectation "..."`.
    Write `## THE RULE / LOGIC` and the other sections as fully
    self-sufficient statements of the rule itself — never a pointer back to a
-   spec document section, decision ID, or Open-Question ID (Ground Truth
-   3b). If the spec's own wording is worth preserving verbatim, quote it
+   spec document section, decision ID, or Open-Question ID (principle 5,
+   entries stand on their own). If the spec's own wording is worth preserving verbatim, quote it
    inline in the relevant section rather than citing where it lives; the
    atom must still mean the same thing after the spec document is gone.
    Confirm the id from the command's own output before treating a new atom
-   as created (see CLI quick reference) — don't just assume your proposed id
+   as created (see the ATD manual's CLI quick reference) — don't just assume your proposed id
    landed. A milestone revision reopens confidence in that atom — return it
    to DRAFT even if it was previously REVIEW/STABLE. If it was STABLE or
    BUSINESS-layer (it will be both here), the same STABLE+BUSINESS `--force`
@@ -156,7 +158,7 @@ for anything that slips past planning, once implementation catches up
    section is still `(proposed)` or named in the spec's own deferred/open
    list, do not materialize an atom for it and do not fold it into a
    REQUIREMENT/RULE atom as an incidental complication either — an atom is a
-   claim about decided state (Ground Truth 3a), and this isn't decided yet.
+   claim about decided state (principle 4), and this isn't decided yet.
    Leave it out of `docs/` entirely; the master spec's own `(proposed)` tag
    or deferred/open listing is where that unresolved status already lives and
    belongs — you don't need spec-writer's Open Questions register to know

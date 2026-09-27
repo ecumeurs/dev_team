@@ -77,12 +77,12 @@ is milestone-only or still live, **ask the user**. Don't guess.
   such as application source for `ux-writer`. It is also the better choice
   when the document is still the contract for running code.
 
-  ATD atoms are never a reason to keep a document in place. Atoms must be
-  self-sufficient: they never link to, cite, or depend on a document outside
-  the atom set (spec, ui_ux, issue, or register ID). An atom that does is
-  already an ATD violation, whatever the archive does. Report it to
-  `documentalist` to inline the content, and archive the document on its own
-  merits.
+  Declared intent — ATD atoms or intent-register entries — is never a reason
+  to keep a document in place. Atoms and entries must be self-sufficient: they
+  never link to, cite, or depend on a document outside their own record (spec,
+  ui_ux, issue, or an open-question or decision ID). One that does is already
+  a violation, whatever the archive does. Report it to `documentalist` to
+  inline the content, and archive the document on its own merits.
 
 **Standing documents are never archived as a unit.** The spec tree's
 personas document — and any other document that describes the product rather
@@ -155,10 +155,10 @@ resolved fit findings against a closed version) follows the classes above.
 
 ## Boundaries
 
-- Never touch ATD atoms (`docs/*.atom.md`); `documentalist` owns them. Atoms
-  must never reference documents outside the atom set; report every atom that
-  does (a moved file or not) as a self-sufficiency violation for
-  `documentalist` to fix.
+- Never touch declared intent: ATD atoms (`docs/*.atom.md`) or the intent
+  register (`intent/`), both owned by `documentalist`. Neither may reference
+  documents outside its own record; report every atom or entry that does (a
+  moved file or not) as a self-sufficiency violation for its owner to fix.
 - Never delete, close or move the issue tracker or its files, or any
   deliverable: code, tests or release evidence. You may repair link paths in
   them. Don't change their wording.
@@ -188,5 +188,6 @@ Check every item before you report the pass as done:
    files at the base commit to separate pre-existing failures from new ones,
    and fix only the new ones.
 6. **The report lists:** what moved and where; what stayed in place and why;
-   any atom that references an outside document, for `documentalist`; the items carried
-   forward; and any question you had to put to the user.
+   any atom or intent entry that references an outside document, for its
+   owner; the items carried forward; and any question you had to put to the
+   user.

@@ -30,12 +30,12 @@ preserving the load-bearing behavioral rules (completion gates, guardrails,
 delegation triggers) while dropping crewbee-internal plumbing that has no
 native OpenCode equivalent. Two agents beyond those 8 are new, designed from
 scratch rather than translated from crewbee: `documentalist`, which maintains
-this machine's [ATD](../atd/) papertrail (`docs/*.atom.md`,
-`@spec-link`/`@test-link` congruence); and `spec-writer`, an ideation/
-specification partner for turning an unscoped project idea into a spec
-`coding-leader` can build from — see
-`references/software-quality-principles.md` for the project-agnostic quality
-checklist it draws on.
+a project's declared intent, either as an [ATD](../atd/) papertrail
+(`docs/*.atom.md`, `@spec-link`/`@test-link` congruence) or as the ATD-less
+intent register; and `spec-writer`, an ideation/specification partner for
+turning an unscoped project idea into a spec `coding-leader` can build from —
+see `references/software-quality-principles.md` for the project-agnostic
+quality checklist it draws on.
 
 ## Layout
 
@@ -144,6 +144,11 @@ Practical differences from the other two dialects:
   Keep this port fully self-contained until Codex documents real skill
   support, then extract the same sections `agents/`/`claude-agents/` already
   did.
+- **Lags on declared intent**: this port still has a separate
+  `intent-keeper` for the register and the older all-inline `documentalist`.
+  The other two ports merged both into one `documentalist` (see "Who owns
+  it" below). Port that change here before relying on Codex in a register
+  repo.
 
 ## The team
 
@@ -158,7 +163,7 @@ Practical differences from the other two dialects:
 | `reviewer` | subagent | `gpt-5.6` | Independent OKAY/REJECT review gate before closing non-trivial work. |
 | `principal-advisor` | subagent | `gpt-5.6` | High-stakes architecture/perf/security/complexity judgment calls. |
 | `multimodal-looker` | subagent | `gpt-5.6-luna` | Reads screenshots, PDFs, diagrams, UI images. |
-| `documentalist` | subagent | `gpt-5.6-terra` | Maintains the ATD papertrail after coding tasks close in ATD-managed repos. |
+| `documentalist` | subagent | `gpt-5.6-terra` | Owns the repo's declared intent in either backend (ATD atoms or the `intent/` register) and runs the intent gates. |
 | `ux-writer` | subagent | `gpt-5.6-terra` | Designs UI/UX document trees and token guidance before implementation. |
 | `ux-critic` | subagent | `gpt-5.6` | Read-only UI/UX validator and critique specialist. |
 
@@ -172,6 +177,159 @@ pay-per-token API path returns "insufficient balance / no resource package".
 natively vision-capable). To switch: add a `glm-5v-turbo` model block to
 `config/litellm/config.yaml` pointed at `https://api.z.ai/api/paas/v4` once
 the z.ai plan/balance side is sorted, then flip this agent's `model:` field.
+
+## Intent guardrail: ATD or the intent register
+
+The leaders check every change against declared business intent. There is a
+preflight before a plan is final, architecture capture before code, and a
+sync after the task that confirms the declared intent still matches the
+code. The team can hold that intent in one of two backends. Each repository
+picks one with a marker at its project root. The ATD-less backend, the
+**intent register**, needs nothing beyond plain files, `grep` and `git`.
+
+| Marker at the project root | Backend | Owner | Skills |
+|---|---|---|---|
+| `.atd` | ATD atoms (`docs/*.atom.md`, `@spec-link`/`@test-link`, the `atd` CLI or MCP server) | `documentalist` | `atd-*` |
+| `intent/README.md` | intent register (`intent/*.md`, `@intent` tags) | `documentalist` | `intent-preflight`, `intent-architecture-capture`, `intent-post-task-sync`, `intent-cold-start`, `intent-spec-ingestion` |
+| both | ATD wins, and the register is reported to the user as a conflict | `documentalist` | `atd-*` |
+| neither | no declared intent, so no gate runs | none | none |
+
+The leaders' side of the protocol (when to call `documentalist`, how to act
+on its verdict) is one shared skill, `intent-gating-protocol`, for both backends.
+The verdict scale is the same in both: `PROCEED`,
+`PROCEED-WITH-SIGNOFF-PENDING`, `HALT-NEEDS-USER-INPUT` and
+`HALT-NEEDS-CONTRACT-VISION-DECISION`.
+
+### Where intent lives without atoms
+
+The spec tree (`specs/`, see `references/doc-tree-conventions.md`) is where
+intent is worked out and published per milestone. It can't be the record the
+gates check against on its own:
+
+- The master spec carries no tracking IDs, by convention, so a plan, a
+  handoff or a line of code can't point at one rule in it.
+- It is scoped to a milestone and gets archived when the milestone closes.
+  The gates need the standing, current record.
+- It has no home for architectural decisions made while planning a task.
+- A codebase that never went through `spec-writer` has no spec tree at all.
+
+So the spec tree stays as it is, and a small dedicated register sits beside
+it:
+
+```
+intent/
+  README.md        the marker; Vision (in and out of scope), Contract
+                   (guarantees that change only with the user's agreement)
+  business.md      one entry per business rule the product must keep
+  architecture.md  one entry per architectural decision, each naming the
+                   business entries it serves
+```
+
+An entry has a kebab-case ID (`guest-checkout`), a status (`draft`, then
+`confirmed` once a human confirms it, then `retired`), and fields that state
+the rule in full. It never cites a spec section or a register ID to complete
+its meaning. The register is filled from the settled master spec (spec
+ingestion), from existing code (cold start), or from preflight proposals.
+Slug IDs never collide with the trees' `D`/`O`/`Q` numbers. The format is in
+`references/intent-register.md`.
+
+### How code links to it
+
+A comment tag, `@intent <id>`, sits directly above the function, class,
+route handler or test that implements or tests an entry. It survives file
+moves and `git grep -n '@intent'` finds every tag. The implementer places
+tags, because the leader's handoff carries the entry IDs. The post-task sync
+adds any tag that is missing (a comment line only) and reports tags that
+point at unknown or retired entries.
+
+### Who owns it
+
+`documentalist` owns both backends and is the only writer of either record.
+It never edits application logic, and it never resolves drift by rewriting
+the record or the code. Its agent file holds only what both backends share:
+the five triggers, the verdicts, the drift and lifecycle rules, and the
+report format. On each call it reads the marker and maps the trigger to that
+backend's skill (`atd-*` or `intent-*`). Each backend's details live in a
+manual it reads on demand: `references/atd-atoms.md` for ATD (atom anatomy,
+dissection, the `atd` commands) and `references/intent-register.md` for the
+register. An ATD-less repo never loads `atd` text, and an ATD repo never
+loads the register format.
+
+The alternatives were weaker:
+
+- **Redistributing the job to existing agents.** The gate needs a checker
+  that is independent of the leader whose plan it checks, and the record
+  needs a single writer to stay consistent.
+- **A second agent for the register.** It would duplicate the triggers,
+  verdicts and rules, and every other agent would have to pick an owner by
+  marker. One owner keeps that choice in one place.
+
+### The declared-intent note
+
+So that no session has to rediscover the backend, `documentalist` keeps a
+`## Declared intent` section in the project's instructions file. It writes
+the section to `CLAUDE.md` and `AGENTS.md`, whichever exist; when one only
+imports the other, it writes to the imported file; when neither exists, it
+creates `CLAUDE.md` (Claude port) or `AGENTS.md` (OpenCode port). The
+section names the backend, where the record lives, how code links to it, and
+that leaders gate every change through `documentalist`. The leaders and
+`codebase-explorer` read the note first and fall back to the markers. The
+marker stays the truth: when the two disagree, `documentalist` fixes the
+note on its next call.
+
+### The gates, register backend
+
+- **Preflight** (`intent-preflight`). D1 runs before code exploration and
+  searches the register for the task. D2 runs after exploration and reads
+  the `@intent` tags in the files in scope. The trivial path gets a single
+  peek. When no entry governs the change but one can be inferred, it is
+  written as `draft` and the verdict asks for sign-off. When nothing can be
+  inferred, or the only grounding would change Vision or Contract, the
+  verdict halts.
+- **Architecture capture** (`intent-architecture-capture`). Once a plan
+  settles a new or changed API, entity, module, service, UI flow or
+  specification, the decision goes into `architecture.md` as `draft`,
+  serving its business entries, before the handoff.
+- **Post-task sync** (`intent-post-task-sync`). It reads the diff and the
+  tags, then sorts each entry involved: aligned, missing tag, no entry, or
+  drift. Drift stops the sync. The entry gets a `Drift:` line naming both
+  sides, and a human or a leader resolves it. Neither the entry's rule nor
+  the code is rewritten. Moving an entry to `confirmed` needs a human.
+- **Cold start** (`intent-cold-start`). It drafts the register from an
+  existing codebase: every entry is `draft` and describes current behavior,
+  Vision is drafted, and Contract is proposed only.
+- **Spec ingestion** (`intent-spec-ingestion`). `spec-writer` hands over the
+  finished master spec (and its access model). Only settled content becomes
+  entries, and it creates `intent/` if the repo has no marker yet.
+
+### Packaging
+
+It is one team with two backends, selected per repository at runtime. There
+is no second agent set and no install-time variant:
+
+- **Hand sync stays flat.** Backend-specific text lives only in the two
+  manuals and the two skill families. Every shared agent carries one backend-neutral pointer, so
+  editing a leader updates both modes. A duplicated set would double the
+  work on top of the three ports.
+- **ATD behavior is unchanged.** `documentalist`'s ATD rules moved,
+  unchanged in substance, into `references/atd-atoms.md`, and the `atd-*`
+  skills point there. The leaders' skill `atd-gating-protocol` became
+  `intent-gating-protocol`. It keeps the ATD rules and adds two that apply
+  to both backends: drift is resolved by a leader or the user, and a draft
+  entry inferred at preflight needs sign-off.
+- **An install-time variant costs more than it saves.** The agent
+  directories are linked as whole directories. A variant would need
+  per-file links, and Codex inlines skills, so each variant would need full
+  TOML copies.
+- **No ATD tooling is needed.** Without `.atd`, no agent calls `atd`. A
+  machine without `atd` runs the register backend as is, apart from the
+  `mcp.atd` entry in `opencode/opencode.jsonc`, which the scripts don't
+  manage.
+
+To use the register in a repository: for a new product, let `spec-writer` hand
+its master spec over (spec ingestion creates `intent/`). For an existing
+codebase, ask `documentalist` for a cold start (it bootstraps the register
+unless you ask for ATD). After that, the leaders gate every task on their own.
 
 ## Editing
 
@@ -231,7 +389,9 @@ path) Codex alike — no separate OpenCode-specific skills target is needed.
 The installer is idempotent. If a target already exists as a real directory or
 file, it refuses to touch it and tells you to move that content aside manually.
 If a target exists as a symlink to a different location, setup replaces that
-symlink.
+symlink. Setup also removes any link in `~/.claude/skills` that points into
+this repo's `skills/` at a skill that no longer exists, such as
+`atd-gating-protocol` after its rename to `intent-gating-protocol`.
 
 The legacy name still works:
 
@@ -249,7 +409,8 @@ scripts/teardown.sh
 
 This removes the OpenCode, Claude Code, and Codex agent symlinks, and every
 per-skill symlink teardown finds under `~/.claude/skills` that points back
-into this repo's `skills/` directory (any other skill living there is left
+into this repo's `skills/` directory, including links to skills since renamed
+or removed (any other skill living there is left
 untouched). It does not remove real directories or files, and it leaves
 `~/.local/share/dev_team/references` in place because that path is inert when
 no persona reads it — unlike references, skills are active automation an

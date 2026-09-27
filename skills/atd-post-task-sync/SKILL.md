@@ -24,7 +24,8 @@ evidence supports it.
 4. **Classify each touched atom:**
    - **Aligned** — code still satisfies INTENT/EXPECTATION. If the atom was
      DRAFT/REVIEW and implementation is now solid, consider advancing status
-     (see Lifecycle Discipline in the core agent instructions).
+     (see Lifecycle in the ATD manual,
+     `~/.local/share/dev_team/references/atd-atoms.md`).
    - **Missing link** — code clearly implements an atom but carries no
      `@spec-link`/`@test-link`. Confirm via `atd map --file <path> --atom
      <id>`, then add the tag with `atd update --spec-link <id> <file>`.

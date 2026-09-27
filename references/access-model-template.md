@@ -9,8 +9,8 @@ It exists because three downstream agents are *barred* from inventing this
 material and will stall without it: `ux-writer` (needs to know which roles
 reach which screens, and what a denial looks like on screen), `coding-leader`
 and `coding-executor` (need enforceable rules, not intent), and
-`documentalist` (atomizes it into BUSINESS-layer atoms, which requires each
-rule to stand on its own).
+`documentalist` (which records each rule as business-level intent, so each
+rule must stand on its own).
 
 ## Two lives
 
@@ -24,7 +24,7 @@ The document has a draft life and a final life, exactly like the master spec:
   cells, no `(proposed)` tags, and **no internal tracking IDs of any kind**.
   Anything still undecided is restated in plain language under *Known gaps*.
   Same self-sufficiency requirement as the master spec, for the same reason:
-  documentalist ingests it and will never see the register those IDs point
+  `documentalist` ingests it and will never see the register those IDs point
   into.
 
 Suggested filename: `access-model.md`, beside the master spec.

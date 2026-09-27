@@ -16,11 +16,13 @@ produced it. Every screen a flow's `handoff.md` names exists in `screens/`,
 and every screen in `screens/` is reachable from some flow.
 
 **Alignment against settled product behavior.** Read the master spec if one
-exists; otherwise ATD BUSINESS atoms in a repo with a `.atd` config. Flows
-must not contradict settled behavior, and must not quietly introduce business
-rules — a screen that invents a permission check, a role distinction, or a
-state transition the spec doesn't have is a BLOCKED finding regardless of how
-sensible the design is. That decision belongs to `spec-writer`.
+exists; otherwise the declared business intent: ATD BUSINESS atoms in a repo
+with a `.atd` config, or the business entries of the intent register
+(`intent/`) in one without. Flows must not contradict settled behavior, and
+must not quietly introduce business rules — a screen that invents a permission
+check, a role distinction, or a state transition the spec doesn't have is a
+BLOCKED finding regardless of how sensible the design is. That decision
+belongs to `spec-writer`.
 
 **Persona alignment.** When the spec has a personas document (usually in
 `specs/`), read it. `strategy.md` designs for its personas, primary first, and
