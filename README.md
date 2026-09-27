@@ -171,6 +171,139 @@ natively vision-capable). To switch: add a `glm-5v-turbo` model block to
 `config/litellm/config.yaml` pointed at `https://api.z.ai/api/paas/v4` once
 the z.ai plan/balance side is sorted, then flip this agent's `model:` field.
 
+## Intent guardrail: ATD or the intent register
+
+The leaders check every change against declared business intent. There is a
+preflight before a plan is final, architecture capture before code, and a
+sync after the task that confirms the declared intent still matches the
+code. The team can hold that intent in one of two backends. Each repository
+picks one with a marker at its project root. The ATD-less backend, the
+**intent register**, needs nothing beyond plain files, `grep` and `git`.
+
+| Marker at the project root | Backend | Intent owner | Owner's skills |
+|---|---|---|---|
+| `.atd` | ATD atoms (`docs/*.atom.md`, `@spec-link`/`@test-link`, the `atd` CLI or MCP server) | `documentalist` | `atd-*` |
+| `intent/README.md` | intent register (`intent/*.md`, `@intent` tags) | `intent-keeper` | `intent-preflight`, `intent-architecture-capture`, `intent-post-task-sync`, `intent-cold-start`, `intent-spec-ingestion` |
+| both | ATD wins, and the register is reported to the user as a conflict | `documentalist` | `atd-*` |
+| neither | no declared intent, so no gate runs | none | none |
+
+The leaders' side of the protocol (when to call the owner, how to act on its
+verdict) is one shared skill, `intent-gating-protocol`, for both backends.
+The verdict scale is the same in both: `PROCEED`,
+`PROCEED-WITH-SIGNOFF-PENDING`, `HALT-NEEDS-USER-INPUT` and
+`HALT-NEEDS-CONTRACT-VISION-DECISION`.
+
+### Where intent lives without atoms
+
+The spec tree (`specs/`, see `references/doc-tree-conventions.md`) is where
+intent is worked out and published per milestone. It can't be the record the
+gates check against on its own:
+
+- The master spec carries no tracking IDs, by convention, so a plan, a
+  handoff or a line of code can't point at one rule in it.
+- It is scoped to a milestone and gets archived when the milestone closes.
+  The gates need the standing, current record.
+- It has no home for architectural decisions made while planning a task.
+- A codebase that never went through `spec-writer` has no spec tree at all.
+
+So the spec tree stays as it is, and a small dedicated register sits beside
+it:
+
+```
+intent/
+  README.md        the marker; Vision (in and out of scope), Contract
+                   (guarantees that change only with the user's agreement)
+  business.md      one entry per business rule the product must keep
+  architecture.md  one entry per architectural decision, each naming the
+                   business entries it serves
+```
+
+An entry has a kebab-case ID (`guest-checkout`), a status (`draft`, then
+`confirmed` once a human confirms it, then `retired`), and fields that state
+the rule in full. It never cites a spec section or a register ID to complete
+its meaning. The register is filled from the settled master spec (spec
+ingestion), from existing code (cold start), or from preflight proposals.
+Slug IDs never collide with the trees' `D`/`O`/`Q` numbers. The format is in
+`references/intent-register.md`.
+
+### How code links to it
+
+A comment tag, `@intent <id>`, sits directly above the function, class,
+route handler or test that implements or tests an entry. It survives file
+moves and `git grep -n '@intent'` finds every tag. The implementer places
+tags, because the leader's handoff carries the entry IDs. The post-task sync
+adds any tag that is missing (a comment line only) and reports tags that
+point at unknown or retired entries.
+
+### Who owns it
+
+A new agent, `intent-keeper`, is the register's only writer. It mirrors
+`documentalist`: the same five triggers, the same verdicts, and the same
+rules. It never edits application logic, and it never resolves drift by
+rewriting the entry or the code. The alternatives were weaker:
+
+- **Redistributing the job to existing agents.** The gate needs a checker
+  that is independent of the leader whose plan it checks, and the record
+  needs a single writer to stay consistent.
+- **Extending `documentalist`.** Its prompt is mostly `atd` ground truth
+  (CLI, atom anatomy, lifecycle). Loading that in an ATD-less repo wastes
+  context and invites `atd` calls.
+
+A separate owner keeps each backend's text in exactly one place.
+`spec-writer`, `ux-writer`, the leaders and `codebase-explorer` refer to
+"the intent owner" and pick it by marker.
+
+### The gates, register backend
+
+- **Preflight** (`intent-preflight`). D1 runs before code exploration and
+  searches the register for the task. D2 runs after exploration and reads
+  the `@intent` tags in the files in scope. The trivial path gets a single
+  peek. When no entry governs the change but one can be inferred, it is
+  written as `draft` and the verdict asks for sign-off. When nothing can be
+  inferred, or the only grounding would change Vision or Contract, the
+  verdict halts.
+- **Architecture capture** (`intent-architecture-capture`). Once a plan
+  settles a new or changed API, entity, module, service, UI flow or
+  specification, the decision goes into `architecture.md` as `draft`,
+  serving its business entries, before the handoff.
+- **Post-task sync** (`intent-post-task-sync`). It reads the diff and the
+  tags, then sorts each entry involved: aligned, missing tag, no entry, or
+  drift. Drift stops the sync. The entry gets a `Drift:` line naming both
+  sides, and a human or a leader resolves it. Neither the entry's rule nor
+  the code is rewritten. Moving an entry to `confirmed` needs a human.
+- **Cold start** (`intent-cold-start`). It drafts the register from an
+  existing codebase: every entry is `draft` and describes current behavior,
+  Vision is drafted, and Contract is proposed only.
+- **Spec ingestion** (`intent-spec-ingestion`). `spec-writer` hands over the
+  finished master spec (and its access model). Only settled content becomes
+  entries, and it creates `intent/` if the repo has no marker yet.
+
+### Packaging
+
+It is one team with two backends, selected per repository at runtime. There
+is no second agent set and no install-time variant:
+
+- **Hand sync stays flat.** Backend-specific text lives only in each owner
+  and its skills. Every shared agent carries one backend-neutral pointer, so
+  editing a leader updates both modes. A duplicated set would double the
+  work on top of the three ports.
+- **ATD mode is unchanged.** The `documentalist` and `atd-*` bodies are
+  untouched. The only ATD-side edit is renaming the leaders' skill
+  `atd-gating-protocol` to `intent-gating-protocol`, with the same rules.
+- **An install-time variant costs more than it saves.** The agent
+  directories are linked as whole directories. A variant would need
+  per-file links, and Codex inlines skills, so each variant would need full
+  TOML copies.
+- **No ATD tooling is needed.** Without `.atd`, no agent calls `atd`. A
+  machine without `atd` runs the register backend as is, apart from the
+  `mcp.atd` entry in `opencode/opencode.jsonc`, which the scripts don't
+  manage.
+
+To use the register in a repository: for a new product, let `spec-writer`
+hand its master spec over (spec ingestion creates `intent/`). For an
+existing codebase, ask `intent-keeper` for a cold start. After that, the
+leaders gate every task on their own.
+
 ## Editing
 
 Edit files here directly. `agents/`, `claude-agents/`, and `codex-agents/` are
