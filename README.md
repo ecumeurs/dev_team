@@ -79,8 +79,10 @@ primary|subagent|all`. Practical differences from `agents/`:
   budget fast and aren't meant to be the default here. Roughly: former
   `glm-5.2` roles (coding-leader, coordination-leader, principal-advisor,
   reviewer) → `opus`; former `glm-5` roles (coding-executor, documentalist,
-  web-researcher, spec-writer) → `sonnet`; former `glm-4.7` roles
-  (codebase-explorer, multimodal-looker) → `haiku`.
+  web-researcher) → `sonnet`; former `glm-4.7` roles
+  (codebase-explorer, multimodal-looker) → `haiku`. The design agents
+  (spec-writer, ux-writer, ux-critic) run on `opus`: their long,
+  judgment-heavy design conversations are where model quality pays off most.
 - **No `primary`/`all` mode**: `coding-leader`, `coordination-leader`, and
   `spec-writer` were OpenCode opening-owner agents (`mode: primary`/`all`) —
   usable as the whole session's persona, not just a delegate. Claude Code has
