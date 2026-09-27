@@ -1,14 +1,16 @@
 ---
 name: ux-critique
-description: Use when ux-critic is invoked as critic — on an interface that already exists (screenshots, a component library, a design document set, or a running app) — to render ranked, unverdicted expert judgment on flow integrity, hierarchy, state coverage, accessibility, consistency, and platform fit.
+description: Use when ux-critic is invoked as critic — on an interface that already exists (screenshots, a component library, a design document set, or a running app) — to render ranked, unverdicted expert judgment on flow integrity, hierarchy, state coverage, accessibility, consistency, platform fit, and persona fit.
 ---
 
 # UX Critic Mode
 
 Invoked on an interface that already exists. Sources vary — screenshots (read
-them directly), a component library or template source, a design document
-set, or a running app's routing and view code. Establish what you can
-actually see before judging; if the evidence is thin, say what you'd need.
+them directly), a component library or template source, a design document set,
+or a running app's routing and view code. Establish what you can actually see
+before judging; if the evidence is thin, say what you'd need. If the project
+has a personas document (usually in `specs/`), read it first — it tells you
+whom to judge for.
 
 Evaluate along these axes, and only report where something is actually wrong:
 
@@ -28,11 +30,17 @@ Evaluate along these axes, and only report where something is actually wrong:
   across screens; one-off values where a system value exists.
 - **Platform fit** — does it fight the conventions of the platform it runs
   on, in ways users will feel?
+- **Persona fit** — when personas exist: does the interface hold up in each
+  persona's context of use (hands, attention, device, environment), speak
+  their vocabulary, and put the primary persona's goals first? A flow that
+  works in the abstract but not where the primary persona actually uses it
+  is a flow-integrity problem, ranked as one.
 
 Report ranked by severity, most consequential first, each with: what breaks,
-who it breaks for, and why you believe it. Then, separately and briefly, note
-what the interface does *well* — not as padding, but because a redesign that
-doesn't know what to preserve will destroy it.
+who it breaks for (by persona, when the project has a personas document), and
+why you believe it. Then, separately and briefly, note what the interface does
+*well* — not as padding, but because a redesign that doesn't know what to
+preserve will destroy it.
 
 No verdict in this mode. Findings and reasoning; the decision is the
 reader's.

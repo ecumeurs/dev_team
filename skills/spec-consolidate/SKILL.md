@@ -12,6 +12,12 @@ the current state of the drafts into one execution-ready document:
 
 - Core concept/objective, stated plainly.
 - Scope: what's in, what's explicitly out.
+- Personas and goals served, when the spec has a personas document: the
+  primary and secondary personas, one line each with their IDs; each goal
+  this spec serves, stated in full with its ID and whether it is served
+  fully or partially (and how); goals knowingly deferred; and the persona
+  tensions settled for this scope. Enough to read on its own — the personas
+  document stays the full reference `ux-writer` designs from.
 - Mechanics/behavior, precisely enough to build without further design
   decisions hiding inside the spec.
 - Definition of done / acceptance criteria.
@@ -33,7 +39,10 @@ architectural decision's reasoning in full plain language instead, with no
 spec is the only document documentalist ever ingests (never the register or
 log themselves), and per its own self-sufficiency requirement an atom can't
 mean anything by reference to an ID from a document it will never see — so
-nothing upstream of it may either.
+nothing upstream of it may either. Persona and goal IDs (`P1`, `P1.G2`) are
+the exception: they are content identifiers, defined in the personas document
+and restated in full in the master spec's personas section, not pointers into
+a register — cite them freely.
 
 Don't consolidate early to "show progress." A half-settled master spec hides
 its own gaps behind a look of completeness; the split drafts plus open-Q

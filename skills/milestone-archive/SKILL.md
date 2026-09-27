@@ -81,6 +81,12 @@ is milestone-only or still live, **ask the user**. Don't guess.
   `documentalist` to inline the content, and archive the document on its own
   merits.
 
+**Standing documents are never archived as a unit.** The spec tree's
+personas document — and any other document that describes the product rather
+than a milestone, such as a vision — stays live and is edited in place. Only
+milestone-bound material inside it (for example a personas document's
+resolved fit findings against a closed version) follows the classes above.
+
 ## 3. Archive
 
 - **Move with `git mv`**, keeping each file at the same directory depth when
