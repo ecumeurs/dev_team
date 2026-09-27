@@ -25,7 +25,8 @@ tier, not just non-trivial ones.
 With neither marker, don't create a register on your own initiative. On
 non-trivial work, say in your final report that the repo has no declared
 intent and that `intent-keeper` can cold-start one; starting it is the
-user's call.
+user's call. A `spec-writer` handoff to `intent-keeper` also starts one;
+that is part of the spec work the user asked for, not your initiative.
 
 Everything below applies to both owners. They share the same five triggers
 and the same verdict scale; only their storage differs. "Governing entries"
@@ -78,7 +79,8 @@ repo.
   inferred from the task. Surface this now, not as a surprise at close-out;
   treat any actual change to that entry as needing explicit user
   confirmation before you proceed, and put a drafted entry in front of the
-  user to confirm or reject.
+  user to confirm or reject. If the user rejects it and the task stops
+  there, still ask the owner to remove the rejected draft.
 - **HALT-NEEDS-USER-INPUT** — no governing entry found and the task
   description doesn't give enough to infer one, or the information
   contradicts itself. Don't proceed on a guess — bring the owner's findings

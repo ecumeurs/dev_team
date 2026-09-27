@@ -290,7 +290,9 @@ is no second agent set and no install-time variant:
   work on top of the three ports.
 - **ATD mode is unchanged.** The `documentalist` and `atd-*` bodies are
   untouched. The only ATD-side edit is renaming the leaders' skill
-  `atd-gating-protocol` to `intent-gating-protocol`, with the same rules.
+  `atd-gating-protocol` to `intent-gating-protocol`. It keeps the ATD
+  rules and adds two that apply to both backends: drift is resolved by a
+  leader or the user, and a draft entry inferred at preflight needs sign-off.
 - **An install-time variant costs more than it saves.** The agent
   directories are linked as whole directories. A variant would need
   per-file links, and Codex inlines skills, so each variant would need full
