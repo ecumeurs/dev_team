@@ -12,7 +12,9 @@ Code is the source of truth; your job is to produce an honest first draft of
    `atd init` (or `atd init --docs <path>` / `atd init --model <name>` for
    non-default layout). `atd init` also installs the ATD pre-commit hook and
    the `req_tech_debt_backlog` escape-hatch atom — don't fight either; they
-   exist so day-to-day work isn't blocked by imperfect ancestry.
+   exist so day-to-day work isn't blocked by imperfect ancestry. Then add
+   the `## Declared intent` section to the project instructions (see the core
+   agent instructions).
 2. **Prioritize.** `atd roadmap --dir <src> --out roadmap.json` ranks files by
    complexity/density. Work the densest files first — that's where the
    highest-value atoms live.
@@ -21,9 +23,9 @@ Code is the source of truth; your job is to produce an honest first draft of
    available, skip it and rely on `atd query` / grep instead — don't block
    cold-start on infrastructure that isn't your job to stand up.
 4. **Dissect manually.** For each prioritized file, run the Manual
-   Dissection Protocol (in the core agent instructions) to get proposed atom
-   boundaries (id, type, line range) — `atd dissect` no longer exists (see
-   Ground Truth, Token Economy).
+   Dissection Protocol in the ATD manual
+   (`~/.local/share/dev_team/references/atd-atoms.md`) to get proposed atom
+   boundaries (id, type, line range) — `atd dissect` no longer exists.
 5. **Materialize DRAFT atoms.** For each proposed boundary, create the atom
    via `atd update --file docs/<id>.atom.md --set id=<id> --set type=<TYPE>
    --set layer=<LAYER> --set status=DRAFT --set priority=<n> --intent "..."
@@ -32,7 +34,7 @@ Code is the source of truth; your job is to produce an honest first draft of
    like `RULE`/`MECHANIC` (factor ≥0.7) must stay single-rule; `MODULE`/
    `REQUIREMENT`/`SPECIFICATION` (0.3) and `USER_STORY`/`API`/`USECASE` (0.1)
    tolerate broader narrative. Confirm the id from the command's own output
-   before moving on (see CLI quick reference in the core agent instructions)
+   before moving on (see the ATD manual's CLI quick reference)
    — don't just assume your proposed id landed.
 6. **Weave.** `atd weave` after any batch of new atoms, to populate
    `dependents[]` from `parents:` declarations.

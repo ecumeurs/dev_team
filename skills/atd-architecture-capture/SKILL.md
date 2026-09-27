@@ -28,8 +28,8 @@ exists.
    module usually means `atd update` on that atom, not a fresh one. Reserve a
    new atom for architecture the project genuinely didn't have before.
 3. **Classify by ATD type**: API, ENTITY, MODULE, SERVICE, UI, or
-   SPECIFICATION, per the type table in the core agent instructions' Ground
-   Truth section. Check `atd config bloating-factor <TYPE>` before drafting
+   SPECIFICATION, per Atom anatomy in the ATD manual
+   (`~/.local/share/dev_team/references/atd-atoms.md`). Check `atd config bloating-factor <TYPE>` before drafting
    content, same as everywhere else.
 4. **Materialize or update the atom**: `atd update --set id=<id> --set
    type=<TYPE> --set layer=ARCHITECTURE --set status=DRAFT --set
@@ -40,7 +40,7 @@ exists.
    previously STABLE (a revised architectural decision), the same
    STABLE+BUSINESS `--force` guard applies; don't bypass it without explicit
    confirmation. Confirm the id from the command's own output before treating
-   a new atom as created (see CLI quick reference) — the leader will carry
+   a new atom as created (see the ATD manual's CLI quick reference) — the leader will carry
    whatever id you report straight into the `coding-executor` handoff, so an
    unconfirmed or wrong id here propagates directly into `@spec-link` tags on
    real code.

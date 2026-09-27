@@ -1,6 +1,6 @@
 ---
 name: spec-access-model
-description: Use when spec-writer's product has more than one kind of user, to produce the access model companion document stating who exists, what each may do, and what happens when they try something they may not — required by ux-writer, coding-leader, and the intent owner (documentalist or intent-keeper).
+description: Use when spec-writer's product has more than one kind of user, to produce the access model companion document stating who exists, what each may do, and what happens when they try something they may not — required by ux-writer, coding-leader, and documentalist.
 ---
 
 # The Access Model Document
@@ -13,10 +13,9 @@ layout in `~/.local/share/dev_team/references/access-model-template.md`.
 This is a real deliverable, not an appendix, because three downstream agents
 are barred from inventing this material and stall without it: `ux-writer`
 (which screens each role reaches, and what a denial looks like on screen),
-`coding-leader` (enforceable rules rather than intent), and the intent owner
-(`documentalist` or `intent-keeper`, which records each rule as business-level
-intent — a BUSINESS atom or a register entry — and needs each rule
-self-sufficient).
+`coding-leader` (enforceable rules rather than intent), and `documentalist`
+(which records each rule as business-level intent — a BUSINESS atom or a
+register entry — and needs each rule self-sufficient).
 
 Start it as an ordinary draft topic doc during inception — partial matrix,
 `(proposed)` entries, `?` cells, open-question IDs inline are all fine and

@@ -9,8 +9,7 @@ description: >
   mechanism — not just a list of filenames. In a repo with declared intent (a `.atd` config or an
   `intent/README.md` register at the project root), it also runs a quick read-only lookup of that
   intent alongside the code search and reports any matching atoms or entries as a terse id/intent
-  list — never a governance verdict, that stays the intent owner's job (documentalist or
-  intent-keeper). Reach for it before an implementation, refactor, debugging, or planning
+  list — never a governance verdict, that stays documentalist's job. Reach for it before an implementation, refactor, debugging, or planning
   task so the next step has accurate, verified locations to work from. Do not use it for external
   library/framework/OSS research, for actually writing or fixing code, or for interpreting
   screenshots, PDFs, or diagrams — those belong to other specialists.
@@ -78,9 +77,10 @@ say so explicitly rather than papering over it.
 
 ## Intent awareness (repos with `.atd` or `intent/`)
 
-Check once, in parallel with your other searches, whether `.atd` or `intent/README.md` exists at
-the project root. If neither does, skip this entirely — no `atd` calls, no intent lookup, no
-mention of it in your report.
+The project instructions' `## Declared intent` section, when present, names the backend.
+Otherwise check once, in parallel with your other searches, whether `.atd` or `intent/README.md`
+exists at the project root. If neither does, skip this entirely — no `atd` calls, no intent
+lookup, no mention of it in your report.
 
 If `.atd` does, ATD's atom graph (`docs/*.atom.md`) is another source worth a quick look — atoms
 often state the "why" behind code you're locating. Run `atd search --query "<caller's request, in
@@ -102,7 +102,7 @@ instead, with plain `grep` and no `atd` at all. Grep it for the caller's request
 (`grep -rn -i -E '<term>|<synonym>' intent/`); once you've pinned down in-scope files, grep them
 for tags (`grep -n '@intent' <path>`). Each tag names an entry, whose `## <id>` heading in
 `intent/*.md` carries a one-line `Intent:`. The same limits apply: a pointer, not a governance
-check — don't classify, trace blast radius, or judge drift (that's intent-keeper's job), and
+check — don't classify, trace blast radius, or judge drift (that's documentalist's job), and
 never write to `intent/` or to source.
 
 ## What you actually verify vs. what you report

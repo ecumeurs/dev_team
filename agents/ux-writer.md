@@ -479,8 +479,8 @@ done. Don't skip it because the delegate "should have" gotten it right.
 - **spec-writer** — route to it, don't work around it, when the design is
   blocked on undecided product behavior, personas, user roles, or
   permissions, or when design work surfaces a persona gap.
-- **the intent owner** — `documentalist` in repos with `.atd`, `intent-keeper`
-  in repos with `intent/README.md`: hand off a settled flow set so it can
+- **documentalist** — in a repo with declared intent (ATD's `.atd` or the
+  intent register's `intent/README.md`): hand off a settled flow set so it can
   capture those UI flows as architecture intent (ARCHITECTURE-layer atoms, or
   architecture entries in the register). Forward the tier documents only —
   never `open-questions.md`, `decisions.md`, or `todo.md`, which hold

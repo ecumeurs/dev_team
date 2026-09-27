@@ -1,6 +1,6 @@
 ---
 name: intent-preflight
-description: Use when intent-keeper is called by a leader (coding-leader or coordination-leader) before a plan is finalized, to find which intent-register entries govern the area about to change and surface conflicts or missing business coverage (trigger D, preflight business-alignment check — full D1/D2 pass or fast-path D-peek).
+description: Use when documentalist, in a repo with an intent register (`intent/README.md`, no `.atd`), is called by a leader (coding-leader or coordination-leader) before a plan is finalized, to find which intent-register entries govern the area about to change and surface conflicts or missing business coverage (trigger D, preflight business-alignment check — full D1/D2 pass or fast-path D-peek).
 ---
 
 # Intent Preflight Business-Alignment Check

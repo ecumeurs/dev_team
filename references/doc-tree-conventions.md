@@ -84,14 +84,13 @@ trees.
 ## The intent record is not a third tree
 
 The declared-intent record — ATD's `docs/` or, without ATD, the intent
-register `intent/` — belongs to its owner (`documentalist` or
-`intent-keeper`), not to either writer, and follows its own format rather
-than the skeleton above. The register's format is `intent-register.md` in
-this directory: no open-questions register, decisions log or archive, and an
-entry that stops applying is retired in place. Atom and entry IDs are named
-slugs such as `guest-checkout`, never numbered, so they can't clash with
-`D`, `O` or `Q`. Neither tree writes into the record, and the record never
-cites a tree's IDs.
+register `intent/` — belongs to `documentalist`, not to either writer, and
+follows its own format rather than the skeleton above. The register's format
+is `intent-register.md` in this directory: no open-questions register,
+decisions log or archive, and an entry that stops applying is retired in
+place. Atom and entry IDs are named slugs such as `guest-checkout`, never
+numbered, so they can't clash with `D`, `O` or `Q`. Neither tree writes into
+the record, and the record never cites a tree's IDs.
 
 ## Existing trees in another shape
 

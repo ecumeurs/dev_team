@@ -96,9 +96,8 @@ writing it is half the job and using it is the other half.
 - The master spec carries a self-sufficient summary of the personas and the
   goals it serves (skill `spec-consolidate`).
 - Forward the personas document itself to `ux-writer`, alongside the master
-  spec and the access model. Don't forward it to the intent owner
-  (`documentalist`, or `intent-keeper` without ATD), which takes the personas
-  from the master spec's summary and never from this document.
+  spec and the access model. Don't forward it to `documentalist`, which takes
+  the personas from the master spec's summary and never from this document.
 - If `ux-writer` comes back with a persona gap (a context of use nobody
   described, or a goal a flow clearly serves that isn't listed), treat it like
   any other open question. Settle it with the user, then update the document.

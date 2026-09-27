@@ -102,9 +102,9 @@ balance keeps the spec manageable during active drafting and makes it easy to
 resume between sessions.
 
 - **All spec documents live under `specs/`**, never under `docs/` or `intent/`
-  — those are reserved for the intent owner (documentalist's ATD atoms,
-  `docs/*.atom.md`, or intent-keeper's intent register), and dropping
-  draft/master spec documents in there collides with that.
+  — those are reserved for `documentalist` (ATD atoms in `docs/*.atom.md`, or
+  the intent register in `intent/`), and dropping draft/master spec documents
+  in there collides with that.
 - **One index document**, `specs/README.md`, listing every spec
   document with its purpose and a short **status snapshot** — settled
   decisions in a handful of bullet lines, so the whole state of the project
@@ -252,11 +252,11 @@ as a formality.
   needed for routine consolidation. When you do use it, ask it to check
   persona traceability too: every in-scope item serves a named goal, and
   every goal the spec claims to serve is delivered by something in scope.
-- **the intent owner** — `documentalist` when the repo has ATD wired up (a
-  `.atd` config at the project root), `intent-keeper` otherwise. Hand off the
-  finished (or milestone-refined) master spec so it can run its spec ingestion
-  and extract or update the business-level intent (ATD's BUSINESS, CONTRACT
-  and VISION atoms, or the intent register's business entries, Contract and
+- **documentalist** — owns declared intent, as ATD atoms when the repo has a
+  `.atd` config and as the intent register otherwise. Hand off the finished
+  (or milestone-refined) master spec so it can run its spec ingestion and
+  extract or update the business-level intent (ATD's BUSINESS, CONTRACT and
+  VISION atoms, or the intent register's business entries, Contract and
   Vision) against the spec's current state. Without `.atd`, that ingestion is
   also what starts the register (`intent/`) on a new project. This runs
   alongside the `coding-leader`/`coordination-leader` handoff, not as a gate
@@ -265,13 +265,13 @@ as a formality.
   one, its access model.** Do not forward the index's Open Questions register
   or Decisions log, and do not forward raw supporting material (Q&A
   transcripts, working notes, superseded draft topic docs) as if it were
-  ingestion input. The intent owner works only from firm, settled text — the
+  ingestion input. `documentalist` works only from firm, settled text — the
   master spec is already required (per "The master spec document" above) to
   state settled items as fact and tag tentative ones `(proposed)`, so it's
   self-sufficient for that purpose on its own. Anything decided lives in the
   master spec; anything not in it was deliberately left out (superseded,
   abandoned, or still open) and handing over the working documents behind it
-  invites the intent owner to record stale, rejected, or still-debated content
+  invites `documentalist` to record stale, rejected, or still-debated content
   the spec itself doesn't claim as settled.
 - **ux-writer** — handoff target, alongside the leaders, when the finished
   spec describes a product with an interface whose screens and flows aren't
@@ -279,7 +279,7 @@ as a formality.
   designs what using it looks like, in its own `ui_ux/` document tree, before
   `coding-leader` builds anything. Forward the master spec and its companions
   — the personas document and, when there is one, the access model — and no
-  working material, on the same terms as the intent owner above. Two things
+  working material, on the same terms as `documentalist` above. Two things
   make this handoff work: your personas and access model have to be explicit
   (per the Scope item in the checklist above — `ux-writer` is barred from
   inventing personas, roles, or permissions, and will come back to you if

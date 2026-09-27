@@ -1,39 +1,45 @@
 ---
 name: intent-gating-protocol
-description: Use when coding-leader or coordination-leader is operating in a repo with declared intent — a `.atd` config (ATD) or an `intent/README.md` register at the project root — to know which agent owns that intent, when to call it for preflight/architecture-capture/post-task-sync, and how to act on its verdict. Shared by both leaders and both backends — the protocol is identical regardless of which leader is driving the task or where the intent lives.
+description: Use when coding-leader or coordination-leader is operating in a repo with declared intent — a `## Declared intent` section in the project instructions, or a `.atd` config (ATD) or `intent/README.md` register at the project root — to know when to call documentalist for preflight/architecture-capture/post-task-sync, and how to act on its verdict. Shared by both leaders and both backends — the protocol is identical regardless of which leader is driving the task or where the intent lives.
 ---
 
 # Intent Gating Protocol (for leaders)
 
-This is the leader's side of the protocol; the **intent owner** runs the
-actual checks with its own skills. Your job here is knowing *which* owner
-applies, *when* to call it, and what each verdict obligates you to do next —
-never to run the checks yourself or second-guess its findings.
+This is the leader's side of the protocol; `documentalist` runs the actual
+checks with its own skills, in either backend. Your job here is knowing
+*whether* the repo declares intent, *when* to call documentalist, and what
+each verdict obligates you to do next — never to run the checks yourself or
+second-guess its findings.
 
-## Which owner, if any
+## Does this repo declare intent?
 
-Check the project root early — it changes how you plan, on every triage
-tier, not just non-trivial ones.
+Settle this early — it changes how you plan, on every triage tier, not just
+non-trivial ones. The project's instructions (`CLAUDE.md` / `AGENTS.md`,
+already in your context) normally answer it: documentalist keeps a
+`## Declared intent` section there naming the backend. Only when that
+section is absent, check the project root for the markers yourself:
 
-| At the project root | Intent owner | Where intent lives | Code links |
+| At the project root | Backend | Where intent lives | Code links |
 |---|---|---|---|
-| `.atd` | `documentalist` | ATD atoms, `docs/*.atom.md` | `@spec-link` / `@test-link` |
-| `intent/README.md` | `intent-keeper` | the intent register, `intent/*.md` | `@intent <id>` |
-| both | `documentalist` — ATD wins. Tell the user the repo carries two intent records and gate against ATD only. | | |
+| `.atd` | ATD | atoms, `docs/*.atom.md` | `@spec-link` / `@test-link` |
+| `intent/README.md` | intent register | `intent/*.md` | `@intent <id>` |
+| both | ATD wins. Tell the user the repo carries two intent records and gate against ATD only. | | |
 | neither | none — skip this protocol for the task. | | |
 
-With neither marker, don't create a register on your own initiative. On
-non-trivial work, say in your final report that the repo has no declared
-intent and that `intent-keeper` can cold-start one; starting it is the
-user's call. A `spec-writer` handoff to `intent-keeper` also starts one;
-that is part of the spec work the user asked for, not your initiative.
+A marker without the note is fine to act on; documentalist adds the note on
+its next call. With neither the note nor a marker, don't create a record on
+your own initiative. On non-trivial work, say in your final report that the
+repo has no declared intent and that documentalist can cold-start one;
+starting it is the user's call. A `spec-writer` handoff to documentalist
+also starts one; that is part of the spec work the user asked for, not your
+initiative.
 
-Everything below applies to both owners. They share the same five triggers
-and the same verdict scale; only their storage differs. "Governing entries"
-below means atom IDs in an ATD repo and register entry IDs in an `intent/`
-repo.
+Everything below applies to both backends. documentalist uses the same five
+triggers and the same verdict scale in each; only storage differs.
+"Governing entries" below means atom IDs in an ATD repo and register entry
+IDs in an `intent/` repo.
 
-## When to call the intent owner
+## When to call documentalist
 
 1. **Before finalizing any plan** (preflight D1) — hand it the task in plain
    language. It searches for intent that already governs this area and flags
@@ -50,7 +56,7 @@ repo.
    the failure mode it exists to catch.
 4. **Once your plan settles on a concrete architectural decision** — a new or
    changed API, entity, module, service, UI flow, or specification, not just
-   "which existing entry governs this" — call the owner again for
+   "which existing entry governs this" — call documentalist again for
    architecture capture *before* you start implementing or finalize the
    handoff. It records the decision now (an ARCHITECTURE-layer atom, or an
    `intent/architecture.md` entry), tied to the governing business intent
@@ -64,26 +70,20 @@ repo.
    diff from), the governing entry IDs, and anything the user confirmed or
    rejected along the way.
 
-| Call | `documentalist` skill | `intent-keeper` skill |
-|---|---|---|
-| Preflight D1 / D2 / D-peek | `atd-preflight` | `intent-preflight` |
-| Architecture capture | `atd-architecture-capture` | `intent-architecture-capture` |
-| Post-task sync | `atd-post-task-sync` | `intent-post-task-sync` |
-
 ## Acting on the verdict
 
 - **PROCEED** — carry the governing entry IDs forward as context for the
   work, the handoff (if delegating), and the post-task sync.
 - **PROCEED-WITH-SIGNOFF-PENDING** — a confirmed/STABLE or business-level
-  entry sits in the blast radius, or the owner drafted a new business entry
+  entry sits in the blast radius, or documentalist drafted a new business entry
   inferred from the task. Surface this now, not as a surprise at close-out;
   treat any actual change to that entry as needing explicit user
   confirmation before you proceed, and put a drafted entry in front of the
   user to confirm or reject. If the user rejects it and the task stops
-  there, still ask the owner to remove the rejected draft.
+  there, still ask documentalist to remove the rejected draft.
 - **HALT-NEEDS-USER-INPUT** — no governing entry found and the task
   description doesn't give enough to infer one, or the information
-  contradicts itself. Don't proceed on a guess — bring the owner's findings
+  contradicts itself. Don't proceed on a guess — bring documentalist's findings
   (near misses and why they don't fit) back to the user and ask a precise
   reformulation question, per your own ambiguity policy.
 - **HALT-NEEDS-CONTRACT-VISION-DECISION** — the only plausible business
@@ -98,9 +98,9 @@ condition in your own operating instructions — not something to route around
 by narrowing scope until it disappears.
 
 Drift the post-task sync reports is yours or the user's to resolve, never
-the owner's: decide which side is right (the recorded intent or the code),
+documentalist's: decide which side is right (the recorded intent or the code),
 or put the question to the user, and say which in your final report. If the
-record is the side that's wrong, ask the owner to revise it, with the user's
+record is the side that's wrong, ask documentalist to revise it, with the user's
 sign-off when the entry is confirmed/STABLE. Never ask it to make the record
 match the code just to clear the finding.
 

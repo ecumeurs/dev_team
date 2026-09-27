@@ -30,12 +30,12 @@ preserving the load-bearing behavioral rules (completion gates, guardrails,
 delegation triggers) while dropping crewbee-internal plumbing that has no
 native OpenCode equivalent. Two agents beyond those 8 are new, designed from
 scratch rather than translated from crewbee: `documentalist`, which maintains
-this machine's [ATD](../atd/) papertrail (`docs/*.atom.md`,
-`@spec-link`/`@test-link` congruence); and `spec-writer`, an ideation/
-specification partner for turning an unscoped project idea into a spec
-`coding-leader` can build from — see
-`references/software-quality-principles.md` for the project-agnostic quality
-checklist it draws on.
+a project's declared intent, either as an [ATD](../atd/) papertrail
+(`docs/*.atom.md`, `@spec-link`/`@test-link` congruence) or as the ATD-less
+intent register; and `spec-writer`, an ideation/specification partner for
+turning an unscoped project idea into a spec `coding-leader` can build from —
+see `references/software-quality-principles.md` for the project-agnostic
+quality checklist it draws on.
 
 ## Layout
 
@@ -142,6 +142,11 @@ Practical differences from the other two dialects:
   Keep this port fully self-contained until Codex documents real skill
   support, then extract the same sections `agents/`/`claude-agents/` already
   did.
+- **Lags on declared intent**: this port still has a separate
+  `intent-keeper` for the register and the older all-inline `documentalist`.
+  The other two ports merged both into one `documentalist` (see "Who owns
+  it" below). Port that change here before relying on Codex in a register
+  repo.
 
 ## The team
 
@@ -156,8 +161,7 @@ Practical differences from the other two dialects:
 | `reviewer` | subagent | `gpt-5.6` | Independent OKAY/REJECT review gate before closing non-trivial work. |
 | `principal-advisor` | subagent | `gpt-5.6` | High-stakes architecture/perf/security/complexity judgment calls. |
 | `multimodal-looker` | subagent | `gpt-5.6-luna` | Reads screenshots, PDFs, diagrams, UI images. |
-| `documentalist` | subagent | `gpt-5.6-terra` | Maintains the ATD papertrail after coding tasks close in ATD-managed repos. |
-| `intent-keeper` | subagent | `gpt-5.6-terra` | Keeps the ATD-less intent register (`intent/`) and runs the same intent gates in repos without `.atd`. |
+| `documentalist` | subagent | `gpt-5.6-terra` | Owns the repo's declared intent in either backend (ATD atoms or the `intent/` register) and runs the intent gates. |
 | `ux-writer` | subagent | `gpt-5.6-terra` | Designs UI/UX document trees and token guidance before implementation. |
 | `ux-critic` | subagent | `gpt-5.6` | Read-only UI/UX validator and critique specialist. |
 
@@ -181,15 +185,15 @@ code. The team can hold that intent in one of two backends. Each repository
 picks one with a marker at its project root. The ATD-less backend, the
 **intent register**, needs nothing beyond plain files, `grep` and `git`.
 
-| Marker at the project root | Backend | Intent owner | Owner's skills |
+| Marker at the project root | Backend | Owner | Skills |
 |---|---|---|---|
 | `.atd` | ATD atoms (`docs/*.atom.md`, `@spec-link`/`@test-link`, the `atd` CLI or MCP server) | `documentalist` | `atd-*` |
-| `intent/README.md` | intent register (`intent/*.md`, `@intent` tags) | `intent-keeper` | `intent-preflight`, `intent-architecture-capture`, `intent-post-task-sync`, `intent-cold-start`, `intent-spec-ingestion` |
+| `intent/README.md` | intent register (`intent/*.md`, `@intent` tags) | `documentalist` | `intent-preflight`, `intent-architecture-capture`, `intent-post-task-sync`, `intent-cold-start`, `intent-spec-ingestion` |
 | both | ATD wins, and the register is reported to the user as a conflict | `documentalist` | `atd-*` |
 | neither | no declared intent, so no gate runs | none | none |
 
-The leaders' side of the protocol (when to call the owner, how to act on its
-verdict) is one shared skill, `intent-gating-protocol`, for both backends.
+The leaders' side of the protocol (when to call `documentalist`, how to act
+on its verdict) is one shared skill, `intent-gating-protocol`, for both backends.
 The verdict scale is the same in both: `PROCEED`,
 `PROCEED-WITH-SIGNOFF-PENDING`, `HALT-NEEDS-USER-INPUT` and
 `HALT-NEEDS-CONTRACT-VISION-DECISION`.
@@ -238,21 +242,38 @@ point at unknown or retired entries.
 
 ### Who owns it
 
-A new agent, `intent-keeper`, is the register's only writer. It mirrors
-`documentalist`: the same five triggers, the same verdicts, and the same
-rules. It never edits application logic, and it never resolves drift by
-rewriting the entry or the code. The alternatives were weaker:
+`documentalist` owns both backends and is the only writer of either record.
+It never edits application logic, and it never resolves drift by rewriting
+the record or the code. Its agent file holds only what both backends share:
+the five triggers, the verdicts, the drift and lifecycle rules, and the
+report format. On each call it reads the marker and maps the trigger to that
+backend's skill (`atd-*` or `intent-*`). Each backend's details live in a
+manual it reads on demand: `references/atd-atoms.md` for ATD (atom anatomy,
+dissection, the `atd` commands) and `references/intent-register.md` for the
+register. An ATD-less repo never loads `atd` text, and an ATD repo never
+loads the register format.
+
+The alternatives were weaker:
 
 - **Redistributing the job to existing agents.** The gate needs a checker
   that is independent of the leader whose plan it checks, and the record
   needs a single writer to stay consistent.
-- **Extending `documentalist`.** Its prompt is mostly `atd` ground truth
-  (CLI, atom anatomy, lifecycle). Loading that in an ATD-less repo wastes
-  context and invites `atd` calls.
+- **A second agent for the register.** It would duplicate the triggers,
+  verdicts and rules, and every other agent would have to pick an owner by
+  marker. One owner keeps that choice in one place.
 
-A separate owner keeps each backend's text in exactly one place.
-`spec-writer`, `ux-writer`, the leaders and `codebase-explorer` refer to
-"the intent owner" and pick it by marker.
+### The declared-intent note
+
+So that no session has to rediscover the backend, `documentalist` keeps a
+`## Declared intent` section in the project's instructions file. It writes
+the section to `CLAUDE.md` and `AGENTS.md`, whichever exist; when one only
+imports the other, it writes to the imported file; when neither exists, it
+creates `CLAUDE.md` (Claude port) or `AGENTS.md` (OpenCode port). The
+section names the backend, where the record lives, how code links to it, and
+that leaders gate every change through `documentalist`. The leaders and
+`codebase-explorer` read the note first and fall back to the markers. The
+marker stays the truth: when the two disagree, `documentalist` fixes the
+note on its next call.
 
 ### The gates, register backend
 
@@ -284,15 +305,16 @@ A separate owner keeps each backend's text in exactly one place.
 It is one team with two backends, selected per repository at runtime. There
 is no second agent set and no install-time variant:
 
-- **Hand sync stays flat.** Backend-specific text lives only in each owner
-  and its skills. Every shared agent carries one backend-neutral pointer, so
+- **Hand sync stays flat.** Backend-specific text lives only in the two
+  manuals and the two skill families. Every shared agent carries one backend-neutral pointer, so
   editing a leader updates both modes. A duplicated set would double the
   work on top of the three ports.
-- **ATD mode is unchanged.** The `documentalist` and `atd-*` bodies are
-  untouched. The only ATD-side edit is renaming the leaders' skill
-  `atd-gating-protocol` to `intent-gating-protocol`. It keeps the ATD
-  rules and adds two that apply to both backends: drift is resolved by a
-  leader or the user, and a draft entry inferred at preflight needs sign-off.
+- **ATD behavior is unchanged.** `documentalist`'s ATD rules moved,
+  unchanged in substance, into `references/atd-atoms.md`, and the `atd-*`
+  skills point there. The leaders' skill `atd-gating-protocol` became
+  `intent-gating-protocol`. It keeps the ATD rules and adds two that apply
+  to both backends: drift is resolved by a leader or the user, and a draft
+  entry inferred at preflight needs sign-off.
 - **An install-time variant costs more than it saves.** The agent
   directories are linked as whole directories. A variant would need
   per-file links, and Codex inlines skills, so each variant would need full
@@ -302,10 +324,10 @@ is no second agent set and no install-time variant:
   `mcp.atd` entry in `opencode/opencode.jsonc`, which the scripts don't
   manage.
 
-To use the register in a repository: for a new product, let `spec-writer`
-hand its master spec over (spec ingestion creates `intent/`). For an
-existing codebase, ask `intent-keeper` for a cold start. After that, the
-leaders gate every task on their own.
+To use the register in a repository: for a new product, let `spec-writer` hand
+its master spec over (spec ingestion creates `intent/`). For an existing
+codebase, ask `documentalist` for a cold start (it bootstraps the register
+unless you ask for ATD). After that, the leaders gate every task on their own.
 
 ## Editing
 

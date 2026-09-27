@@ -9,8 +9,8 @@ It exists because three downstream agents are *barred* from inventing this
 material and will stall without it: `ux-writer` (needs to know which roles
 reach which screens, and what a denial looks like on screen), `coding-leader`
 and `coding-executor` (need enforceable rules, not intent), and
-the intent owner (`documentalist` or `intent-keeper`, which records each rule
-as business-level intent, so each rule must stand on its own).
+`documentalist` (which records each rule as business-level intent, so each
+rule must stand on its own).
 
 ## Two lives
 
@@ -24,7 +24,7 @@ The document has a draft life and a final life, exactly like the master spec:
   cells, no `(proposed)` tags, and **no internal tracking IDs of any kind**.
   Anything still undecided is restated in plain language under *Known gaps*.
   Same self-sufficiency requirement as the master spec, for the same reason:
-  the intent owner ingests it and will never see the register those IDs point
+  `documentalist` ingests it and will never see the register those IDs point
   into.
 
 Suggested filename: `access-model.md`, beside the master spec.
@@ -189,7 +189,7 @@ Draft versions use an *Open questions* section instead, which may cite IDs.
 
 ## Completeness check
 
-Run before marking the document final. `ux-critic` and the intent owner both
+Run before marking the document final. `ux-critic` and `documentalist` both
 rely on these holding:
 
 - Every actor in §2 appears as a column in every §5 table.

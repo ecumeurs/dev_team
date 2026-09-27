@@ -1,6 +1,6 @@
 ---
 name: intent-architecture-capture
-description: Use when intent-keeper is called once a leader has settled a concrete architectural decision during planning, before any code is written, to record that decision as an intent-register architecture entry (trigger E, pre-code architecture capture).
+description: Use when documentalist, in a repo with an intent register (`intent/README.md`, no `.atd`), is called once a leader has settled a concrete architectural decision during planning, before any code is written, to record that decision as an intent-register architecture entry (trigger E, pre-code architecture capture).
 ---
 
 # Intent Pre-Code Architecture Capture

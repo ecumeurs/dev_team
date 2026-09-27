@@ -1,6 +1,6 @@
 ---
 name: intent-post-task-sync
-description: Use when intent-keeper is called after coding-leader (or any other agent) closes a coding task, to verify the intent-register entries touched by that work still describe what the code does, complete missing @intent tags, and report drift (trigger B, ongoing sync).
+description: Use when documentalist, in a repo with an intent register (`intent/README.md`, no `.atd`), is called after coding-leader (or any other agent) closes a coding task, to verify the intent-register entries touched by that work still describe what the code does, complete missing @intent tags, and report drift (trigger B, ongoing sync).
 ---
 
 # Intent Post-Task Sync

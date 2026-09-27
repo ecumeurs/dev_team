@@ -1,6 +1,6 @@
 ---
 name: intent-cold-start
-description: Use when intent-keeper is pointed at an existing codebase with no declared intent (no `intent/` register, no `.atd`) and needs to extract an initial honest draft of the intent register from the implementation (trigger A, cold-start onboarding).
+description: Use when documentalist, bootstrapping the ATD-less intent register, is pointed at an existing codebase with no declared intent (no `intent/` register, no `.atd`) and needs to extract an initial honest draft of the intent register from the implementation (trigger A, cold-start onboarding).
 ---
 
 # Intent Cold-Start Extraction
@@ -10,13 +10,15 @@ the register, not a complete one. Everything you write is `draft`: it
 describes what the code does today, which is not the same as what anyone
 has agreed it should do.
 
-1. **Check the markers.** If `.atd` exists, stop: `documentalist` owns
-   intent in this repo. If `intent/README.md` exists, this isn't a cold
+1. **Check the markers.** If `.atd` exists, this is an ATD repo: stop and
+   use skill `atd-cold-start` instead. If `intent/README.md` exists, this isn't a cold
    start — extend the existing register (steps 3–8 on the uncovered areas)
    rather than recreating it.
 2. **Bootstrap.** Create `intent/README.md`, `intent/business.md` and
    `intent/architecture.md` from the layout in the format reference
-   (`~/.local/share/dev_team/references/intent-register.md`).
+   (`~/.local/share/dev_team/references/intent-register.md`), then add the
+   `## Declared intent` section to the project instructions (see the core
+   agent instructions).
 3. **Find where behavior enters.** List the product's entry points before
    reading deeply: routes and handlers, CLI commands, public API modules,
    jobs and consumers, UI routes. Read the project's own README and docs for

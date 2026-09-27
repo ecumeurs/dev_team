@@ -1,6 +1,6 @@
 ---
 name: intent-spec-ingestion
-description: Use when intent-keeper is handed a spec-writer master spec (initial, or a milestone refinement) to create or update the intent register's business entries, Vision and Contract against the spec's current state (trigger C, spec ingestion).
+description: Use when documentalist, in a repo with an intent register (`intent/README.md`, no `.atd`), is handed a spec-writer master spec (initial, or a milestone refinement) to create or update the intent register's business entries, Vision and Contract against the spec's current state (trigger C, spec ingestion).
 ---
 
 # Intent Spec Ingestion
@@ -13,10 +13,12 @@ This workflow stays at the business level: it never writes architecture
 entries or `@intent` tags. Those come from a leader's architecture capture
 before code, or from the post-task sync once code lands.
 
-1. **Check the markers.** If `.atd` exists, stop: `documentalist` owns
-   intent in this repo. If `intent/README.md` is absent, bootstrap the
-   register from the layout in the format reference
-   (`~/.local/share/dev_team/references/intent-register.md`). On a
+1. **Check the markers.** If `.atd` exists, this is an ATD repo: stop and
+   use skill `atd-spec-ingestion` instead. If `intent/README.md` is absent,
+   bootstrap the register from the layout in the format reference
+   (`~/.local/share/dev_team/references/intent-register.md`) and add the
+   `## Declared intent` section to the project instructions (see the core
+   agent instructions). On a
    milestone refinement it already exists.
 2. **Work from the master spec and its access model alone.** You should
    only ever be handed those — never spec-writer's index, open-questions

@@ -38,14 +38,13 @@ as shorthand — that's fine for your own working set. The master spec is a
 different kind of document: state each deferred item, open question, and
 architectural decision's reasoning in full plain language instead, with no
 `O#`/`D#` (or equivalent) citation standing in for the content. The master
-spec, with its access model, is all the intent owner (`documentalist`, or
-`intent-keeper` without ATD) ever ingests (never the register or log
-themselves), and per its own self-sufficiency requirement an atom or intent
-entry can't mean anything by reference to an ID from a document it will never
-see — so nothing upstream of it may either. Persona and goal IDs (`P1`,
-`P1.G2`) are the exception: they are content identifiers, defined in the
-personas document and restated in full in the master spec's personas section,
-not pointers into a register — cite them freely.
+spec, with its access model, is all `documentalist` ever ingests (never the
+register or log themselves), and per its own self-sufficiency requirement an
+atom or intent entry can't mean anything by reference to an ID from a document
+it will never see — so nothing upstream of it may either. Persona and goal IDs
+(`P1`, `P1.G2`) are the exception: they are content identifiers, defined in
+the personas document and restated in full in the master spec's personas
+section, not pointers into a register — cite them freely.
 
 Don't consolidate early to "show progress." A half-settled master spec hides
 its own gaps behind a look of completeness; the split drafts plus open-Q

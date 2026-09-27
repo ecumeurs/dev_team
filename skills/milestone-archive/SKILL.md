@@ -81,9 +81,8 @@ is milestone-only or still live, **ask the user**. Don't guess.
   to keep a document in place. Atoms and entries must be self-sufficient: they
   never link to, cite, or depend on a document outside their own record (spec,
   ui_ux, issue, or an open-question or decision ID). One that does is already
-  a violation, whatever the archive does. Report it to its owner
-  (`documentalist`, or `intent-keeper` for `intent/`) to inline the content,
-  and archive the document on its own merits.
+  a violation, whatever the archive does. Report it to `documentalist` to
+  inline the content, and archive the document on its own merits.
 
 **Standing documents are never archived as a unit.** The spec tree's
 personas document — and any other document that describes the product rather
@@ -156,11 +155,10 @@ resolved fit findings against a closed version) follows the classes above.
 
 ## Boundaries
 
-- Never touch declared intent: ATD atoms (`docs/*.atom.md`), owned by
-  `documentalist`, or the intent register (`intent/`), owned by
-  `intent-keeper`. Neither may reference documents outside its own record;
-  report every atom or entry that does (a moved file or not) as a
-  self-sufficiency violation for its owner to fix.
+- Never touch declared intent: ATD atoms (`docs/*.atom.md`) or the intent
+  register (`intent/`), both owned by `documentalist`. Neither may reference
+  documents outside its own record; report every atom or entry that does (a
+  moved file or not) as a self-sufficiency violation for its owner to fix.
 - Never delete, close or move the issue tracker or its files, or any
   deliverable: code, tests or release evidence. You may repair link paths in
   them. Don't change their wording.

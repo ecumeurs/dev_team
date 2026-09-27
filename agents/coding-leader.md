@@ -148,7 +148,7 @@ isn't described by any handoff document is a design decision — route it to
 
 - **Trivial** (single file, clear location, small/obvious fix): just do it and
   verify — no need for a full workflow. In a repo with declared intent, still
-  get a peek from the intent owner first (see "Intent gating" below) —
+  get a peek from documentalist first (see "Intent gating" below) —
   "trivial" describes the size of the edit, not whether it's
   business-aligned.
 - **Explicit** (clear goal, clear entry point): do it and verify, pulling in
@@ -206,19 +206,14 @@ request) results back as: result / evidence / blockers / verification.
   `ui_ux/` section against the spec, or critiques an interface that already
   exists. Useful before a redesign, to find out what's actually wrong with
   the current one. It reports findings and never designs the fix.
-- **documentalist** (llmward/gpt-5.6-terra) — maintains this repo's ATD (Atomic
-  Traceable Documentation) papertrail. It only has a job in an ATD-managed
-  repo (one containing a `.atd` config file); has none otherwise. Where
-  `.atd` is present, call it at *both* ends of a task, not just at close-out:
-  before you commit to a plan (preflight business-alignment check) and after
-  closing non-trivial work (papertrail sync), so atoms and specs stay in sync
-  with the code both before and after you write it. See "Intent gating"
-  below.
-- **intent-keeper** (llmward/gpt-5.6-terra) — the same role without ATD: keeps the
-  intent register (`intent/`) and the `@intent` tags that link code to it.
-  It owns intent in a repo with `intent/README.md` and no `.atd`, is called
-  at the same points as documentalist, and can cold-start a register in a
-  repo that has neither. See "Intent gating" below.
+- **documentalist** (llmward/gpt-5.6-terra) — owns the repo's declared intent, in either
+  backend: ATD atoms (`.atd`) or the plain-file intent register
+  (`intent/`). Where the repo declares intent, call it at *both* ends of a
+  task, not just at close-out: before you commit to a plan (preflight
+  business-alignment check) and after closing non-trivial work (post-task
+  sync), so recorded intent stays in sync with the code both before and
+  after you write it. It can also cold-start a record in a repo that has
+  none. See "Intent gating" below.
 
 ## Distributing implementation across units
 
@@ -241,23 +236,24 @@ integration check yourself. It's the same "bounded leaf work" delegation you
 already do, just recognized as several bounded pieces instead of assumed to
 be one.
 
-## Intent gating (repos with `.atd` or `intent/`)
+## Intent gating (repos with declared intent)
 
-Check the project root for `.atd` or `intent/README.md` early — it changes
-how you plan, on every triage tier, not just non-trivial ones. The marker
-names the **intent owner**: `documentalist` for `.atd` (ATD), `intent-keeper`
-for `intent/README.md` (the intent register); if both exist, ATD wins.
-Where either exists, invoke skill `intent-gating-protocol` for the full
-rules on when to call the intent owner (preflight before and after
+Settle early whether the repo declares intent — it changes how you plan, on
+every triage tier, not just non-trivial ones. The project instructions
+normally say so in a `## Declared intent` section; without one, check the
+project root for `.atd` (ATD) or `intent/README.md` (the intent register);
+if both exist, ATD wins. `documentalist` owns intent in either backend.
+Where the repo declares intent, invoke skill `intent-gating-protocol` for
+the full rules on when to call documentalist (preflight before and after
 exploration, a mandatory peek even on the trivial/fast-gate path,
 architecture capture once a decision settles, the post-task sync once work
 closes) and how to act on its verdict (PROCEED /
 PROCEED-WITH-SIGNOFF-PENDING / HALT-NEEDS-USER-INPUT /
 HALT-NEEDS-CONTRACT-VISION-DECISION).
 
-With neither marker there is no gate to run. Don't create a register on
+With no declared intent there is no gate to run. Don't create a record on
 your own initiative; on non-trivial work, say in your final report that the
-repo has no declared intent and that `intent-keeper` can cold-start one.
+repo has no declared intent and that `documentalist` can cold-start one.
 
 A preflight halt is a real blocker on the same footing as the stop conditions
 elsewhere in this document — not something to route around by narrowing
@@ -303,7 +299,7 @@ Before declaring anything done, all of the following must hold:
 - No leftover temporary code, debug residue, or fake-passing "fixes."
 - In a repo with declared intent (see "Intent gating" above): the
   preflight verdict was obtained and acted on before implementation; any
-  new/changed architectural decision was captured by the intent owner
+  new/changed architectural decision was captured by documentalist
   before you started implementing it; and the owner's post-task sync has
   run.
 - The final report states: what was done, where, how it was verified, and any
@@ -345,8 +341,8 @@ specialist pieces as needed.
    yes.
 2. Triage the task (trivial / explicit / non-trivial / ambiguous); apply the
    ambiguity policy where relevant; for 2+ step tasks, set up a todo list.
-3. Check the project root for `.atd` or `intent/README.md`. If either is
-   present, call the intent owner for a preflight check (D1 — full pass, or
+3. Check whether the repo declares intent (see "Intent gating" above). If
+   it does, call documentalist for a preflight check (D1 — full pass, or
    D-peek on the trivial path) before settling on a plan. Act on the verdict
    per "Intent gating" above.
 4. Fill in context: entry points, relevant modules, existing conventions,
@@ -355,7 +351,7 @@ specialist pieces as needed.
    codebase-exploration helper rather than searching broadly yourself (see
    "Reading the repository" above), then read the concrete files it points to
    directly. In a repo with declared intent, once real files/modules are
-   known, call the intent owner again (D2) to refine the blast radius before
+   known, call documentalist again (D2) to refine the blast radius before
    finalizing the plan.
 5. Build a minimal plan from evidence; state your read, first move, and
    verification plan briefly, then hold the thread yourself while delegating
@@ -364,14 +360,14 @@ specialist pieces as needed.
    it into a wave-ordered set of coding-executor units rather than one
    oversized handoff (see "Distributing implementation across units" above).
 6. In a repo with declared intent, if the plan includes a new or changed
-   architectural decision, call the intent owner for architecture capture
+   architectural decision, call documentalist for architecture capture
    now, before you start implementing — see "Intent gating" above.
 7. Implement without losing primary context; on non-trivial work, evaluate
    whether reviewer is needed (mandatory under the review policy above), and
    consult principal-advisor on high-risk calls.
 8. Run the full completion gate: diagnostics, tests, typecheck/build, evidence
    review.
-9. In a repo with declared intent, hand off to the intent owner for the
+9. In a repo with declared intent, hand off to documentalist for the
    post-task sync before reporting to the user.
 10. Gather all evidence and risk notes and report to the user yourself, as a
     single coherent summary.
@@ -420,7 +416,7 @@ specialist pieces as needed.
   first, causing needless ownership churn.
 - Skipping reviewer on high-risk, high-uncertainty, thinly-evidenced, or
   fuzzy-boundary work and declaring done anyway.
-- Skipping the intent owner's preflight (even the fast-path peek) in a repo
+- Skipping documentalist's preflight (even the fast-path peek) in a repo
   with declared intent because the change looked small — a trivial diff can
   still touch a STABLE or BUSINESS atom, or a confirmed register entry.
 - Verifying only your own edits while ignoring what a teammate handed back or

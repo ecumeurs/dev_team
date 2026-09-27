@@ -2,7 +2,7 @@
 
 The intent register is the ATD-less record of declared intent: what the
 product must do, why, and which architectural decisions serve it. The
-leaders' gates check every change against it. `intent-keeper` is its only
+leaders' gates check every change against it. `documentalist` is its only
 writer. Everyone else reads it: the leaders, `codebase-explorer`,
 `ux-writer`, `ux-critic`, and humans. A repository uses the register when
 `intent/README.md` exists at the project root. If `.atd` exists too, ATD
@@ -37,7 +37,7 @@ retired in place.
 ```markdown
 # Intent register
 
-Declared intent for <product>. Maintained by `intent-keeper`; format in
+Declared intent for <product>. Maintained by `documentalist`; format in
 `~/.local/share/dev_team/references/intent-register.md`.
 
 ## Vision
@@ -132,7 +132,7 @@ Source: planning decision, task "add second payment provider"
   still check against it, but it can change without sign-off.
 - **`confirmed`**: a human confirmed it. Changing its meaning (`Intent`,
   `Rule`, `Decision`, `Expectation`, `Serves`) needs the user's explicit
-  agreement. `intent-keeper` never sets `confirmed` on its own initiative.
+  agreement. `documentalist` never sets `confirmed` on its own initiative.
 - **`retired`**: no longer applies. The entry stays, with a `Retired:` line,
   so the ID is never reused. Code must not carry a tag for it.
 
@@ -176,7 +176,7 @@ export interface PaymentProvider { ... }
 ## Drift
 
 Drift means an entry and the code both claim to be right and disagree. It
-is recorded, not resolved. `intent-keeper` adds one line to the entry and
+is recorded, not resolved. `documentalist` adds one line to the entry and
 leaves the rest of the entry, and the code, as they are:
 
 ```markdown
@@ -192,7 +192,7 @@ lists every open drift.
 
 ## Consistency checks
 
-`intent-keeper` runs these after every write. `codebase-explorer` and the
+`documentalist` runs these after every write. `codebase-explorer` and the
 leaders can run them read-only:
 
 - Every entry has the fields its kind requires, and a valid `Status`.
@@ -203,3 +203,18 @@ leaders can run them read-only:
   existing entry that is not `retired`.
 - No entry cites a spec section, register ID or outside document as its
   meaning.
+
+## Tool quick reference
+
+The register needs no tooling beyond plain files, `grep` and `git`.
+
+| Need | Command |
+|---|---|
+| Search the register by meaning | `grep -rn -i -E '<term>\|<synonym>' intent/` |
+| List entries and statuses | `grep -rn -E '^## \|^Status:' intent/` |
+| Tags in one file | `grep -n '@intent' <file>` |
+| All code and tests tagged with one entry | `git grep -n '@intent <id>'` |
+| All tags in the repo | `git grep -n '@intent'` |
+| What a task changed | `git diff --name-only <base>`, `git diff <base> -- <file>` |
+| Tags a task added or removed | `git diff <base> \| grep '@intent'` |
+| Open drift | `grep -rn '^Drift:' intent/` |
