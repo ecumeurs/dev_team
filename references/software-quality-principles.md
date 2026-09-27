@@ -55,8 +55,8 @@ principle nobody thought to write down.
 6. **Docs move with code.** A behavior change updates its own documentation
    in the same change that makes the change — not as a follow-up someone
    forgets. If the project tracks structured docs/specs (its own equivalent
-   of atoms, ADRs, or a living spec doc), those are part of "done," not
-   optional polish.
+   of atoms, an intent register, ADRs, or a living spec doc), those are part
+   of "done," not optional polish.
 
 7. **Instrument early if observability will matter.** Retrofitting logging/
    tracing into mature code is expensive; building it in from the first
@@ -66,15 +66,16 @@ principle nobody thought to write down.
    never asking.
 
 8. **Documentation must be self-sufficient.** In-code comments, out-of-code
-   docs, and ATD atoms alike must stand on their own — a reader shouldn't
-   need to chase a linked issue, PR, failure report, or other external
-   document to understand what's being said. Linking out to those is
-   prohibited; restate the needed context inline instead. The only exception
-   is a deliberately hierarchical document base where hard links between
-   documents are the structure itself (e.g. an index linking to its
-   subjects, or an atom's declared `@spec-link`/parent-atom references) —
-   there, following the link is the intended reading path, not a detour
-   needed to recover missing context.
+   docs, ATD atoms and intent-register entries alike must stand on their own
+   — a reader shouldn't need to chase a linked issue, PR, failure report, or
+   other external document to understand what's being said. Linking out to
+   those is prohibited; restate the needed context inline instead. The only
+   exception is a deliberately hierarchical document base where hard links
+   between documents are the structure itself (e.g. an index linking to its
+   subjects, or an atom's declared `@spec-link`/parent-atom references, or an
+   intent entry's `Serves:` line and `@intent` tags) — there, following the
+   link is the intended reading path, not a detour needed to recover missing
+   context.
 
 ## How to use this during spec work
 

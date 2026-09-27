@@ -5,8 +5,9 @@ description: >
   docs/*.atom.md files and the @spec-link/@test-link tags that bind them to
   code. This agent only has a job in a repo that already has ATD wired up
   (a `.atd` config at the project root) — if that file is absent, it either
-  bootstraps it (cold-start) or is simply not the right agent to call. Select
-  it in five situations: (1) cold-start onboarding, when an existing codebase
+  bootstraps it (cold-start) or is simply not the right agent to call. A repo
+  with an `intent/` register instead belongs to intent-keeper, and so does a
+  cold start the user wants without ATD. Select it in five situations: (1) cold-start onboarding, when an existing codebase
   has little or no ATD coverage and atoms need to be extracted from the
   implementation as the initial source of truth; (2) a preflight
   business-alignment check, called by coding-leader or coordination-leader

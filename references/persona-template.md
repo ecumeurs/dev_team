@@ -20,7 +20,7 @@ guesses without them:
   "users".
 
 The master spec carries a short, self-sufficient summary of the personas and
-the goals it serves (see skill `spec-consolidate`), so `documentalist` and
+the goals it serves (see skill `spec-consolidate`), so the intent owner and
 `coding-leader` get what they need without this document. This document stays
 the full reference.
 

@@ -205,7 +205,8 @@ The reasoning layer. Contains:
 is for and what they are trying to do, which user types exist and what each
 may do — that is business scope. `spec-writer` settles it in the personas
 document, the master spec, and its access model, or it lives in the project's
-ATD BUSINESS atoms. Your job is to *read* it and design for it: which flows
+declared intent (ATD BUSINESS atoms, or the business entries of an `intent/`
+register). Your job is to *read* it and design for it: which flows
 serve which persona's goals, which flows each role can enter, which screens
 they see, what a permission-denied state looks like. If personas or roles are
 undefined and the design needs them, do not invent them — log it in
@@ -317,8 +318,10 @@ priority order:
    designing flows; a flow that contradicts the spec is a defect, not a
    design choice, and a flow designed for nobody in the personas document is
    a question.
-3. **ATD BUSINESS atoms**, in repos with a `.atd` config at the project root,
-   when there is no master spec — same role, different source.
+3. **Declared business intent** — ATD BUSINESS atoms in repos with a `.atd`
+   config at the project root, or the business entries of the intent register
+   (`intent/`) in repos with `intent/README.md` — when there is no master
+   spec: same role, different source.
 4. **The existing codebase** — delegate to `codebase-explorer` to find the
    current UI structure, component library, routing, and anything a redesign
    would strain. State what you checked and what you found before proposing a
@@ -341,9 +344,10 @@ it to `ux-critic` for a validation pass covering:
   exist; the edge-case policy in `strategy.md` is actually applied in each
   screen's handoff; nothing in a screen contradicts the strategy that
   produced it.
-- **Alignment against the master spec** — or, absent one, against ATD
-  BUSINESS atoms. Flows must not contradict settled behavior, and must not
-  quietly introduce business rules.
+- **Alignment against the master spec** — or, absent one, against the declared
+  business intent (ATD BUSINESS atoms or intent-register business entries).
+  Flows must not contradict settled behavior, and must not quietly introduce
+  business rules.
 - **Persona alignment** — the strategy designs for the spec's personas, each
   flow names the goals it serves, and nothing introduces a persona or a
   persona trait the personas document doesn't have.
@@ -464,11 +468,14 @@ done. Don't skip it because the delegate "should have" gotten it right.
 - **spec-writer** — route to it, don't work around it, when the design is
   blocked on undecided product behavior, personas, user roles, or
   permissions, or when design work surfaces a persona gap.
-- **documentalist** — in repos with `.atd`, hand off a settled flow set so it
-  can capture the ARCHITECTURE-layer atoms for those UI flows. Forward the
-  tier documents only — never `open-questions.md`, `decisions.md`, or
-  `todo.md`, which hold unsettled and superseded material it must not atomize.
-  This runs alongside the `coding-leader` handoff, not as a gate on it.
+- **the intent owner** — `documentalist` in repos with `.atd`, `intent-keeper`
+  in repos with `intent/README.md`: hand off a settled flow set so it can
+  capture those UI flows as architecture intent (ARCHITECTURE-layer atoms, or
+  architecture entries in the register). Forward the tier documents only —
+  never `open-questions.md`, `decisions.md`, or `todo.md`, which hold
+  unsettled and superseded material it must not record. This runs alongside
+  the `coding-leader` handoff, not as a gate on it. In a repo with neither
+  marker, skip it.
 - **coding-leader** — the handoff target once a flow and its screens are
   complete and buildable.
 - **coordination-leader** — handoff target instead when the completed design

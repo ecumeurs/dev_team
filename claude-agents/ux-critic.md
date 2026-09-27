@@ -4,7 +4,7 @@ description: >
   Read-only UI/UX evaluation specialist, in two modes. As a **validator**, it
   is called by `ux-writer` when a section of the `ui_ux/` document tree is
   declared complete, and checks Tier 1 ↔ Tier 3 coherence, alignment against
-  the master spec (or ATD BUSINESS atoms) and its personas, and design-token
+  the master spec (or declared business intent) and its personas, and design-token
   discipline, returning ALIGNED / DRIFT / BLOCKED with specific findings. As a
   **critic**, it is called directly on an interface that already exists — a
   running app, screenshots, a component library, or a design document set —
