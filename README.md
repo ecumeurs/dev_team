@@ -157,6 +157,7 @@ Practical differences from the other two dialects:
 | `principal-advisor` | subagent | `gpt-5.6` | High-stakes architecture/perf/security/complexity judgment calls. |
 | `multimodal-looker` | subagent | `gpt-5.6-luna` | Reads screenshots, PDFs, diagrams, UI images. |
 | `documentalist` | subagent | `gpt-5.6-terra` | Maintains the ATD papertrail after coding tasks close in ATD-managed repos. |
+| `intent-keeper` | subagent | `gpt-5.6-terra` | Keeps the ATD-less intent register (`intent/`) and runs the same intent gates in repos without `.atd`. |
 | `ux-writer` | subagent | `gpt-5.6-terra` | Designs UI/UX document trees and token guidance before implementation. |
 | `ux-critic` | subagent | `gpt-5.6` | Read-only UI/UX validator and critique specialist. |
 
@@ -362,7 +363,9 @@ path) Codex alike — no separate OpenCode-specific skills target is needed.
 The installer is idempotent. If a target already exists as a real directory or
 file, it refuses to touch it and tells you to move that content aside manually.
 If a target exists as a symlink to a different location, setup replaces that
-symlink.
+symlink. Setup also removes any link in `~/.claude/skills` that points into
+this repo's `skills/` at a skill that no longer exists, such as
+`atd-gating-protocol` after its rename to `intent-gating-protocol`.
 
 The legacy name still works:
 
@@ -380,7 +383,8 @@ scripts/teardown.sh
 
 This removes the OpenCode, Claude Code, and Codex agent symlinks, and every
 per-skill symlink teardown finds under `~/.claude/skills` that points back
-into this repo's `skills/` directory (any other skill living there is left
+into this repo's `skills/` directory, including links to skills since renamed
+or removed (any other skill living there is left
 untouched). It does not remove real directories or files, and it leaves
 `~/.local/share/dev_team/references` in place because that path is inert when
 no persona reads it — unlike references, skills are active automation an

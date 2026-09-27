@@ -51,6 +51,20 @@ if [ -d "$REPO_DIR/skills" ]; then
   done
 fi
 
+# Also remove links to skills this repo no longer has (renamed or deleted),
+# which the loop above can't name. Only links pointing into this repo's
+# skills/ directory are touched.
+for link in "$HOME/.claude/skills"/*; do
+  [ -L "$link" ] || continue
+  target="$(readlink "$link")"
+  case "$target" in
+    "$REPO_DIR/skills/"*)
+      rm "$link"
+      echo "Skill:$(basename "$link"): removed stale link (was -> $target)"
+      ;;
+  esac
+done
+
 if [ "$failed" -ne 0 ]; then
   echo >&2
   echo "One or more links could not be removed; see above." >&2

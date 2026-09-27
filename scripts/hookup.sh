@@ -58,6 +58,23 @@ ensure_link "$REPO_DIR/agents"        "$HOME/.config/opencode/agents"          "
 ensure_link "$REPO_DIR/claude-agents" "$HOME/.claude/agents"                   "Claude Code"  || failed=1
 ensure_link "$REPO_DIR/codex-agents"  "$HOME/.codex/agents"                    "Codex"        || failed=1
 
+# Prune links left behind by a renamed or removed skill: a symlink in
+# ~/.claude/skills that points into this repo's skills/ directory at a skill
+# that no longer exists (e.g. atd-gating-protocol, renamed to
+# intent-gating-protocol). Links pointing anywhere else are never touched.
+for link in "$HOME/.claude/skills"/*; do
+  [ -L "$link" ] || continue
+  target="$(readlink "$link")"
+  case "$target" in
+    "$REPO_DIR/skills/"*) ;;
+    *) continue ;;
+  esac
+  if [ ! -e "$link" ]; then
+    rm "$link"
+    echo "Skill:$(basename "$link"): removed stale link (was -> $target)"
+  fi
+done
+
 # Skills are symlinked one subdirectory at a time into ~/.claude/skills, never
 # as a whole-directory link onto ~/.claude/skills itself — that location can
 # hold skills dev_team doesn't manage (e.g. hand-installed ones), and a
