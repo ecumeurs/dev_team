@@ -71,7 +71,7 @@ Invoked by `ux-writer` when a section of `ui_ux/` is declared complete, or by
 a user asking whether a design set is ready to build. Invoke skill
 `ux-validate` for the full check (Tier 1 ↔ Tier 3 coherence, alignment
 against settled product behavior, persona alignment, token discipline, ID
-discipline) and the
+discipline, version-change marking) and the
 ALIGNED / DRIFT / BLOCKED verdict scale, capped at five findings.
 
 ## Mode 2 — Critic

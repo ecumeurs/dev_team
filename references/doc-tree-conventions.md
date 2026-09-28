@@ -59,13 +59,28 @@ archived.
 `screens/<screen-name>/`, each of the last two holding `intent.md` and
 `handoff.md`. The layout is set in `ux-writer`'s document tree.
 
+```
+ui_ux/
+  versions/
+    <version>/        an approved version's design, frozen, with a summary README
+```
+
+Both trees have a `versions/` folder, for different things. The spec tree's
+holds each version's scope and master spec, including versions not yet built.
+The UI/UX tree's holds only designs the user has approved, copied there
+frozen; everything else at the `ui_ux/` root is the next version's work in
+progress, specified in full, with what it adds, changes and removes marked.
+The rules are in `ux-writer`'s "Versions and change marking".
+
 ## Archive
 
 - `archive/README.md` indexes the archive. Each closed milestone gets
   `archive/<milestone>/` with its own `README.md`. Nothing sits loose at the
   archive root.
 - A moved document keeps its name, and its depth where possible
-  (`versions/v1/` becomes `archive/v1/`).
+  (`specs/versions/v1/` becomes `specs/archive/v1/`). The UI/UX tree's
+  `versions/` is never archived: it is the frozen design, not a working
+  record.
 - An archived slice of a register keeps the live file's name and adds the ID
   range: `decisions-D45-D71.md`, `open-questions-O12-O30.md`. A single
   extracted entry uses its one ID: `open-questions-Q15.md`.

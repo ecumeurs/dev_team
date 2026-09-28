@@ -137,7 +137,13 @@ Act on what comes back:
 If the repo has a `ui_ux/` tree, it is the source of truth for interface work:
 read `ui_ux/README.md` and the relevant `flows/`/`screens/` handoff documents
 before touching UI, and build what they specify rather than re-deciding it.
-Two rules bind you there. **`ui_common.css` (or the project's equivalent token
+Build from the documents at the `ui_ux/` root; `ui_ux/versions/` holds
+approved designs, frozen, for reference only. When a root document opens
+with a change block ("Changes since v1"), read it first: it lists what the
+version in progress adds, changes and removes, each item linking to its
+section, and inline `**[v2 new]**` / `**[v2 changed]**` tags mark the same spots
+in the body. Read the unchanged remainder as far as your change touches it —
+it is there so you don't break what already works. Two rules bind you there. **`ui_common.css` (or the project's equivalent token
 source — a `tailwind.config.*` or theme file) is owned by `ux-writer` and you
 never edit it**; if the design needs a token that doesn't exist, that's a
 request back to `ux-writer`, not a value you inline. And a UI change that

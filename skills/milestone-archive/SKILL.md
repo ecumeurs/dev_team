@@ -38,7 +38,7 @@ Before you move anything, list every candidate:
   `ui_ux/open-questions.md`), including closed-question prose that is still
   sitting in it.
 - The sections and items of `ui_ux/todo.md`.
-- Every document tied to the milestone: version folders, execution reports,
+- Every document tied to the milestone: spec version folders, execution reports,
   feasibility reviews, plans, and superseded snapshots.
 
 Record the set of open question IDs now. The final check compares against it.
@@ -148,6 +148,13 @@ resolved fit findings against a closed version) follows the classes above.
   - UI/UX tree: `ui_ux/README.md` (a tier doc, so no IDs; name the archive in
     its map) and `todo.md`.
   - Bump the `Status: draft vN` line of every live spec document you edit.
+- **UI/UX tree, version milestone.** Check that `ui_ux/versions/<version>/`
+  exists: the frozen copy of the design that `ux-writer` takes when the user
+  approves the version's design. If it is missing, take it now, per
+  `ux-writer`'s "Versions and change marking". Never archive or trim
+  `ui_ux/versions/`: it is the design, not the working record. Don't clear
+  the root's change marks either; that happens when design work on the next
+  version starts.
 - **Record the archive action in a live log only if that tree already does
   so.** The spec log records milestone events ("D75 — the v1.0 gate is
   closed; its working documents are archived"). `ui_ux/decisions.md` records

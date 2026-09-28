@@ -1,6 +1,6 @@
 ---
 name: ux-validate
-description: Use when ux-critic is invoked as validator — by ux-writer when a section of the ui_ux/ document tree is declared complete, or by a user asking whether a design set is ready to build — to check Tier 1 ↔ Tier 3 coherence, alignment against settled product behavior and personas, and token/ID discipline, returning ALIGNED / DRIFT / BLOCKED.
+description: Use when ux-critic is invoked as validator — by ux-writer when a section of the ui_ux/ document tree is declared complete, or by a user asking whether a design set is ready to build — to check Tier 1 ↔ Tier 3 coherence, alignment against settled product behavior and personas, and token/ID discipline and version-change marking, returning ALIGNED / DRIFT / BLOCKED.
 ---
 
 # UX Validator Mode
@@ -43,11 +43,27 @@ project's token source). Every component state the design uses is defined in
 the state matrix, including `:focus-visible`. Every responsive behavior cites
 a named breakpoint rather than a number.
 
+**Change marking.** When `ui_ux/` has a `versions/` folder, the root is the
+next version's work in progress. Compare each root tier document the section
+touches with its copy in the latest `versions/<version>/` (a plain `diff`).
+A document that differs opens with a change block listing what is new,
+changed and removed, each item linking to a section that exists; the body
+carries an inline `**[<version> new]**` or `**[<version> changed]**` tag at the
+start of each changed section, list item, paragraph or table row; removals
+appear only in the block, linking to the frozen copy, never as struck-through
+text; and a document with no counterpart in `versions/` carries a single
+"New in <version>" line. A change with no mark, a mark on unchanged text, or
+a block entry that points nowhere is DRIFT. So is any edit to a `versions/`
+folder after it was frozen (check its `git log`), unless `decisions.md`
+records it as a correction to match what that version shipped.
+
 **Also check the ID discipline**: no question or decision ID (`Q4`, `D7`, or
 equivalent) appears in any tier document. Those belong only in
 `open-questions.md` and `decisions.md`, which point into the tier docs and
 never the reverse. Persona and goal IDs (`P1`, `P1.G2`) are not tracking IDs —
-they are defined in the spec's personas document — and are allowed.
+they are defined in the spec's personas document — and are allowed. So are
+version tags (`**[v2 new]**`, `**[v2 changed]**`, a "Changes since v1" block):
+they name a version, not a register entry.
 
 Return exactly one verdict:
 

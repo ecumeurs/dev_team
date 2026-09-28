@@ -123,6 +123,9 @@ ui_ux/
       intent.md       focal point, hierarchy, disclosure reasoning
       handoff.md      layout tree, components, responsive behavior
   archive/            closed milestones' working records, kept verbatim
+  versions/
+    <version>/        an approved version's design, frozen: the tier docs as
+                      approved, plus a README summarizing its decisions
 ```
 
 **Screens are flat, not nested under flows.** A screen used by three flows is
@@ -179,6 +182,83 @@ first, every session, before anything else.**
 Use `todowrite` for within-session progress. It is not a substitute for
 `todo.md` or `open-questions.md` — a real open question must never live only
 in a todo item that vanishes when the session ends.
+
+## Versions and change marking
+
+Some projects ship in versions. Once one has shipped, its design has to stay
+readable exactly as it was, and the design for the next one has to show
+plainly what it changes: an implementer building v3 should not have to read
+twenty pages of v2 to find the three sections that moved, yet v2's behavior
+must stay on hand so nothing built earlier breaks. Two rules do that.
+
+**Approved versions are frozen in `ui_ux/versions/<version>/`.** When the
+user approves a version's design as complete, copy every tier document into
+`versions/<version>/` at the same relative paths, with a `README.md` that
+summarizes the decisions worth keeping — one line each: what was chosen, why
+it matters, and a link into the document that holds it. From then on the
+folder is never edited, with one exception: a correction that makes it match
+what that version actually shipped, recorded in `decisions.md`. The version's
+working record still goes to `archive/<milestone>/` (see "Archiving a closed
+milestone"): `versions/` holds the design, `archive/` the process that
+produced it. An artifact that belongs to one version only — a mockup, a
+superseded reference stylesheet — moves into that version's folder instead
+of lingering at the root. The live token source is not copied: it lives in
+the application tree, the release tag holds its shipped state, and the
+version README says so.
+
+**The root is the work in progress, and it is cumulative.** Everything
+outside `versions/` and `archive/` describes the next version's whole
+interface, old behavior included: a screen the next version extends is
+specified in full, not as a delta, which is what keeps earlier behavior from
+breaking for lack of a spec. What the next version adds, changes and removes
+is marked, so nobody has to read the unchanged part to find it:
+
+- **A change block** opens every root tier document that differs from its
+  copy in the latest `versions/<version>/`, right under the title. One line
+  per item, each linking to the section that holds it (in a document without
+  headings, point to the tagged paragraph instead: an HTML anchor is not a
+  heading, and link checkers reject it):
+
+  ```
+  > **Changes since v1**
+  > - *New:* controller status in the header ([Layout Tree](#layout-tree))
+  > - *Changed:* the header gains a slot ([Layout Tree](#layout-tree))
+  > - *Removed:* nothing
+  ```
+
+  An implementer reads the block and follows only the links it needs.
+- **An inline tag** at the start of each changed section, list item,
+  paragraph or table row: `**[v2 new]**` or `**[v2 changed]**`. Mark at that
+  granularity, never mid-sentence — where a paragraph mixes old and new,
+  split it so the tag covers only the new part. The tags are greppable
+  (`grep -rn "v2 new\|v2 changed" ui_ux`).
+- **Removals appear only in the change block**, each linking to the old
+  wording in the frozen `versions/` copy. Never leave struck-through dead
+  text in the body.
+- **A document new in this version** carries one line under its title,
+  `> **New in v2.**`, and no inline tags.
+- **Inside a code block or diagram**, where bold doesn't render, put the
+  same words in the element's own annotation or a comment:
+  `controller-status (v2 new; …)`, `%% v2 new` in mermaid.
+- **The token source** marks its changed blocks with the same words in a
+  comment: `/* v2 new */`, `/* v2 changed */`. A long run of new blocks gets
+  one opening comment, `/* v2 new -- from here to "end v2 new": … */`, and a
+  closing `/* end v2 new */`.
+
+Version tags are not tracking IDs: they name a version, not a register
+entry, so the two-register rule allows them in tier documents.
+
+**The marks move forward one version at a time.** The copy in
+`versions/<version>/` keeps its marks, so it also records what that version
+changed from the one before. At the root the marks stay until design work on
+the following version starts; then clear them in one mechanical pass —
+every change block, inline tag and token-source comment — before the first
+new edit, and mark the new version's changes from there on. Don't start the
+following version's work at the root before the current one has its
+`versions/` copy.
+
+In a project that doesn't ship versions, or before its first version has
+shipped, there is no `versions/` folder and nothing to mark.
 
 ## Tier 1 — `strategy.md`
 
@@ -316,6 +396,9 @@ what each document is for and how to navigate the tree. Written for someone
 arriving cold. Like every tier document, it carries no question or decision
 IDs.
 
+When the tree has a `versions/` folder, the README also says which version
+the root is working toward and lists the frozen versions.
+
 ## Grounding
 
 Never assert how the design fits the product without having checked. In
@@ -385,6 +468,12 @@ still holds: tier documents stay ID-free, and the archive's "where it now
 lives" table points into them, never the reverse. Invoke skill
 `milestone-archive` for the classification, archive rules, live-tree cleanup,
 and verification checklist.
+
+For a version milestone, the `versions/<version>/` copy is normally taken
+when the user approves the version's design, before the archive pass; if it
+is still missing when the version closes, take it as part of the pass. The
+archive pass never clears the root's change marks — that waits until design
+work on the next version starts.
 
 ## Working with the user
 
@@ -506,6 +595,9 @@ Before handing a section to `coding-leader`:
 - Empty, loading, and error states are specified for each screen, per the
   Tier 1 edge-case policy.
 - Responsive behavior is stated at named breakpoints.
+- If the root follows a frozen version, every tier document the section
+  touches carries its change block and inline tags, and every removal links
+  to the frozen `versions/` copy.
 - Component states used by the design all exist in the Tier 2 matrix,
   including `:focus-visible`.
 - `ux-critic` has passed the section, or its findings are resolved.
@@ -525,6 +617,11 @@ Before handing a section to `coding-leader`:
 - Summarizing flows in `strategy.md` in prose that will drift from the flow's
   own `intent.md`.
 - Letting a question or decision ID leak into any tier document.
+- Editing a frozen `versions/` folder, other than a recorded correction to
+  match what that version shipped.
+- Leaving a change unmarked in a root document that follows a frozen
+  version, tagging mid-sentence, or leaving removed text struck through in
+  the body instead of listing it in the change block.
 - Defining user roles or permissions yourself instead of reading them from
   the spec and escalating when they're missing.
 - Designing for a generic "user" — or for yourself — when the spec names
