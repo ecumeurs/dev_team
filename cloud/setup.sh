@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Provision a claude.ai/code cloud environment for the dev_team agent set.
 #
-Called by cloud/bootstrap.sh, the environment's "Setup script" (see
+# Called by cloud/bootstrap.sh, the environment's "Setup script" (see
 # cloud/README.md), once dev_team is at /opt/dev_team:
 #
 #   cloud/setup.sh [--playwright VER] [--godot VER] [--godot-mirror REPO] [--tailscale]
