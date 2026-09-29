@@ -17,19 +17,34 @@ STATUS_DIR=/opt/dev_team-status
 RUN_DIR=/tmp/dev_team-cloud
 mkdir -p "$RUN_DIR"
 
-if [ ! -d "$DEV_TEAM_DIR/.git" ]; then
-	echo "dev_team: not provisioned. Set the environment's setup script (dev_team cloud/README.md)."
+if [ ! -f "$DEV_TEAM_DIR/scripts/setup.sh" ]; then
+	echo "dev_team: not provisioned; see /var/log/dev_team-bootstrap.log and the environment's setup script (dev_team cloud/README.md)."
 	exit 0
 fi
+# shellcheck source=cloud/fetch.sh
+. "$DEV_TEAM_DIR/cloud/fetch.sh"
 
-timeout 30 git -C "$DEV_TEAM_DIR" pull --ff-only --quiet >/dev/null 2>&1 \
-	|| echo "dev_team: pull failed, using the cached copy ($(git -C "$DEV_TEAM_DIR" log -1 --format=%h))."
+if [ -d "$DEV_TEAM_DIR/.git" ]; then
+	timeout 30 git -C "$DEV_TEAM_DIR" pull --ff-only --quiet >"$RUN_DIR/refresh.log" 2>&1 \
+		|| echo "dev_team: pull failed, using the cached copy ($(repo_version "$DEV_TEAM_DIR"))."
+else
+	# A tarball copy: fetch main again and swap the contents in place, so the
+	# ~/.claude links into $DEV_TEAM_DIR stay valid. Files are unlinked, not
+	# overwritten, so this script (read by bash from its open file) is safe.
+	if timeout 60 bash -c ". '$DEV_TEAM_DIR/cloud/fetch.sh' && fetch_repo ecumeurs/dev_team '$RUN_DIR/dev_team.new'" \
+		>"$RUN_DIR/refresh.log" 2>&1; then
+		find "$DEV_TEAM_DIR" -mindepth 1 -delete && cp -a "$RUN_DIR/dev_team.new/." "$DEV_TEAM_DIR/"
+		rm -rf "$RUN_DIR/dev_team.new"
+	else
+		echo "dev_team: refresh failed, using the cached copy ($(repo_version "$DEV_TEAM_DIR")); see $RUN_DIR/refresh.log."
+	fi
+fi
 "$DEV_TEAM_DIR/scripts/setup.sh" >"$RUN_DIR/hookup.log" 2>&1 \
 	|| echo "dev_team: linking agents failed, see $RUN_DIR/hookup.log."
 
 for f in "$STATUS_DIR"/*; do
 	[ -f "$f" ] && [ "$(cat "$f")" = failed ] \
-		&& echo "dev_team: setup step '$(basename "$f")' failed; see /var/log/dev_team-setup.log."
+		&& echo "dev_team: setup step '$(basename "$f")' failed; see /var/log/dev_team-setup.log and /var/log/dev_team-bootstrap.log."
 done
 
 # Tailnet, for atd's Ollama-backed commands (map, audit, search, trace, ...).
@@ -56,5 +71,5 @@ if [ -n "${TS_AUTHKEY:-}" ] && command -v tailscaled >/dev/null 2>&1; then
 	fi
 fi
 
-echo "dev_team: agents at $(git -C "$DEV_TEAM_DIR" log -1 --format=%h), atd $(cat /usr/local/lib/atd/VERSION 2>/dev/null || echo missing)."
+echo "dev_team: agents at $(repo_version "$DEV_TEAM_DIR"), atd $(cat /usr/local/lib/atd/VERSION 2>/dev/null || echo missing)."
 exit 0

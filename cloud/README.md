@@ -13,14 +13,21 @@ anonymously. It only sees what is pushed to `main`, never local edits.
 
 | Piece | Where it lives | When it runs |
 | --- | --- | --- |
-| `cloud/setup.sh` | the environment's **Setup script** field (claude.ai) | once per cached environment (rebuilt every ~7 days, or when the script or network list changes), as root, before Claude starts |
+| `cloud/bootstrap.sh` → `cloud/setup.sh` | the environment's **Setup script** field (claude.ai) | once per cached environment (rebuilt every ~7 days, or when the script or network list changes), as root, before Claude starts |
 | `cloud/session-start.sh` | dev_team, called by the project hook | every session start and resume |
 | `.claude/settings.json` + `.claude/cloud-session-start.sh` | committed in the project repo (templates in `cloud/projects/<name>/`) | every session start and resume; does nothing locally |
 | `cloud/atd-wrapper.sh` | installed as `/usr/local/bin/atd` | on every `atd` call; routes it through the tailnet when that is up |
 
-`setup.sh` clones dev_team to `/opt/dev_team`, runs `scripts/setup.sh`, builds
+`bootstrap.sh` fetches dev_team to `/opt/dev_team` and hands over to
+`setup.sh`, which runs `scripts/setup.sh`, builds
 atd from source, and optionally installs Playwright's Chromium, Godot and
-Tailscale. `session-start.sh` pulls dev_team (so agent edits reach sessions
+Tailscale. The VM's GitHub proxy refuses to `git clone` repos not attached
+to the session, even public ones, so each fetch falls back to a
+`codeload.github.com` tarball of `main` (`cloud/fetch.sh`); the bootstrap
+itself comes from `raw.githubusercontent.com`, which bypasses that proxy.
+Nothing here can fail the session start: failures land in
+`/var/log/dev_team-bootstrap.log` and `/var/log/dev_team-setup.log`, and the
+session hook reports them. `session-start.sh` pulls dev_team (so agent edits reach sessions
 without waiting for a cache rebuild), relinks, brings the tailnet up, and
 reports failed steps into Claude's context.
 
@@ -36,8 +43,8 @@ are personal, so only you can read their variables.
 
 - **Setup script**
   ```bash
-  git clone --depth 1 https://github.com/ecumeurs/dev_team /opt/dev_team \
-    && bash /opt/dev_team/cloud/setup.sh --playwright 1.63.0 --tailscale
+  curl -fsSL https://raw.githubusercontent.com/ecumeurs/dev_team/main/cloud/bootstrap.sh \
+    | bash -s -- --playwright 1.63.0 --tailscale
   ```
   Keep `--playwright` in step with `@playwright/test` in `package-lock.json`
   (the session hook also runs `npx playwright install chromium`, so a stale
@@ -64,8 +71,8 @@ are personal, so only you can read their variables.
 
 - **Setup script**
   ```bash
-  git clone --depth 1 https://github.com/ecumeurs/dev_team /opt/dev_team \
-    && bash /opt/dev_team/cloud/setup.sh --godot 4.7.2 --godot-mirror kluthen/slime_train --tailscale
+  curl -fsSL https://raw.githubusercontent.com/ecumeurs/dev_team/main/cloud/bootstrap.sh \
+    | bash -s -- --godot 4.7.2 --godot-mirror kluthen/slime_train --tailscale
   ```
 - **Network access**: Custom, defaults included, plus `*.tailscale.com` and
   `tailscale.com`.

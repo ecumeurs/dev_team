@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 # Provision a claude.ai/code cloud environment for the dev_team agent set.
 #
-# Paste into the environment's "Setup script" field (see cloud/README.md):
+Called by cloud/bootstrap.sh, the environment's "Setup script" (see
+# cloud/README.md), once dev_team is at /opt/dev_team:
 #
-#   git clone --depth 1 https://github.com/ecumeurs/dev_team /opt/dev_team \
-#     && bash /opt/dev_team/cloud/setup.sh [--playwright VER] [--godot VER] [--tailscale]
+#   cloud/setup.sh [--playwright VER] [--godot VER] [--godot-mirror REPO] [--tailscale]
 #
 # Runs as root on Ubuntu 24.04, before Claude Code starts. Its filesystem is
 # snapshotted and reused for about 7 days when it finishes in under ~5 minutes,
@@ -14,7 +14,6 @@
 set -uo pipefail
 
 DEV_TEAM_DIR=/opt/dev_team
-ATD_REPO=https://github.com/ecumeurs/atd
 ATD_DIR=/opt/atd
 LOG=/var/log/dev_team-setup.log
 STATUS_DIR=/opt/dev_team-status
@@ -36,6 +35,8 @@ done
 
 mkdir -p "$STATUS_DIR"
 : >"$LOG"
+# shellcheck source=cloud/fetch.sh
+. "$DEV_TEAM_DIR/cloud/fetch.sh"
 
 # step <name> <function>: run one install, record ok/failed in $STATUS_DIR.
 step() {
@@ -49,21 +50,18 @@ step() {
 }
 
 link_dev_team() {
-	# Clone the agent set (the paste line already does it; this covers a re-run).
-	[ -d "$DEV_TEAM_DIR/.git" ] || git clone --depth 1 https://github.com/ecumeurs/dev_team "$DEV_TEAM_DIR"
-	# The session hook pulls as whatever user Claude runs as.
+	# The session hook refreshes it as whatever user Claude runs as.
 	chmod -R a+rwX "$DEV_TEAM_DIR"
 	git config --system --add safe.directory "$DEV_TEAM_DIR"
 	"$DEV_TEAM_DIR/scripts/setup.sh"
 }
 
 build_atd() {
-	rm -rf "$ATD_DIR"
-	git clone --depth 1 "$ATD_REPO" "$ATD_DIR"
+	fetch_repo ecumeurs/atd "$ATD_DIR"
 	# cgo stays on: atd's store uses go-sqlite3.
 	mkdir -p /usr/local/lib/atd
 	(cd "$ATD_DIR/atd" && CGO_ENABLED=1 go build -trimpath -o /usr/local/lib/atd/atd ./cmd/atd)
-	git -C "$ATD_DIR" rev-parse --short HEAD >/usr/local/lib/atd/VERSION
+	repo_version "$ATD_DIR" >/usr/local/lib/atd/VERSION
 	install -m 0755 "$DEV_TEAM_DIR/cloud/atd-wrapper.sh" /usr/local/bin/atd
 }
 
