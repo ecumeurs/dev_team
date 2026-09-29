@@ -4,7 +4,7 @@
 # Called by cloud/bootstrap.sh, the environment's "Setup script" (see
 # cloud/README.md), once dev_team is at /opt/dev_team:
 #
-#   cloud/setup.sh [--playwright VER] [--godot VER] [--godot-mirror REPO] [--tailscale]
+#   cloud/setup.sh [--playwright VER] [--godot VER] [--godot-mirror REPO]
 #
 # Runs as root on Ubuntu 24.04, before Claude Code starts. Its filesystem is
 # snapshotted and reused for about 7 days when it finishes in under ~5 minutes,
@@ -21,13 +21,11 @@ STATUS_DIR=/opt/dev_team-status
 playwright_version=""
 godot_version=""
 godot_mirror=""
-with_tailscale=false
 while [ $# -gt 0 ]; do
 	case "$1" in
 	--playwright) playwright_version="$2"; shift ;;
 	--godot) godot_version="$2"; shift ;;
 	--godot-mirror) godot_mirror="$2"; shift ;;
-	--tailscale) with_tailscale=true ;;
 	*) echo "cloud/setup.sh: unknown option $1" >&2 ;;
 	esac
 	shift
@@ -53,7 +51,33 @@ link_dev_team() {
 	# The session hook refreshes it as whatever user Claude runs as.
 	chmod -R a+rwX "$DEV_TEAM_DIR"
 	git config --system --add safe.directory "$DEV_TEAM_DIR"
-	"$DEV_TEAM_DIR/scripts/setup.sh"
+	# Claude may run as root or as a user under /home, and the agents have to
+	# be linked before it starts; the session hook relinks for the real user.
+	local home
+	for home in /root /home/*; do
+		[ -d "$home" ] || continue
+		HOME="$home" "$DEV_TEAM_DIR/scripts/setup.sh" || return 1
+		[ "$home" = /root ] || chown -hR --reference="$home" "$home/.claude" "$home/.config" "$home/.codex" "$home/.local" || true
+	done
+}
+
+# The session hook goes in the managed settings, which Claude Code reads
+# whatever the working directory and user. A project's own
+# .claude/settings.json isn't enough: with several repos attached, Claude
+# starts in /home/user and only reaches them through --add-dir, which loads
+# their CLAUDE.md and skills but not their hooks.
+install_session_hook() {
+	local file=/etc/claude-code/managed-settings.json
+	local cmd="bash $DEV_TEAM_DIR/cloud/session-start.sh"
+	local hook
+	hook="$(jq -n --arg cmd "$cmd" '[{matcher: "startup|resume", hooks: [{type: "command", command: $cmd}]}]')"
+	mkdir -p "$(dirname "$file")"
+	[ -s "$file" ] || echo '{}' >"$file"
+	# Merge, keeping any settings already there, and replace an earlier copy.
+	jq --arg cmd "$cmd" --argjson hook "$hook" \
+		'.hooks.SessionStart = ([(.hooks.SessionStart // [])[] | select(all(.hooks[]?; .command != $cmd))] + $hook)' \
+		"$file" >"$file.new" && mv "$file.new" "$file"
+	chmod 0644 "$file"
 }
 
 build_atd() {
@@ -62,7 +86,7 @@ build_atd() {
 	mkdir -p /usr/local/lib/atd
 	(cd "$ATD_DIR/atd" && CGO_ENABLED=1 go build -trimpath -o /usr/local/lib/atd/atd ./cmd/atd)
 	repo_version "$ATD_DIR" >/usr/local/lib/atd/VERSION
-	install -m 0755 "$DEV_TEAM_DIR/cloud/atd-wrapper.sh" /usr/local/bin/atd
+	ln -sf /usr/local/lib/atd/atd /usr/local/bin/atd
 }
 
 install_playwright() {
@@ -89,15 +113,11 @@ install_godot() {
 	godot --headless --version
 }
 
-install_tailscale() {
-	curl -fsSL https://tailscale.com/install.sh | sh
-}
-
 step dev_team link_dev_team
+step hook install_session_hook
 step atd build_atd &
 [ -n "$playwright_version" ] && { step playwright install_playwright & }
 [ -n "$godot_version" ] && { step godot install_godot & }
-$with_tailscale && { step tailscale install_tailscale & }
 wait
 
 echo "cloud/setup.sh: done ($(cd "$STATUS_DIR" && grep -H . * | tr '\n' ' '))"

@@ -23,7 +23,10 @@ governs this area of the business.
    this is exactly the "find existing atoms before creating new ones" use
    case. Follow up with `atd query --field <field> --search <value>` for any
    keyword/type/tag lead the semantic search surfaces (e.g. narrowing to
-   `type=RULE` or a suspected `tags` value).
+   `type=RULE` or a suspected `tags` value). Without Ollama (a cloud
+   session), semantic search errors out and `map`/`trace --summary` hand
+   their prompts back to you: follow "Without an LLM provider" in
+   `~/.local/share/dev_team/references/atd-atoms.md`.
 2. **Read, don't just list, the top candidates.** For every plausible
    candidate atom, read the file (not just the frontmatter snippet) — compare
    its `## INTENT` and `## THE RULE / LOGIC` against what the leader

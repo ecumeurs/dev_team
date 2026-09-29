@@ -1,38 +1,62 @@
 # Running the dev_team agents in Claude Code cloud sessions
 
 A cloud session (claude.ai/code, `claude --cloud`, the mobile app) runs on a
-fresh Ubuntu 24.04 VM with a clone of the project repo. It never sees this
-machine, so `~/.claude/agents`, `~/.claude/skills`,
+fresh Ubuntu 24.04 VM with clones of the repos attached to it. It never sees
+this machine, so `~/.claude/agents`, `~/.claude/skills`,
 `~/.local/share/dev_team/references` and `~/.local/bin/atd` are all missing.
 This directory rebuilds that layout on the VM.
 
-It relies on **dev_team and atd being public GitHub repos**: the VM clones them
-anonymously. It only sees what is pushed to `main`, never local edits.
+It relies on **dev_team and atd being public GitHub repos**: the setup script
+fetches them from `main` even when they aren't attached to the session.
 
 ## How it fits together
 
 | Piece | Where it lives | When it runs |
 | --- | --- | --- |
 | `cloud/bootstrap.sh` → `cloud/setup.sh` | the environment's **Setup script** field (claude.ai) | once per cached environment (rebuilt every ~7 days, or when the script or network list changes), as root, before Claude starts |
-| `cloud/session-start.sh` | dev_team, called by the project hook | every session start and resume |
-| `.claude/settings.json` + `.claude/cloud-session-start.sh` | committed in the project repo (templates in `cloud/projects/<name>/`) | every session start and resume; does nothing locally |
-| `cloud/atd-wrapper.sh` | installed as `/usr/local/bin/atd` | on every `atd` call; routes it through the tailnet when that is up |
+| `cloud/session-start.sh` | installed by `setup.sh` as a SessionStart hook in `/etc/claude-code/managed-settings.json` | every session start and resume |
+| `.claude/cloud-project.sh` | committed in each project repo (templates in `cloud/projects/<name>/`) | run by `session-start.sh`, from the repo root |
 
 `bootstrap.sh` fetches dev_team to `/opt/dev_team` and hands over to
-`setup.sh`, which runs `scripts/setup.sh`, builds
-atd from source, and optionally installs Playwright's Chromium, Godot and
-Tailscale. The VM's GitHub proxy refuses to `git clone` repos not attached
-to the session, even public ones, so each fetch falls back to a
-`codeload.github.com` tarball of `main` (`cloud/fetch.sh`); the bootstrap
-itself comes from `raw.githubusercontent.com`, which bypasses that proxy.
-Nothing here can fail the session start: failures land in
-`/var/log/dev_team-bootstrap.log` and `/var/log/dev_team-setup.log`, and the
-session hook reports them. `session-start.sh` pulls dev_team (so agent edits reach sessions
-without waiting for a cache rebuild), relinks, brings the tailnet up, and
-reports failed steps into Claude's context.
+`setup.sh`. That script links the agents and skills for every home on the
+VM, builds atd from source into `/usr/local/bin/atd`, installs the session
+hook, and optionally installs Playwright's Chromium and Godot. The VM's
+GitHub proxy only lets `git clone` reach repos attached to the session, so
+each fetch falls back to a `codeload.github.com` tarball of `main`
+(`cloud/fetch.sh`). The bootstrap itself comes from
+`raw.githubusercontent.com`, which bypasses that proxy. Nothing here can fail
+the session start: failures land in `/var/log/dev_team-bootstrap.log` and
+`/var/log/dev_team-setup.log`, and the session hook reports them.
 
-atd is built when the cache is built. To pick up a newer atd sooner, edit the
-setup script (any change, even a comment) to force a rebuild.
+The hook sits in the managed settings, not in the project, because of
+multi-repo sessions. With several repos attached, Claude starts in
+`/home/user` with each repo at `/home/user/<repo>`, added with `--add-dir`.
+Those repos' `CLAUDE.md` and skills load, but their `.claude/settings.json`
+hooks don't. `session-start.sh` therefore looks for work in the project
+directory and in each directory beneath it:
+
+- It links the agents from dev_team's session clone when dev_team is
+  attached, so edits on the session branch apply. Otherwise it uses
+  `/opt/dev_team`, refreshed from `main`, so agent edits reach sessions
+  without waiting for a cache rebuild.
+- It reports failed setup steps and atd's mode (below) into Claude's context.
+- It runs each `.claude/cloud-project.sh` it finds.
+
+atd is built from `main` when the cache is built. To pick up a newer atd
+sooner, edit the setup script (any change, even a comment) to force a
+rebuild.
+
+## atd without Ollama
+
+A cloud VM can't reach the desktop's Ollama, so atd runs without an LLM. Its
+offline commands (`lint`, `query`, `check`, `crawl`, `weave`, `trace`,
+`update`, `search --grep`) work as usual. `index` and `search --query` need
+embeddings and fail. `map`, `trace --summary`, `audit`'s bloat check,
+`congruence`, `compare`, `reconcile`, `check --semantic` and `fix` fall back
+to atd's `ide_agent` passthrough: they write the prompt they would have sent
+to `pipeline_output/` and Claude answers it itself. The agents' rules for
+this mode are in `references/atd-atoms.md` ("Without an LLM provider").
+Projects keep `pipeline_output/` in `.gitignore`.
 
 ## One cloud environment per project
 
@@ -44,11 +68,11 @@ are personal, so only you can read their variables.
 - **Setup script**
   ```bash
   curl -fsSL https://raw.githubusercontent.com/ecumeurs/dev_team/main/cloud/bootstrap.sh \
-    | bash -s -- --playwright 1.63.0 --tailscale
+    | bash -s -- --playwright 1.63.0
   ```
   Keep `--playwright` in step with `@playwright/test` in `package-lock.json`
-  (the session hook also runs `npx playwright install chromium`, so a stale
-  pin only costs a download).
+  (`cloud-project.sh` also runs `npx playwright install chromium`, so a
+  stale pin only costs a download).
 - **Network access**: Custom, with *Also include default list* checked, plus:
   ```text
   cdn.playwright.dev
@@ -56,27 +80,27 @@ are personal, so only you can read their variables.
   playwright.azureedge.net
   archive.ubuntu.com
   security.ubuntu.com
-  *.tailscale.com
-  tailscale.com
   ```
-- **Environment variables**: `TS_AUTHKEY=<key>` (see Tailscale below); leave
-  it out to run without Ollama.
-- **Repo files**: copy `cloud/projects/infinite_flow/.claude/*` into the repo's
-  `.claude/`, add the `tailnet` provider to `.atd` (Tailscale section), and push.
+- **Repos to attach**: infinite-flow. Attaching dev_team too makes the
+  session use its clone for the agents; Claude can then also edit and push
+  it, so tell it to stay in infinite_flow.
+- **Repo files**: `.claude/cloud-project.sh` (from
+  `cloud/projects/infinite_flow/`) and `pipeline_output/` in `.gitignore`.
 - **Out of reach in the cloud**: the dev container itself (the VM replaces it)
   and the Docker socket from the host. `docker compose up --build` still works,
   since the VM has its own Docker.
 
 ### slime_train
 
+Stays local for now. The template in `cloud/projects/slime_train/` is ready
+if that changes:
+
 - **Setup script**
   ```bash
   curl -fsSL https://raw.githubusercontent.com/ecumeurs/dev_team/main/cloud/bootstrap.sh \
-    | bash -s -- --godot 4.7.2 --godot-mirror kluthen/slime_train --tailscale
+    | bash -s -- --godot 4.7.2 --godot-mirror kluthen/slime_train
   ```
-- **Network access**: Custom, defaults included, plus `*.tailscale.com` and
-  `tailscale.com`.
-- **Environment variables**: `TS_AUTHKEY=<key>`, optional.
+- **Network access**: Trusted.
 - **Godot mirror**: the VM's GitHub proxy may refuse release assets from repos
   not attached to the session, which would block the official
   `godotengine/godot-builds` download. The fallback is a copy attached to a
@@ -87,63 +111,31 @@ are personal, so only you can read their variables.
     --title "Godot 4.7.2 (cloud session toolchain)" --notes "Headless Linux build for cloud sessions." --prerelease
   ```
   Only needed if the setup log shows the official download failing.
-- **Repo files**: copy `cloud/projects/slime_train/.claude/*` into the repo's
-  `.claude/`, add the `tailnet` provider to `.atd` (Tailscale section), and push.
+- **Repo files**: `.claude/cloud-project.sh` and `pipeline_output/` in
+  `.gitignore`.
 - **Out of reach in the cloud**: `make apk` and `make install` (no Android SDK,
   no phone). The native GDExtension is not built; it is outside the test
   suite anyway (`docs/dev/native.md`).
 
-## Tailscale, so atd reaches the desktop's Ollama
-
-`atd lint`, `check` and `query` run offline. `map`, `audit`, `search`,
-`trace`, `congruence`, `fix` and `index` call Ollama, which runs on the
-desktop `bastienbureau` (tailnet address `100.77.105.99`). The session joins
-the tailnet as an ephemeral node and atd reaches Ollama at that address.
-
-1. **Add a provider to the project's `.atd`**, after `remote` so the LAN
-   address still wins at home. Its longer timeout allows for the relayed
-   path from the cloud; away from home it also serves a laptop on the tailnet.
-   ```bash
-   jq '.llm.providers |= (.[:1] + [{"name": "tailnet", "base_url": "http://100.77.105.99:11434", "timeout_ms": 5000}] + .[1:])' .atd > .atd.new && mv .atd.new .atd
-   ```
-2. **Restrict the cloud nodes to Ollama only.** In the Tailscale policy file:
-   ```json
-   "tagOwners": { "tag:claude-cloud": ["autogroup:admin"] },
-   "hosts": { "bastienbureau": "100.77.105.99" },
-   "acls": [
-     { "action": "accept", "src": ["tag:claude-cloud"], "dst": ["bastienbureau:11434"] }
-   ]
-   ```
-   Merge this with your existing rules. Any rule that lets `*` reach everything
-   also lets the cloud VM reach your whole tailnet, so scope those to users or
-   tags first.
-3. **Generate an auth key** (Settings > Keys): **reusable**, **ephemeral**,
-   **pre-approved**, tag `tag:claude-cloud`. Put it in each environment as
-   `TS_AUTHKEY`.
-
-Nothing changes on the desktop: Ollama already answers on its tailnet address.
-
-In the VM, tailscaled runs in userspace mode (no TUN device needed) and
-reaches the control plane through the VM's HTTPS proxy, so traffic is
-relayed over DERP. Expect slower responses than on your LAN.
-
 ## Check the first session
 
-Ask Claude in the first session of each environment:
+The session's first context should carry the hook's `dev_team: …` lines and
+`infinite_flow: ready in …`. Then ask Claude:
 
-> List your available agent types and skills, then run `atd --version`,
-> `cat /opt/dev_team-status/*` and `atd search "test"`.
+> Print `pwd`. List your agent types and skills. Run `atd --version`,
+> `cat /opt/dev_team-status/*`, `tail -30 /var/log/dev_team-setup.log`,
+> `ls /tmp/dev_team-cloud/` and `atd lint`.
 
-- If the dev_team agents (coding-leader, documentalist, ...) are missing but
-  the hook said "agents at <sha>", Claude Code read the agent directory before
-  the hook linked it. Start a second session: the setup script links it for
-  root before Claude starts, which covers the cached case.
-- If `atd search` fails, read `/tmp/dev_team-cloud/tailscale-up.log`.
+- No `dev_team:` lines and no `/tmp/dev_team-cloud/`: the hook didn't run.
+  Check that `/etc/claude-code/managed-settings.json` holds it.
+- The hook ran but the dev_team agents (coding-leader, documentalist, ...)
+  are missing: Claude Code read the agent directory before any link
+  existed for its user. Start a second session; the setup script links every
+  home before Claude starts, which covers the cached case.
 
 ## Status
 
-Written 2026-09-29, not yet run in a cloud session. The parts that rely on
-unverified behavior are: user-level `~/.claude/agents` on the VM being loaded
-like local ones, `git clone` of public repos not attached to the session
-through the GitHub proxy, the Godot download path, and Tailscale over the VM's
-HTTPS proxy.
+Revised 2026-09-29 after the first real session, which showed the
+multi-repo layout and that the VM can't reach the desktop's Ollama. Still unverified in
+the cloud: the managed-settings hook, which user Claude runs as, and the
+codeload fallback for repos not attached to the session.

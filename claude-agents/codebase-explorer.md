@@ -58,6 +58,8 @@ plain language>"` (fall back to `atd query --field <field> --search <value>` for
 lead, or plain grep over `docs/*.atom.md` if the `atd` binary isn't available) to find atoms
 relevant to the query. If you've already pinned down a specific in-scope file, `atd map --file
 <path>` (no `--atom`, no `--new`) is a cheap read-only way to see if it's already linked to one.
+Without Ollama (cloud sessions), semantic search errors out and `map` only writes a prompt to
+`pipeline_output/`: use `atd query` and grep instead, and grep the file for `@spec-link` tags.
 
 This is a pointer, not a governance check: don't classify PROCEED/HALT, don't trace blast radius,
 don't judge drift between atom and code — that's documentalist's job. You're just surfacing what

@@ -1,45 +1,65 @@
 #!/usr/bin/env bash
-# Per-session half of the cloud setup, called by a project's SessionStart hook
-# (cloud/project-template/.claude/cloud-session-start.sh) in cloud sessions only.
+# The SessionStart hook of cloud sessions, installed by cloud/setup.sh in
+# /etc/claude-code/managed-settings.json so it runs whatever the working
+# directory: the project repo in a single-repo session, /home/user when
+# several repos are attached (each then sits in /home/user/<repo>).
 #
 # cloud/setup.sh runs once per cached environment (up to ~7 days old), so this
 # refreshes what must be current or can't survive the snapshot:
-#   - pulls dev_team, so agent and skill edits pushed since the cache was built
-#     reach new sessions, and relinks them for the user Claude runs as;
-#   - brings the tailnet up when TS_AUTHKEY is set (a running tailscaled is a
-#     process, which the snapshot doesn't keep);
-#   - reports any install that failed in the setup script.
+#   - links the agents from the freshest dev_team: the session's own clone
+#     when dev_team is attached (it carries the session branch), else
+#     /opt/dev_team, refreshed from main;
+#   - reports any install that failed in the setup script;
+#   - runs .claude/cloud-project.sh of the project directory and of each repo
+#     beneath it, for per-project steps (npm ci, ...).
 # Everything it prints lands in Claude's context, so it stays short.
 set -uo pipefail
+[ "${CLAUDE_CODE_REMOTE:-}" = true ] || exit 0
 
-DEV_TEAM_DIR=/opt/dev_team
+OPT_DEV_TEAM=/opt/dev_team
 STATUS_DIR=/opt/dev_team-status
 RUN_DIR=/tmp/dev_team-cloud
+PROJECT_DIR="${CLAUDE_PROJECT_DIR:-$PWD}"
 mkdir -p "$RUN_DIR"
 
-if [ ! -f "$DEV_TEAM_DIR/scripts/setup.sh" ]; then
+if [ ! -f "$OPT_DEV_TEAM/scripts/setup.sh" ]; then
 	echo "dev_team: not provisioned; see /var/log/dev_team-bootstrap.log and the environment's setup script (dev_team cloud/README.md)."
 	exit 0
 fi
 # shellcheck source=cloud/fetch.sh
-. "$DEV_TEAM_DIR/cloud/fetch.sh"
+. "$OPT_DEV_TEAM/cloud/fetch.sh"
 
-if [ -d "$DEV_TEAM_DIR/.git" ]; then
-	timeout 30 git -C "$DEV_TEAM_DIR" pull --ff-only --quiet >"$RUN_DIR/refresh.log" 2>&1 \
-		|| echo "dev_team: pull failed, using the cached copy ($(repo_version "$DEV_TEAM_DIR"))."
+# is_dev_team <dir>: the dir is a dev_team checkout.
+is_dev_team() { [ -f "$1/scripts/hookup.sh" ] && [ -d "$1/claude-agents" ]; }
+
+dev_team_dir=""
+for d in "$PROJECT_DIR" "$PROJECT_DIR"/*/; do
+	d="${d%/}"
+	is_dev_team "$d" && { dev_team_dir="$d"; break; }
+done
+
+if [ -n "$dev_team_dir" ]; then
+	dev_team_source="attached clone $dev_team_dir"
 else
-	# A tarball copy: fetch main again and swap the contents in place, so the
-	# ~/.claude links into $DEV_TEAM_DIR stay valid. Files are unlinked, not
-	# overwritten, so this script (read by bash from its open file) is safe.
-	if timeout 60 bash -c ". '$DEV_TEAM_DIR/cloud/fetch.sh' && fetch_repo ecumeurs/dev_team '$RUN_DIR/dev_team.new'" \
-		>"$RUN_DIR/refresh.log" 2>&1; then
-		find "$DEV_TEAM_DIR" -mindepth 1 -delete && cp -a "$RUN_DIR/dev_team.new/." "$DEV_TEAM_DIR/"
-		rm -rf "$RUN_DIR/dev_team.new"
+	dev_team_dir="$OPT_DEV_TEAM"
+	dev_team_source="$OPT_DEV_TEAM"
+	if [ -d "$OPT_DEV_TEAM/.git" ]; then
+		timeout 30 git -C "$OPT_DEV_TEAM" pull --ff-only --quiet >"$RUN_DIR/refresh.log" 2>&1 \
+			|| echo "dev_team: pull failed, using the cached copy ($(repo_version "$OPT_DEV_TEAM"))."
 	else
-		echo "dev_team: refresh failed, using the cached copy ($(repo_version "$DEV_TEAM_DIR")); see $RUN_DIR/refresh.log."
+		# A tarball copy: fetch main again and swap the contents in place, so the
+		# ~/.claude links into it stay valid. Files are unlinked, not
+		# overwritten, so this script (read by bash from its open file) is safe.
+		if timeout 60 bash -c ". '$OPT_DEV_TEAM/cloud/fetch.sh' && fetch_repo ecumeurs/dev_team '$RUN_DIR/dev_team.new'" \
+			>"$RUN_DIR/refresh.log" 2>&1; then
+			find "$OPT_DEV_TEAM" -mindepth 1 -delete && cp -a "$RUN_DIR/dev_team.new/." "$OPT_DEV_TEAM/"
+			rm -rf "$RUN_DIR/dev_team.new"
+		else
+			echo "dev_team: refresh failed, using the cached copy ($(repo_version "$OPT_DEV_TEAM")); see $RUN_DIR/refresh.log."
+		fi
 	fi
 fi
-"$DEV_TEAM_DIR/scripts/setup.sh" >"$RUN_DIR/hookup.log" 2>&1 \
+"$dev_team_dir/scripts/setup.sh" >"$RUN_DIR/hookup.log" 2>&1 \
 	|| echo "dev_team: linking agents failed, see $RUN_DIR/hookup.log."
 
 for f in "$STATUS_DIR"/*; do
@@ -47,29 +67,14 @@ for f in "$STATUS_DIR"/*; do
 		&& echo "dev_team: setup step '$(basename "$f")' failed; see /var/log/dev_team-setup.log and /var/log/dev_team-bootstrap.log."
 done
 
-# Tailnet, for atd's Ollama-backed commands (map, audit, search, trace, ...).
-if [ -n "${TS_AUTHKEY:-}" ] && command -v tailscaled >/dev/null 2>&1; then
-	sock="$RUN_DIR/tailscaled.sock"
-	socks=127.0.0.1:1055
-	if ! tailscale --socket="$sock" status >/dev/null 2>&1; then
-		# Userspace networking: no TUN device needed. tailscaled inherits the
-		# VM's HTTPS_PROXY, which carries its control and DERP traffic.
-		setsid nohup tailscaled --tun=userspace-networking --socks5-server="$socks" \
-			--state=mem: --socket="$sock" --statedir="$RUN_DIR/ts" --no-logs-no-support \
-			>"$RUN_DIR/tailscaled.log" 2>&1 &
-		sleep 1
-		host="claude-cloud-${CLAUDE_CODE_REMOTE_SESSION_ID:-session}"
-		timeout 45 tailscale --socket="$sock" up --authkey="$TS_AUTHKEY" \
-			--hostname="${host:0:60}" --timeout=40s >"$RUN_DIR/tailscale-up.log" 2>&1
-	fi
-	if tailscale --socket="$sock" status >/dev/null 2>&1; then
-		echo "socks5://$socks" >"$RUN_DIR/tailnet-proxy"
-		echo "dev_team: tailnet up; atd reaches Ollama through it."
-	else
-		rm -f "$RUN_DIR/tailnet-proxy"
-		echo "dev_team: tailnet failed ($RUN_DIR/tailscale-up.log); atd LLM commands (map, audit, search, trace) won't work."
-	fi
-fi
+echo "dev_team: agents from $dev_team_source ($(repo_version "$dev_team_dir")), atd $(cat /usr/local/lib/atd/VERSION 2>/dev/null || echo missing)."
+# No Ollama is reachable from a cloud VM.
+echo "dev_team: atd runs without an LLM here: semantic search and indexing fail, and map, trace --summary, audit, congruence and fix hand their prompts back to you. Follow \"Without an LLM provider\" in ~/.local/share/dev_team/references/atd-atoms.md."
 
-echo "dev_team: agents at $(repo_version "$DEV_TEAM_DIR"), atd $(cat /usr/local/lib/atd/VERSION 2>/dev/null || echo missing)."
+# Per-project steps. Each script runs from its own repo root.
+for d in "$PROJECT_DIR" "$PROJECT_DIR"/*/; do
+	d="${d%/}"
+	[ -f "$d/.claude/cloud-project.sh" ] || continue
+	(cd "$d" && bash .claude/cloud-project.sh)
+done
 exit 0

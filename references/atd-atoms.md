@@ -174,6 +174,38 @@ and everything that references them.
   that traces back to a BUSINESS-layer atom, never CONTRACT or VISION
   directly.
 
+## Without an LLM provider
+
+atd's LLM calls go to Ollama. When no provider in `.atd` answers (always in
+a cloud session, and at home whenever Ollama is down), atd falls back to its
+`ide_agent` passthrough. The signs are `Provider=ide_agent (IDE Fallback)`
+on stderr, `Task delegated to IDE Agent: …/pipeline_output/task_list.md` on
+stdout, or an error saying a command "requires a local or remote Ollama
+provider". Then you are the LLM, and each command falls in one of three groups:
+
+- **Unaffected** (no LLM): `lint`, `query`, `check` without `--semantic`,
+  `crawl`, `weave`, `stats`, `roadmap`, `config`, `update`,
+  `trace` without `--summary`, `search --grep`.
+- **No substitute** (embeddings): `index`, `search --query`, and the
+  collision half of `audit`. Search with `atd query --field <field> --search
+  <value>`, `atd search --grep "<term>" --scope docs|code` and grep over
+  `docs/*.atom.md`, trying the synonyms a semantic search would have caught.
+  Look for colliding atoms the same way, on the key nouns of the one you're
+  checking.
+- **Delegated**: `map`, `trace --summary`, `congruence`, `compare`,
+  `reconcile`, `check --semantic`, `fix`, and the bloat half of `audit`
+  (reported `PENDING_IDE`). atd writes the prompt it would have sent to
+  `pipeline_output/<name>.prompt` and lists it, with the expected output
+  schema, in `pipeline_output/task_list.md`. Read the prompt, which holds the
+  atom and code excerpts, and make the judgment yourself against that
+  schema. Nothing reads the answers back, so skip the `.result` files and
+  `atd continue`. `fix` splits nothing in this mode: split a bloated atom by
+  hand with `atd update`, under the same approval rules.
+
+In your report, mark those verdicts as your own judgment ("atd ran without
+an LLM"), not atd's. `pipeline_output/` is scratch: never commit it, and
+delete it when you're done.
+
 ## CLI quick reference
 
 When the `atd` MCP server is connected, prefer its tools: same operations,
