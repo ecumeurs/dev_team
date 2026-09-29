@@ -1,0 +1,106 @@
+#!/usr/bin/env bash
+# Provision a claude.ai/code cloud environment for the dev_team agent set.
+#
+# Paste into the environment's "Setup script" field (see cloud/README.md):
+#
+#   git clone --depth 1 https://github.com/ecumeurs/dev_team /opt/dev_team \
+#     && bash /opt/dev_team/cloud/setup.sh [--playwright VER] [--godot VER] [--tailscale]
+#
+# Runs as root on Ubuntu 24.04, before Claude Code starts. Its filesystem is
+# snapshotted and reused for about 7 days when it finishes in under ~5 minutes,
+# so the slow installs run in parallel. It always exits 0: a failed optional
+# install must not stop the session from starting; each failure is logged to
+# /var/log/dev_team-setup.log and reported again by cloud/session-start.sh.
+set -uo pipefail
+
+DEV_TEAM_DIR=/opt/dev_team
+ATD_REPO=https://github.com/ecumeurs/atd
+ATD_DIR=/opt/atd
+LOG=/var/log/dev_team-setup.log
+STATUS_DIR=/opt/dev_team-status
+
+playwright_version=""
+godot_version=""
+godot_mirror=""
+with_tailscale=false
+while [ $# -gt 0 ]; do
+	case "$1" in
+	--playwright) playwright_version="$2"; shift ;;
+	--godot) godot_version="$2"; shift ;;
+	--godot-mirror) godot_mirror="$2"; shift ;;
+	--tailscale) with_tailscale=true ;;
+	*) echo "cloud/setup.sh: unknown option $1" >&2 ;;
+	esac
+	shift
+done
+
+mkdir -p "$STATUS_DIR"
+: >"$LOG"
+
+# step <name> <function>: run one install, record ok/failed in $STATUS_DIR.
+step() {
+	local name="$1"; shift
+	if "$@" >>"$LOG" 2>&1; then
+		echo ok >"$STATUS_DIR/$name"
+	else
+		echo failed >"$STATUS_DIR/$name"
+		echo "cloud/setup.sh: $name failed, see $LOG" >&2
+	fi
+}
+
+link_dev_team() {
+	# Clone the agent set (the paste line already does it; this covers a re-run).
+	[ -d "$DEV_TEAM_DIR/.git" ] || git clone --depth 1 https://github.com/ecumeurs/dev_team "$DEV_TEAM_DIR"
+	# The session hook pulls as whatever user Claude runs as.
+	chmod -R a+rwX "$DEV_TEAM_DIR"
+	git config --system --add safe.directory "$DEV_TEAM_DIR"
+	"$DEV_TEAM_DIR/scripts/setup.sh"
+}
+
+build_atd() {
+	rm -rf "$ATD_DIR"
+	git clone --depth 1 "$ATD_REPO" "$ATD_DIR"
+	# cgo stays on: atd's store uses go-sqlite3.
+	mkdir -p /usr/local/lib/atd
+	(cd "$ATD_DIR/atd" && CGO_ENABLED=1 go build -trimpath -o /usr/local/lib/atd/atd ./cmd/atd)
+	git -C "$ATD_DIR" rev-parse --short HEAD >/usr/local/lib/atd/VERSION
+	install -m 0755 "$DEV_TEAM_DIR/cloud/atd-wrapper.sh" /usr/local/bin/atd
+}
+
+install_playwright() {
+	export PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+	npx -y "playwright@$playwright_version" install --with-deps chromium \
+		|| npx -y "playwright@$playwright_version" install chromium
+	chmod -R a+rX /ms-playwright
+}
+
+install_godot() {
+	local zip="Godot_v${godot_version}-stable_linux.x86_64.zip"
+	local tmp
+	tmp="$(mktemp -d)"
+	# The GitHub proxy only serves release assets of repos attached to the
+	# session, so the official build may 403. The fallback is a copy uploaded
+	# as a release asset of the project repo itself (cloud/README.md).
+	curl -fsSL -o "$tmp/$zip" \
+		"https://github.com/godotengine/godot-builds/releases/download/${godot_version}-stable/$zip" \
+		|| { [ -n "$godot_mirror" ] && gh release download "godot-$godot_version" -R "$godot_mirror" -p "$zip" -D "$tmp"; } \
+		|| return 1
+	unzip -o -q "$tmp/$zip" -d "$tmp"
+	install -m 0755 "$tmp/Godot_v${godot_version}-stable_linux.x86_64" /usr/local/bin/godot
+	rm -rf "$tmp"
+	godot --headless --version
+}
+
+install_tailscale() {
+	curl -fsSL https://tailscale.com/install.sh | sh
+}
+
+step dev_team link_dev_team
+step atd build_atd &
+[ -n "$playwright_version" ] && { step playwright install_playwright & }
+[ -n "$godot_version" ] && { step godot install_godot & }
+$with_tailscale && { step tailscale install_tailscale & }
+wait
+
+echo "cloud/setup.sh: done ($(cd "$STATUS_DIR" && grep -H . * | tr '\n' ' '))"
+exit 0
