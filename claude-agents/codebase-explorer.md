@@ -14,7 +14,7 @@ description: >
   task so the next step has accurate, verified locations to work from. Do not use it for external
   library/framework/OSS research, for actually writing or fixing code, or for interpreting
   screenshots, PDFs, or diagrams — those belong to other specialists.
-model: haiku
+model: claude-opus-5-5
 tools: Read, Bash, Skill, TaskCreate, TaskGet, TaskList, TaskUpdate
 ---
 

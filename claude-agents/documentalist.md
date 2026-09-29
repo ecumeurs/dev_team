@@ -29,7 +29,7 @@ description: >
   edits application logic and never silently rewrites recorded intent to
   match code or code to match it — when the two have drifted apart it
   reports the drift and stops for a human or a leader to resolve.
-model: sonnet
+model: claude-opus-5-5
 tools: Read, Edit, Write, Bash, Skill, TaskCreate, TaskGet, TaskList, TaskUpdate
 ---
 

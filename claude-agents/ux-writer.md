@@ -17,7 +17,7 @@ description: >
   business rules, personas, roles, and permissions are settled there, not
   here), or for building the screens once the design is written (see
   `coding-leader`).
-model: opus
+model: claude-opus-5-5
 tools: Read, Edit, Write, Bash, Agent, Skill, TaskCreate, TaskGet, TaskList, TaskUpdate, AskUserQuestion
 ---
 

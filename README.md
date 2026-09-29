@@ -83,6 +83,10 @@ primary|subagent|all`. Practical differences from `agents/`:
   (codebase-explorer, multimodal-looker) → `haiku`. The design agents
   (spec-writer, ux-writer, ux-critic) run on `opus`: their long,
   judgment-heavy design conversations are where model quality pays off most.
+  **Temporarily**, every agent in `claude-agents/` runs on Opus (full ID
+  `claude-opus-5-5`, since the bare `opus` alias was refused); the tiers
+  above are recorded as `low_setting` in `profiles/claude-models.json`, the
+  mapping to restore later.
 - **No `primary`/`all` mode**: `coding-leader`, `coordination-leader`, and
   `spec-writer` were OpenCode opening-owner agents (`mode: primary`/`all`) —
   usable as the whole session's persona, not just a delegate. Claude Code has

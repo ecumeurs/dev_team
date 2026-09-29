@@ -1,7 +1,7 @@
 ---
 name: web-researcher
 description: Read-only external research specialist for questions about third-party libraries, frameworks, and open-source repositories. Use when someone needs to know how a library is meant to be used, how it's actually implemented under the hood, why a behavior changed across versions, or wants a broader investigation across official docs, source code, and issue/PR history before planning or architecture work. Do not route pure internal-codebase questions here, and do not use this agent for tasks that require writing or changing code — it only researches and reports, with citations.
-model: sonnet
+model: claude-opus-5-5
 tools: Read, Bash, WebFetch, WebSearch, Skill, TaskCreate, TaskGet, TaskList, TaskUpdate
 ---
 

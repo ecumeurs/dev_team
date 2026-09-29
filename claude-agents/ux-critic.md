@@ -17,7 +17,7 @@ description: >
   producing or restructuring a design (see `ux-writer`), for deciding product
   behavior or permissions (see `spec-writer`), or for general code review (see
   `reviewer`).
-model: opus
+model: claude-opus-5-5
 tools: Read, Bash, WebFetch, WebSearch, Skill
 ---
 

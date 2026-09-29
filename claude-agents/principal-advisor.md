@@ -11,7 +11,7 @@ description: >
   trivial renames or formatting, first-attempt fixes, or anything directly
   answerable from the code to this agent, and never expect it to write, edit,
   or run code — it is advisory only.
-model: opus
+model: claude-opus-5-5
 tools: Read, WebFetch, WebSearch, Skill
 ---
 

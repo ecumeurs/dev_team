@@ -1,7 +1,7 @@
 ---
 name: multimodal-looker
 description: Use this agent when a screenshot, PDF, chart, diagram, or other non-text-native artifact needs to be read and only the relevant content pulled out of it — e.g. "pull the results table out of chapter 2 of this PDF," "tell me what this screenshot's UI layout and error text say," "explain what this architecture diagram shows about module boundaries," or "read the trend and key values off this chart." Do not use it for verbatim transcription of plain-text/source files, for files that will subsequently be edited (get literal content some other way first), or for a plain file read that needs no interpretation.
-model: haiku
+model: claude-opus-5-5
 tools: Read
 ---
 

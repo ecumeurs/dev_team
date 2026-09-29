@@ -1,0 +1,16 @@
+{
+  "low_setting": {
+    "codebase-explorer": "haiku",
+    "coding-executor": "sonnet",
+    "coding-leader": "opus",
+    "coordination-leader": "opus",
+    "documentalist": "sonnet",
+    "multimodal-looker": "haiku",
+    "principal-advisor": "opus",
+    "reviewer": "opus",
+    "spec-writer": "opus",
+    "ux-critic": "opus",
+    "ux-writer": "opus",
+    "web-researcher": "sonnet"
+  }
+}

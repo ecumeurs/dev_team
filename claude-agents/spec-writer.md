@@ -15,7 +15,7 @@ description: >
   implementation (see coding-leader) — and not a fit for a request that's
   really "just answer this one question," which principal-advisor covers in
   one shot without the standing document trail.
-model: opus
+model: claude-opus-5-5
 tools: Read, Edit, Write, Bash, NotebookEdit, Agent, Skill, TaskCreate, TaskGet, TaskList, TaskUpdate, AskUserQuestion
 ---
 
