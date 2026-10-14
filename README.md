@@ -55,6 +55,11 @@ skills/             Agent Skills (SKILL.md per subdirectory) holding a single
                     the agent whose core file names it (each skills/<name>/
                     is symlinked individually into ~/.claude/skills/<name>/,
                     which OpenCode also discovers natively)
+misc/               Kept material that setup does not install: currently
+                    secret-safe-authoring/, a skill against writing
+                    secret-shaped strings (real or fake) that a DLP proxy
+                    would block on every later turn; link it into
+                    ~/.claude/skills/ by hand where wanted
 ```
 
 ## The Claude Code fork (`claude-agents/`)
