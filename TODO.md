@@ -6,3 +6,7 @@
   - checker script for the register (the format's consistency checks, run at the end of every skill), shipped inside a skill folder
   - maybe split `references/data-register.md` per file, so each skill reads only the formats it writes
   - try it: cold start on a real repo with personal data
+- [ ] Build plans (wave model): written for `claude-agents/` and the skills (`references/build-plan-model.md`, skills `build-plan-authoring` and `wave-execution`, coding-leader chunk mode, documentalist wave mode, data-steward once per version).
+  - port the same changes to `agents/` (OpenCode)
+  - migrate infinite_flow's v3 plans onto the model, when the owner asks: one shared workflow instead of four §3 copies, a status line per chunk, a wave log for the wave records, waves of v3.1–v3.3 re-formed (v3.1's chunk 16 back to wave 5, v3.2's waves 5, 10 and 11, v3.3's wave 6)
+  - try it on the next wave and review the chunk brief

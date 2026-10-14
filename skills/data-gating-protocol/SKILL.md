@@ -55,6 +55,23 @@ cheap.
    its preflight returned, which proposed measures were built and which
    were not, and anything the user decided along the way.
 
+## Under a build plan: once per version
+
+When the work is a chunk or a wave of a build plan
+(`specs/versions/<v>/build-plan*.md`), the gate runs once for the whole
+version, per "Data register" in
+`~/.local/share/dev_team/references/build-plan-model.md`:
+
+- `spec-writer` calls the data preflight on the draft plan and writes its
+  result into the plan: `@data` IDs and adopted measures on each chunk's
+  **Data** line, human decisions and declined measures in the gates table.
+- The wave driver calls one post-task sync over the release's diff at the
+  release gate.
+- A chunk owner calls neither. It builds the chunk's **Data** line and
+  places its `@data` tags. When a chunk turns out to add data that line
+  doesn't cover, or an inserted chunk adds data, the driver gets a peek
+  before that part is built.
+
 ## Acting on the verdict
 
 - **CLEAR**: carry the entry IDs it gives into the work and the handoff,

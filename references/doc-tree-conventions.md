@@ -46,10 +46,13 @@ specs/
       README.md             the version's scope and status
       master-spec.md        the consolidated deliverable for that version
       access-model.md       its companion, when there is more than one kind of user
+      build-plan.md         the version's build plan (build-plan-<release>.md when it ships as several releases)
+      wave-log.md           the build's execution record, kept by the wave driver (wave-log-<release>.md beside a per-release plan)
 ```
 
 A project without versions keeps `master-spec.md` and `access-model.md` at
-the `specs/` root. Standing documents, which describe the product rather than
+the `specs/` root. The build plan's format is `build-plan-model.md` in this
+directory. Standing documents, which describe the product rather than
 one milestone (`personas.md`, a vision), live at the root and are never
 archived.
 

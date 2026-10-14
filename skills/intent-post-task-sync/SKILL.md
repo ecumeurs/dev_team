@@ -63,3 +63,13 @@ and report drift without resolving it.
    register, since a tag change anywhere can dangle.
 7. **Report** status changes, tags added, entries recorded or retired, and —
    most importantly — every drift you flagged and did not resolve yourself.
+
+## Wave sync — once for a build-plan wave
+
+Called by a wave driver after the wave gate's tests have run (see "Under a
+build plan: wave mode"). Scope the diff from the wave branch's base on
+`main`. The driver names each merged chunk's **Revisions**: these were
+approved with the plan, so apply them as confirmed changes, still through
+the backend's own guards and the Vision and Contract gates. Anything the
+diff changed beyond them is classified as usual, drift included. Report per
+chunk, so the driver can trace a finding to its chunk.

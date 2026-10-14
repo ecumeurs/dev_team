@@ -110,7 +110,7 @@ primary|subagent|all`. Practical differences from `agents/`:
 |---|---|---|---|
 | `coding-leader` | primary | `gpt-5.6-sol` | Default owner for most coding work; holds context end-to-end. |
 | `coordination-leader` | all | `gpt-5.6-sol` | Alternate opening owner for highly ambiguous / multi-task requests that need scoping before implementation starts. |
-| `spec-writer` | all | `gpt-5.6-terra` | Ideation/specification partner for unscoped future work — turns a rough idea into a spec `coding-leader` can build from. |
+| `spec-writer` | all | `gpt-5.6-terra` | Ideation/specification partner for unscoped future work — turns a rough idea into a spec `coding-leader` can build from — and, once a version's master spec is approved, author and keeper of its build plan. |
 | `coding-executor` | subagent | `gpt-5.6-terra` | Bounded leaf implementation once scope is clear. |
 | `codebase-explorer` | subagent | `gpt-5.6-luna` | Read-only: locates code, call chains, existing patterns. |
 | `web-researcher` | subagent | `gpt-5.6-terra` | Read-only: external docs, library/version behavior, OSS references. |
@@ -135,6 +135,26 @@ pay-per-token API path returns "insufficient balance / no resource package".
 natively vision-capable). To switch: add a `glm-5v-turbo` model block to
 `config/litellm/config.yaml` pointed at `https://api.z.ai/api/paas/v4` once
 the z.ai plan/balance side is sorted, then flip this agent's `model:` field.
+
+## Build plans: building a version wave by wave
+
+A version whose master spec is approved is built from a **build plan**:
+numbered chunks grouped into waves. A wave is a gate batch. Its chunks share
+one intent preflight at the start, one full test pass and one post-task sync
+at the end, and one merge into `main`; each chunk checks only its own
+change. How many chunks run at once (κ) is a cost setting, 1 by default.
+The model is `references/build-plan-model.md`.
+
+| Who | Does | With |
+|---|---|---|
+| `spec-writer` | Writes the plan, forms the waves, writes every ruling and move into it. | skill `build-plan-authoring` |
+| Wave driver (your top-level session, or `coordination-leader` when asked) | Runs each wave: branches, the wave preflight, one `coding-leader` per chunk with a standard brief, the wave gate, the sync, the report, the merge on the owner's word. Keeps the wave log. | skill `wave-execution` |
+| `coding-leader`, chunk mode | Builds one chunk: tests first, writes the code itself, chunk checks only, one commit merged into the wave branch. No preflight, no re-planning. | its "Chunk mode" section |
+| `documentalist`, wave mode | One preflight per wave (a verdict per chunk) with the wave's captures; one sync per wave, applying the plan's approved revisions. | its preflight, capture and sync skills |
+| `data-steward` | Once per version: a preflight on the draft plan, a sync at the release gate. | `data-preflight`, `data-post-task-sync` |
+
+To start one, ask `spec-writer` to write the build plan for an approved master spec;
+then, from your top-level session, ask to run wave 1 with skill `wave-execution`.
 
 ## Intent guardrail: ATD or the intent register
 
@@ -322,6 +342,8 @@ questions and separation-of-duties patterns are
 - **Gates.** When a plan touches data (a new field or store, user data in
   logs or analytics, a third party, a new use of personal data, a new
   access path), the leader calls a data preflight before finalizing it.
+  Under a build plan, the gate runs once per version instead: on the draft
+  plan, and at the release gate.
   The verdict is `CLEAR`, `MEASURES-PROPOSED` (build them in, or tell the
   user which were left out) or `NEEDS-HUMAN-DECISION` (ask the user before
   building that part). A post-task sync records what was built.

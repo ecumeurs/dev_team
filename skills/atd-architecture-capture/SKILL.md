@@ -50,3 +50,10 @@ exists.
    `coding-executor` handoff as context — this is what lets the
    atd-post-task-sync skill, once code lands, add `@spec-link` to an atom
    that already exists instead of inventing one from the diff.
+
+## Under a build plan
+
+The captures for a wave run in the wave preflight's call, from each chunk's
+**Architecture capture** line, before any chunk starts, and are committed on
+the wave branch the driver names. Report each capture's ID against its
+chunk, so the driver carries it into that chunk's brief.

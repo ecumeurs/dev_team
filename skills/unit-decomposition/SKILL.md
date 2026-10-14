@@ -1,6 +1,6 @@
 ---
 name: unit-decomposition
-description: Use when coding-leader or coordination-leader is turning a settled implementation plan into coding-executor handoffs, to size the work into independently-dispatchable units and sequence them into parallel/sequential waves instead of one oversized brief. Shared by both leaders — the decomposition method is identical regardless of which one is driving the task.
+description: Use when coding-leader or coordination-leader is turning a settled implementation plan into coding-executor handoffs, to size the work into independently-dispatchable units and sequence them into parallel/sequential batches instead of one oversized brief. Not for a build-plan chunk handed to a leader in chunk mode — the chunk is already sized; only its own split rule applies. Shared by both leaders — the decomposition method is identical regardless of which one is driving the task.
 ---
 
 # Unit Decomposition (for leaders)
@@ -17,7 +17,7 @@ itself between dispatches that its own context bloats instead.
 A unit is one `coding-executor` assignment. Before dispatching it, check all
 five:
 
-1. **File-disjoint within its wave** — no two units running at the same time
+1. **File-disjoint within its batch** — no two units running at the same time
    touch the same file. This is what makes parallel dispatch safe; if two
    candidate units share a file, they're one unit, or need re-splitting along
    a different seam.
@@ -54,34 +54,40 @@ mid-execution.
    feature/module boundaries, disjoint file groups. Never split a single
    cohesive change (one function, one file, one tightly-coupled edit) across
    two units just to have more units.
-4. Arrange units into **waves**: a topological layering of the dependency
-   graph. Wave 1 has no unresolved dependencies; wave 2 depends only on units
-   in wave 1; and so on.
+4. Arrange units into **batches**: a topological layering of the dependency
+   graph. Batch 1 has no unresolved dependencies; batch 2 depends only on
+   units in batch 1; and so on. (A build plan's *waves* are a different
+   thing: gate batches of whole chunks, defined in
+   `~/.local/share/dev_team/references/build-plan-model.md`. Never call
+   these units' batches waves.)
 
-## Dispatching a wave
+## Dispatching a batch
 
-Within a wave, dispatch one `coding-executor` per unit in the same batch —
-they're file-disjoint by construction, so there's no coordination cost to
-running them in parallel. Across waves, dispatch sequentially: don't start
-wave N+1 until wave N's units have reported their own completion.
+Within a batch, dispatch one `coding-executor` per unit, up to the
+concurrency your brief or the user set (when none is set, the whole batch
+at once) — they're file-disjoint by construction, so there's no
+coordination cost to running them in parallel. With a limit of 1, run the
+batch's units one after another. Across batches, dispatch sequentially:
+don't start batch N+1 until batch N's units have reported their own
+completion.
 
-## Crossing wave boundaries: trust the unit's own gate, verify only on failure
+## Crossing batch boundaries: trust the unit's own gate, verify only on failure
 
 Each unit's `coding-executor` already runs its own completion gate
 (diagnostics/build/tests scoped to what it touched) before reporting done —
 that already checks it against its own contract. Don't duplicate that by
-re-running a full diagnostic or test pass over the whole wave yourself before
+re-running a full diagnostic or test pass over the whole batch yourself before
 starting the next one; that's exactly the kind of leader-side bloat this
 skill exists to avoid.
 
-Move to the next wave once every unit in the current one reports its own
+Move to the next batch once every unit in the current one reports its own
 gate passed. Step in yourself only when a failure actually surfaces:
 
-- **A unit in the current wave fails its own gate**: that's this unit's
+- **A unit in the current batch fails its own gate**: that's this unit's
   problem — feed the failure back into the same dispatch (a fresh
   `coding-executor` call carrying the failure evidence), don't widen scope
   to fix it yourself.
-- **A downstream wave's unit fails because an upstream contract wasn't
+- **A downstream batch's unit fails because an upstream contract wasn't
   actually honored** (the type doesn't match, the endpoint isn't there, the
   migration didn't run): that's new evidence a unit's own gate couldn't have
   caught, since it can't see the future. Trace it to the offending unit,
@@ -89,9 +95,10 @@ gate passed. Step in yourself only when a failure actually surfaces:
   that surfaced the failure.
 
 The leader's own end-of-task completion gate — the full diagnostics/tests/
-build pass already required by your own operating instructions — still runs
-once, at the very end, across the whole change. That's the real integration
-check; per-wave gating stays reactive, not exhaustive.
+build pass already required by your own operating instructions, or the
+verification level your brief set — still runs once, at the very end,
+across the whole change. That's the real integration check; per-batch
+gating stays reactive, not exhaustive.
 
 ## When not to fan out
 
@@ -107,9 +114,9 @@ once a plan is real.
 ## How this fits your delegation identity
 
 You still hold the plan and the final verification. Dispatching a
-wave-ordered set of `coding-executor` calls instead of one oversized brief is
+batch-ordered set of `coding-executor` calls instead of one oversized brief is
 the same "delegate bounded leaf work" pattern you already use — applied
 deliberately to several bounded pieces from one plan, instead of assumed to
 be exactly one. It is not a license to become a pure dispatcher: you still
-own forming the units, sequencing the waves, and running the final
+own forming the units, sequencing the batches, and running the final
 integration gate yourself.

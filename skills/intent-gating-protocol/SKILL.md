@@ -70,6 +70,28 @@ IDs in an `intent/` repo.
    diff from), the governing entry IDs, and anything the user confirmed or
    rejected along the way.
 
+## Under a build plan: gate per wave, not per task
+
+When the work is a chunk or a wave of a build plan
+(`specs/versions/<v>/build-plan*.md`), the five calls above move from the
+task to the wave, per "Intent gating under a plan" in
+`~/.local/share/dev_team/references/build-plan-model.md`:
+
+- **The wave driver** calls documentalist once at the wave's start for a
+  wave preflight (a full pass over every chunk's Atoms and Files, a verdict
+  per chunk) together with every architecture capture the wave's chunks
+  name, and once after the wave gate's tests for one post-task sync over
+  the wave's diff, which applies the merged chunks' planned Revisions.
+- **A chunk owner** (coding-leader in chunk mode) runs no preflight, capture
+  or sync. Its brief carries the chunk's verdict, governing entries and
+  capture IDs. It calls documentalist only for a peek when it meets an entry
+  that contradicts the chunk, or an architectural decision nobody captured,
+  and reports either one to the driver instead of resolving it.
+- **An inserted chunk** gets a peek over its files before it starts.
+
+A wave preflight's halt stops the chunk it concerns, not the wave. The
+verdicts below mean the same thing per chunk.
+
 ## Acting on the verdict
 
 - **PROCEED** — carry the governing entry IDs forward as context for the
@@ -107,7 +129,8 @@ match the code just to clear the finding.
 ## If you delegate execution
 
 Never hand off to an executor (`coding-executor` or equivalent) — not even on
-the trivial path — without at least a peek first. A clean handoff needs to
+the trivial path — without at least a peek first (under a build plan, the
+wave preflight's verdict for the chunk is that check). A clean handoff needs to
 reflect a PROCEED or PROCEED-WITH-SIGNOFF-PENDING verdict, and, if one was
 obtained, the architecture-capture entry ID(s), not skip either question. In
 an `intent/` repo, the handoff also tells the executor to put an

@@ -113,3 +113,16 @@ radius your role exists to catch. Collapse D1+D2 into one lightweight call:
    "no governing atom, none plausible, nothing to infer, low-risk mechanical
    change" note) is sufficient — this is meant to be cheap, not a rerun of
    the full workflow.
+
+## Wave preflight — one pass for a build-plan wave
+
+Called by a wave driver at the start of a wave (see "Under a build plan:
+wave mode" in your core instructions). Run D1 once per chunk from its
+**Atoms** line and description, then D2 once over the union of all the
+wave's chunks' **Files**, so each file is mapped and traced once. Classify
+each chunk on the usual scale and report a table: chunk, verdict, governing
+entries, sign-offs pending, what a halt needs. A halt stops its chunk only;
+never escalate one chunk's halt to the wave. Plan corrections you find (a
+wrong **Atoms** line, a missing **Revisions** item, a **Files** line the code
+contradicts) are listed for the driver to pass to `spec-writer`. Then run
+the wave's architecture captures in the same call.
