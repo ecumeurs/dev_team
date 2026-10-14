@@ -57,7 +57,7 @@ link_dev_team() {
 	for home in /root /home/*; do
 		[ -d "$home" ] || continue
 		HOME="$home" "$DEV_TEAM_DIR/scripts/setup.sh" || return 1
-		[ "$home" = /root ] || chown -hR --reference="$home" "$home/.claude" "$home/.config" "$home/.codex" "$home/.local" || true
+		[ "$home" = /root ] || chown -hR --reference="$home" "$home/.claude" "$home/.config" "$home/.local" || true
 	done
 }
 

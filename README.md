@@ -1,7 +1,7 @@
 # dev_team
 
 Git-tracked source of truth for this machine's coding-agent personas: a small
-"Coding Team" ported across OpenCode, Claude Code, and Codex, plus the
+"Coding Team" ported across OpenCode and Claude Code, plus the
 OpenCode provider config.
 
 ## Why this exists
@@ -44,9 +44,6 @@ agents/            OpenCode native agent definitions (symlinked from
                     ~/.config/opencode/agents/)
 claude-agents/      Claude Code subagent definitions, ported from agents/
                     (symlinked from ~/.claude/agents/ — user-scoped, all
-                    projects on this machine)
-codex-agents/       Codex custom-agent definitions, ported from claude-agents/
-                    (symlinked from ~/.codex/agents/ — user-scoped, all
                     projects on this machine)
 opencode/
   opencode.jsonc    the live OpenCode config (symlinked from
@@ -107,69 +104,25 @@ primary|subagent|all`. Practical differences from `agents/`:
   are needed in the matching `claude-agents/*.md` file; there's no automated
   sync between the two.
 
-## The Codex fork (`codex-agents/`)
-
-`codex-agents/` is a Codex-native port of the same team for Codex custom
-agents (`~/.codex/agents/*.toml`). The files are generated from the
-Claude Code port because that dialect is already closest to Codex's custom
-agent shape: each persona has a `name`, `description`, model choice, optional
-`sandbox_mode`, and `developer_instructions`.
-
-Practical differences from the other two dialects:
-
-- **Schema**: Codex custom agents are standalone TOML config layers, not
-  Markdown files with YAML frontmatter. The required fields are `name`,
-  `description`, and `developer_instructions`; other Codex config keys such as
-  `model`, `model_reasoning_effort`, and `sandbox_mode` can be added per
-  persona.
-- **No OpenCode `primary` / `all` mode**: all files in `codex-agents/` are
-  custom agents that Codex can spawn or refer to. They do not replace the main
-  session persona automatically. For main-thread behavior, put durable guidance
-  in a repo or global `AGENTS.md`; for a one-off run, ask Codex in the prompt
-  to work in a specific style.
-- **Models**: the Claude model tiers are mapped to current OpenAI Codex models:
-  `opus` roles use `gpt-5.6` with high reasoning, `sonnet` roles use
-  `gpt-5.6-terra` with medium reasoning, and `haiku` roles use
-  `gpt-5.6-luna` with low reasoning. Adjust the TOML files if your Codex
-  account or environment exposes a different model catalog.
-- **Permissions**: Codex subagents inherit the parent turn's available tools and
-  approval policy. Read-only personas additionally set `sandbox_mode =
-  "read-only"` where the original role was advisory, review-only, research-only,
-  or visual-inspection-only.
-- **Official basis**: this follows OpenAI Docs for Codex custom agents and
-  `AGENTS.md`. The relevant public docs are "Subagents" and "Custom
-  instructions with AGENTS.md" in the Codex manual.
-- **No skill invocation**: unlike `agents/` and `claude-agents/`, personas here
-  keep their workflow procedures fully inline in `developer_instructions`
-  rather than pointing at `skills/` with "invoke skill `name`". Codex has no
-  per-persona tool/skill allowlist to gate it (see Permissions above) and no
-  confirmed mechanism for reading `~/.claude/skills` at all, so a skill
-  pointer here would reference something the agent may have no way to load.
-  Keep this port fully self-contained until Codex documents real skill
-  support, then extract the same sections `agents/`/`claude-agents/` already
-  did.
-- **Lags on declared intent**: this port still has a separate
-  `intent-keeper` for the register and the older all-inline `documentalist`.
-  The other two ports merged both into one `documentalist` (see "Who owns
-  it" below). Port that change here before relying on Codex in a register
-  repo.
-
 ## The team
 
-| Agent | OpenCode mode | Codex model | Role |
+| Agent | OpenCode mode | OpenCode model | Role |
 |---|---|---|---|
-| `coding-leader` | primary | `gpt-5.6` | Default owner for most coding work; holds context end-to-end. |
-| `coordination-leader` | all | `gpt-5.6` | Alternate opening owner for highly ambiguous / multi-task requests that need scoping before implementation starts. |
+| `coding-leader` | primary | `gpt-5.6-sol` | Default owner for most coding work; holds context end-to-end. |
+| `coordination-leader` | all | `gpt-5.6-sol` | Alternate opening owner for highly ambiguous / multi-task requests that need scoping before implementation starts. |
 | `spec-writer` | all | `gpt-5.6-terra` | Ideation/specification partner for unscoped future work — turns a rough idea into a spec `coding-leader` can build from. |
 | `coding-executor` | subagent | `gpt-5.6-terra` | Bounded leaf implementation once scope is clear. |
 | `codebase-explorer` | subagent | `gpt-5.6-luna` | Read-only: locates code, call chains, existing patterns. |
 | `web-researcher` | subagent | `gpt-5.6-terra` | Read-only: external docs, library/version behavior, OSS references. |
-| `reviewer` | subagent | `gpt-5.6` | Independent OKAY/REJECT review gate before closing non-trivial work. |
-| `principal-advisor` | subagent | `gpt-5.6` | High-stakes architecture/perf/security/complexity judgment calls. |
+| `reviewer` | subagent | `gpt-5.6-sol` | Independent OKAY/REJECT review gate before closing non-trivial work. |
+| `principal-advisor` | subagent | `gpt-5.6-sol` | High-stakes architecture/perf/security/complexity judgment calls. |
 | `multimodal-looker` | subagent | `gpt-5.6-luna` | Reads screenshots, PDFs, diagrams, UI images. |
 | `documentalist` | subagent | `gpt-5.6-terra` | Owns the repo's declared intent in either backend (ATD atoms or the `intent/` register) and runs the intent gates. |
 | `ux-writer` | subagent | `gpt-5.6-terra` | Designs UI/UX document trees and token guidance before implementation. |
-| `ux-critic` | subagent | `gpt-5.6` | Read-only UI/UX validator and critique specialist. |
+| `ux-critic` | subagent | `gpt-5.6-sol` | Read-only UI/UX validator and critique specialist. |
+
+Codex support was dropped: `codex-agents/` is gone, and setup removes the
+old `~/.codex/agents` link if it still points here.
 
 ### multimodal-looker model note
 
@@ -314,7 +267,7 @@ is no second agent set and no install-time variant:
 - **Hand sync stays flat.** Backend-specific text lives only in the two
   manuals and the two skill families. Every shared agent carries one backend-neutral pointer, so
   editing a leader updates both modes. A duplicated set would double the
-  work on top of the three ports.
+  work on top of the two ports.
 - **ATD behavior is unchanged.** `documentalist`'s ATD rules moved,
   unchanged in substance, into `references/atd-atoms.md`, and the `atd-*`
   skills point there. The leaders' skill `atd-gating-protocol` became
@@ -323,8 +276,7 @@ is no second agent set and no install-time variant:
   entry inferred at preflight needs sign-off.
 - **An install-time variant costs more than it saves.** The agent
   directories are linked as whole directories. A variant would need
-  per-file links, and Codex inlines skills, so each variant would need full
-  TOML copies.
+  per-file links.
 - **No ATD tooling is needed.** Without `.atd`, no agent calls `atd`. A
   machine without `atd` runs the register backend as is, apart from the
   `mcp.atd` entry in `opencode/opencode.jsonc`, which the scripts don't
@@ -337,14 +289,14 @@ unless you ask for ATD). After that, the leaders gate every task on their own.
 
 ## Editing
 
-Edit files here directly. `agents/`, `claude-agents/`, and `codex-agents/` are
+Edit files here directly. `agents/` and `claude-agents/` are
 live through user-scope symlinks after setup, so changes take effect on the
-next OpenCode, Claude Code, or Codex invocation with no extra sync step. Commit
+next OpenCode or Claude Code invocation with no extra sync step. Commit
 as usual.
 
 When updating a persona, edit the source dialect intentionally and then port
 the same behavioral change to the other dialects by hand. There is no
-automated sync between `agents/`, `claude-agents/`, and `codex-agents/`.
+automated sync between `agents/` and `claude-agents/`.
 
 A skill in `skills/` holds one workflow's full step-by-step procedure, kept
 out of an agent's always-loaded core file and pulled in on demand instead —
@@ -369,7 +321,6 @@ This creates or refreshes these symlinks:
 ```text
 ~/.config/opencode/agents -> agents/
 ~/.claude/agents          -> claude-agents/
-~/.codex/agents           -> codex-agents/
 ```
 
 It also publishes shared reference docs here:
@@ -387,8 +338,7 @@ doesn't manage:
 ```
 
 OpenCode discovers `~/.claude/skills` natively, so this single location makes
-every skill available to OpenCode, Claude Code, and (if it later reads that
-path) Codex alike — no separate OpenCode-specific skills target is needed.
+every skill available to both OpenCode and Claude Code — no separate OpenCode-specific skills target is needed.
 
 The installer is idempotent. If a target already exists as a real directory or
 file, it refuses to touch it and tells you to move that content aside manually.
@@ -411,7 +361,7 @@ To remove the agent symlinks:
 scripts/teardown.sh
 ```
 
-This removes the OpenCode, Claude Code, and Codex agent symlinks, and every
+This removes the OpenCode and Claude Code agent symlinks, and every
 per-skill symlink teardown finds under `~/.claude/skills` that points back
 into this repo's `skills/` directory, including links to skills since renamed
 or removed (any other skill living there is left
@@ -425,40 +375,6 @@ The legacy name still works:
 ```bash
 scripts/hookoff.sh
 ```
-
-## Codex usage
-
-After setup, start a fresh Codex session so it rescans `~/.codex/agents`.
-
-To use a persona for a delegated task, name it directly:
-
-```text
-Use the reviewer agent to review this implementation claim.
-```
-
-```text
-Spawn codebase-explorer to map where authentication is implemented, then report
-the relevant files and call chain.
-```
-
-```text
-Have spec-writer turn this feature idea into a buildable spec before any code
-changes.
-```
-
-In the Codex CLI, use `/agent` while subagents are running to inspect or switch
-between agent threads. A custom agent is still a spawned agent, not the
-automatic top-level personality of the main thread. If you want the current
-main thread to behave like a persona for one task, say so in the prompt:
-
-```text
-For this task, work in the coding-leader style: hold main context, delegate only
-bounded research, and verify before reporting completion.
-```
-
-For durable main-thread guidance across a repository, add an `AGENTS.md` file
-to that repository. For durable personal guidance across repositories, use
-`~/.codex/AGENTS.md`.
 
 ## Toggling the team on/off
 

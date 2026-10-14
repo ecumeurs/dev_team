@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Turn the dev_team agent set OFF for all supported harnesses: remove the
-# ~/.config/opencode/agents, ~/.claude/agents, and ~/.codex/agents symlinks so
+# ~/.config/opencode/agents and ~/.claude/agents symlinks so
 # each falls back to its own stock agents. Idempotent, and only ever removes
 # symlinks — real content in any location is left untouched.
 #
@@ -41,7 +41,17 @@ remove_link() {
 
 remove_link "$HOME/.config/opencode/agents" "OpenCode"    || failed=1
 remove_link "$HOME/.claude/agents"          "Claude Code" || failed=1
-remove_link "$HOME/.codex/agents"           "Codex"       || failed=1
+
+# Codex support was dropped. Remove the ~/.codex/agents link an earlier setup
+# placed, but only if it still points into this repo.
+if [ -L "$HOME/.codex/agents" ]; then
+  case "$(readlink "$HOME/.codex/agents")" in
+    "$REPO_DIR/codex-agents"*)
+      rm "$HOME/.codex/agents"
+      echo "Codex: removed legacy link $HOME/.codex/agents (Codex is no longer supported)"
+      ;;
+  esac
+fi
 
 if [ -d "$REPO_DIR/skills" ]; then
   for skill_dir in "$REPO_DIR/skills"/*/; do

@@ -2,7 +2,6 @@
 # Turn the dev_team agent set ON for all supported harnesses:
 #   ~/.config/opencode/agents -> repo agents/        (OpenCode dialect)
 #   ~/.claude/agents          -> repo claude-agents/ (Claude Code dialect)
-#   ~/.codex/agents           -> repo codex-agents/  (Codex custom agents)
 # Idempotent. hookoff.sh removes them again.
 #
 # Also publishes references/ to ~/.local/share/dev_team/references, the stable
@@ -56,7 +55,17 @@ ensure_link() {
 ensure_link "$REPO_DIR/references"    "$HOME/.local/share/dev_team/references" "References"   || failed=1
 ensure_link "$REPO_DIR/agents"        "$HOME/.config/opencode/agents"          "OpenCode"     || failed=1
 ensure_link "$REPO_DIR/claude-agents" "$HOME/.claude/agents"                   "Claude Code"  || failed=1
-ensure_link "$REPO_DIR/codex-agents"  "$HOME/.codex/agents"                    "Codex"        || failed=1
+
+# Codex support was dropped. Remove the ~/.codex/agents link an earlier setup
+# placed, but only if it still points into this repo.
+if [ -L "$HOME/.codex/agents" ]; then
+  case "$(readlink "$HOME/.codex/agents")" in
+    "$REPO_DIR/codex-agents"*)
+      rm "$HOME/.codex/agents"
+      echo "Codex: removed legacy link $HOME/.codex/agents (Codex is no longer supported)"
+      ;;
+  esac
+fi
 
 # Prune links left behind by a renamed or removed skill: a symlink in
 # ~/.claude/skills that points into this repo's skills/ directory at a skill
@@ -91,7 +100,7 @@ fi
 
 if [ "$failed" -eq 0 ]; then
   echo
-  echo "dev_team agents are now live for OpenCode, Claude Code, and Codex:"
+  echo "dev_team agents are now live for OpenCode and Claude Code:"
   names=()
   for f in "$REPO_DIR/agents"/*.md; do
     [ -e "$f" ] || continue
