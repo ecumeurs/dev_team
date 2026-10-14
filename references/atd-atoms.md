@@ -54,6 +54,17 @@ YAML frontmatter (`id`, `human_name`, `type`, `layer`, `version`, `status`,
 Status moves `DRAFT → REVIEW → STABLE`, and can demote back down if a spec
 changes.
 
+**Atoms describe the present.** An atom says what is true now, not what it
+used to say or what is planned (the `VISION` atom's scope framing is the
+one exception). Git is the change log, so no frontmatter field or section
+records an atom's history: no previous versions or statuses, dates, merge
+hashes, sign-off quotes, or "Earlier:" chains. Provenance (who signed off,
+which chunk or merge prompted a revision) goes in your report and from
+there into the commit message. A free-form `notes:` key is not part of the
+format: write none, and remove one whenever you edit an atom that has one.
+A caveat that is still true, such as "built but not wired into the app
+yet", belongs in the section it qualifies.
+
 **Naming convention (`id` field).** Per ATD.md, `id` is a `snake_case` slug
 of the form `<type_lowercase>_<descriptive_slug>`: a `RULE` atom about rate
 limiting is `rule_rate_limiting`, a `USER_STORY` about checkout is

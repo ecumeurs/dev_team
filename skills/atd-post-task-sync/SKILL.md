@@ -1,9 +1,9 @@
 ---
 name: atd-post-task-sync
-description: Use when documentalist is called after coding-leader (or any other agent) closes a coding task, to verify the atoms touched by that work still describe what the code does and advance their status (ATD trigger B, ongoing papertrail sync).
+description: Use when documentalist is called after coding-leader (or any other agent) closes a coding task, to verify the atoms touched by that work still describe what the code does and advance their status (ATD trigger B, ongoing traceability sync).
 ---
 
-# ATD Post-Task Papertrail Sync
+# ATD Post-Task Traceability Sync
 
 Verify the atoms touched by a just-closed coding task still describe what
 the code does, complete missing links, and advance status where the
@@ -50,7 +50,10 @@ evidence supports it.
    evidence for what changed — and a final `atd check` on the touched
    files/atoms.
 6. **Report** status changes, links added, and — most importantly — every
-   drift you flagged and did not resolve yourself.
+   drift you flagged and did not resolve yourself. The report, not the
+   atom, carries the provenance: whose sign-off, which chunk or merge. Atoms
+   stay in the present tense (see "Atoms describe the present" in the ATD
+   manual).
 
 ## Wave sync — once for a build-plan wave
 

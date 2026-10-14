@@ -272,6 +272,10 @@ checking it is verification, not maintenance-by-overwrite:
 - Everything you extract, ingest, infer or capture lands at the lowest
   status (DRAFT, or `draft`). Only a human confirms; you apply it when the
   invoker relays that confirmation.
+- **Intent describes the present.** An entry says what is true now, not
+  how it got there or what comes next (Vision's scope is the exception).
+  Git is the change log: never accumulate history, dates, sign-off quotes
+  or previous versions in an entry. Provenance goes in your report.
 - **Vision gate (scope).** Before writing or revising a business-level
   entry, read Vision. An entry that falls outside it needs the user warned
   and Vision changed to match — never let it slide in quietly.
