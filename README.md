@@ -120,6 +120,7 @@ primary|subagent|all`. Practical differences from `agents/`:
 | `documentalist` | subagent | `gpt-5.6-terra` | Owns the repo's declared intent in either backend (ATD atoms or the `intent/` register) and runs the intent gates. |
 | `ux-writer` | subagent | `gpt-5.6-terra` | Designs UI/UX document trees and token guidance before implementation. |
 | `ux-critic` | subagent | `gpt-5.6-sol` | Read-only UI/UX validator and critique specialist. |
+| `data-steward` | subagent | `gpt-5.6-terra` | Owns the repo's data register (`data-register/`): inventory, processing purposes, flows, responsibilities; proposes security measures and separations of duty, runs the data gates. |
 
 Codex support was dropped: `codex-agents/` is gone, and setup removes the
 old `~/.codex/agents` link if it still points here.
@@ -286,6 +287,56 @@ To use the register in a repository: for a new product, let `spec-writer` hand
 its master spec over (spec ingestion creates `intent/`). For an existing
 codebase, ask `documentalist` for a cold start (it bootstraps the register
 unless you ask for ATD). After that, the leaders gate every task on their own.
+
+## Data register
+
+A second, independent guardrail covers the data itself. `data-steward` keeps
+a project's **data register**: what data the product holds, how sensitive
+and how important each item is, why it is processed (shaped like the GDPR
+Article 30 record of processing activities), where it flows, and who may
+read, write, export or administer it on the system and operator side. Each
+item states the protection its sensitivity class requires next to the
+protection actually applied; the difference is a visible `Gap:` line.
+
+```
+data-register/
+  README.md          the marker; controller and DPO, scope, pending human decisions
+  classification.md  sensitivity classes and the protection each requires
+  inventory.md       one entry per data item
+  processing.md      one entry per purpose (the Article 30 view)
+  flows.md           components, trust zones, and one entry per flow
+  responsibilities.md  principals, grants per class, separation-of-duties rules
+  processors.md      third parties receiving data
+```
+
+Code links to it with `@data <id>` comments on the models, migrations and
+calls that define or move data. The format is
+`references/data-register.md`; the default classes, measure catalogue, flow
+questions and separation-of-duties patterns are
+`references/data-security-baseline.md`.
+
+| Marker | Owner | Leaders' skill | Steward's skills |
+|---|---|---|---|
+| `data-register/README.md` | `data-steward` | `data-gating-protocol` | `data-cold-start`, `data-preflight`, `data-post-task-sync`, `data-access-model-check`, `data-review` |
+
+- **Gates.** When a plan touches data (a new field or store, user data in
+  logs or analytics, a third party, a new use of personal data, a new
+  access path), the leader calls a data preflight before finalizing it.
+  The verdict is `CLEAR`, `MEASURES-PROPOSED` (build them in, or tell the
+  user which were left out) or `NEEDS-HUMAN-DECISION` (ask the user before
+  building that part). A post-task sync records what was built.
+- **Advisory on security, silent on law.** It proposes measures and
+  separations, argued from the risk they remove, and never implements
+  them. Lawful basis, DPIA need, retention periods, ownership and accepting
+  a risk are human decisions it records as pending.
+- **Independent of declared intent.** A repo can have either record, both,
+  or neither. Where both exist, documentalist records the decisions
+  (including adopted data-protection measures) and data-steward records
+  the state of the data. `spec-writer` hands it each access model for a
+  cross-check against the data's classification, and `codebase-explorer`
+  reports matching `@data` entries alongside intent.
+
+To start one, ask `data-steward` for a cold start on an existing codebase.
 
 ## Editing
 

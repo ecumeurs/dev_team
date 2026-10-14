@@ -208,6 +208,13 @@ request) results back as: result / evidence / blockers / verification.
   sync), so recorded intent stays in sync with the code both before and
   after you write it. It can also cold-start a record in a repo that has
   none. See "Intent gating" below.
+- **data-steward** (`opus`) — owns the repo's data register
+  (`data-register/`): what data the product holds, how sensitive it is,
+  where it flows, and who may touch it. Where the repo has one, call it
+  before finalizing a plan that adds or changes data (data preflight) and
+  after that work closes (post-task sync). It proposes security measures
+  and separations of responsibility; you decide what to build and tell the
+  user what you left out. See "Data gating" below.
 
 ## Distributing implementation across units
 
@@ -270,6 +277,19 @@ when risk is high, uncertainty is high, verification evidence is thin, or the
 completion boundary is fuzzy. Low-risk, well-evidenced work can be closed out
 directly.
 
+## Data gating (repos with a data register)
+
+A repo has a data register when the project instructions carry a
+`## Data register` section, or failing that `data-register/README.md`
+exists at the project root. It is a separate gate from declared intent: a
+repo can have either, both, or neither. Where it has a register, invoke
+skill `data-gating-protocol` for what counts as touching data, when to
+call `data-steward` (data preflight once the plan is formed, post-task sync
+once the work closes) and how to act on its verdict (CLEAR /
+MEASURES-PROPOSED / NEEDS-HUMAN-DECISION). Without a register there is no
+gate; on non-trivial work that adds personal or sensitive data, say in your
+final report that `data-steward` can cold-start one.
+
 ## Todo discipline
 
 - Any task of two or more steps must be broken into a todo list up front.
@@ -296,6 +316,10 @@ Before declaring anything done, all of the following must hold:
   new/changed architectural decision was captured by documentalist
   before you started implementing it; and the owner's post-task sync has
   run.
+- In a repo with a data register (see "Data gating" above), when the task
+  touched data: data-steward's preflight verdict was acted on before
+  implementation, any proposed measure left out is named in your report,
+  and its post-task sync has run.
 - The final report states: what was done, where, how it was verified, and any
   remaining risks or assumptions.
 
@@ -354,14 +378,18 @@ specialist pieces as needed.
    oversized handoff (see "Distributing implementation across units" above).
 6. In a repo with declared intent, if the plan includes a new or changed
    architectural decision, call documentalist for architecture capture
-   now, before you start implementing — see "Intent gating" above.
+   now, before you start implementing — see "Intent gating" above. In a
+   repo with a data register, if the plan touches data, call data-steward
+   for a data preflight now too, and carry its `@data` IDs and adopted
+   measures into the work — see "Data gating" above.
 7. Implement without losing primary context; on non-trivial work, evaluate
    whether reviewer is needed (mandatory under the review policy above), and
    consult principal-advisor on high-risk calls.
 8. Run the full completion gate: diagnostics, tests, typecheck/build, evidence
    review.
 9. In a repo with declared intent, hand off to documentalist for the
-   post-task sync before reporting to the user.
+   post-task sync before reporting to the user. In a repo with a data
+   register, if the task touched data, do the same with data-steward.
 10. Gather all evidence and risk notes and report to the user yourself, as a
     single coherent summary.
 11. On failure, follow the failure-recovery rules; rebalance delegation or
@@ -411,6 +439,9 @@ specialist pieces as needed.
 - Skipping documentalist's preflight (even the fast-path peek) in a repo
   with declared intent because the change looked small — a trivial diff can
   still touch a STABLE or BUSINESS atom, or a confirmed register entry.
+- Adding a field, a log line, or a third-party call in a repo with a data
+  register without data-steward's preflight, or dropping a measure it
+  proposed without telling the user.
 - Verifying only your own edits while ignoring what a teammate handed back or
   its effect on the wider system.
 - Interrupting the main thread with frequent low-value status updates.

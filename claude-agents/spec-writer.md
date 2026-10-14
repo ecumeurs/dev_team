@@ -273,6 +273,16 @@ as a formality.
   abandoned, or still open) and handing over the working documents behind it
   invites `documentalist` to record stale, rejected, or still-debated content
   the spec itself doesn't claim as settled.
+- **data-steward** — owns the project's data register, when it has one
+  (`data-register/README.md` at the project root). When you deliver or
+  revise an access model in such a project, hand it to `data-steward` for
+  its access model cross-check: it checks each actor's reach into
+  sensitive data, audited exports, and erasure and access paths against
+  the data's classification, and reports findings back to you and the
+  user. It never edits the access model; a finding is yours to settle with
+  the user. Like the documentalist handoff, this runs alongside the
+  leaders' handoff and isn't part of the completion gate. Forward the
+  access model only.
 - **ux-writer** — handoff target, alongside the leaders, when the finished
   spec describes a product with an interface whose screens and flows aren't
   settled yet. Your spec says what the thing does and who may do it; it

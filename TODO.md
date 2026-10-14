@@ -1,8 +1,8 @@
 # TODO
 
-- [ ] Work on a data modelist agent. The team must have one, triggered to maintain a register of our data (for GDPR, but for other uses too):
-  - data modeling: schemas, entities, relationships, migrations
-  - per data item: origin, sensitivity, importance, usage, applicable regulation (GDPR, etc.)
-  - mitigation strategy matched to sensitivity (protection level vs. how sensitive the data is)
-  - design the register's layout: how to document each data source and the data usage graph (where data comes from, which components/processes use it, where it flows)
-  - triggering: define when it runs (e.g. when a change adds or alters data, or after a coding task closes), like documentalist's gates
+- [ ] `data-steward` agent: drafted and wired, to review and try.
+  - done: agent (Claude and OpenCode), `references/data-register.md`, `references/data-security-baseline.md`, skills `data-cold-start`, `data-preflight`, `data-post-task-sync`, `data-access-model-check`, `data-review`, leaders' skill `data-gating-protocol`; bound into coding-leader, coordination-leader, spec-writer, codebase-explorer, documentalist; README section
+  - review the draft: verdict scale (CLEAR / MEASURES-PROPOSED / NEEDS-HUMAN-DECISION), preflight writing nothing, default classes and measures
+  - checker script for the register (the format's consistency checks, run at the end of every skill), shipped inside a skill folder
+  - maybe split `references/data-register.md` per file, so each skill reads only the formats it writes
+  - try it: cold start on a real repo with personal data

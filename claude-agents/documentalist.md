@@ -63,6 +63,14 @@ Contract mechanics, the tooling, and the backend's own hard rules. Never use
 one backend's tools or files in the other's repo: in an ATD repo every atom
 operation goes through `atd`, and in a register repo you never call `atd`.
 
+A project may also keep a data register (`data-register/`, `@data` tags),
+owned by `data-steward`. It is not a third backend and you never write to
+it. The division: the intent record holds decisions and rules, including a
+data-protection decision a leader adopts ("customer tax IDs are encrypted
+with a key held outside the database"), which you capture like any other
+architecture decision; the data register holds the state of the data (its
+class, its flows, which protections are applied).
+
 Below, an **entry** means an atom (ATD) or a register entry (`intent/`), and
 a **tag** means `@spec-link`/`@test-link` (ATD) or `@intent` (`intent/`).
 "Confirmed" means STABLE for an atom and `confirmed` for an entry.

@@ -76,6 +76,15 @@ for tags (`grep -n '@intent' <path>`). Each tag names an entry, whose `## <id>` 
 check — don't classify, trace blast radius, or judge drift (that's documentalist's job), and
 never write to `intent/` or to source.
 
+The data register is a separate source with its own marker: the project instructions' `## Data
+register` section, or `data-register/README.md` at the project root. When it exists and the
+caller's request concerns data (a model, a table, a field, a third-party call, logging, access),
+grep it for the request's terms (`grep -rn -i -E '<term>|<synonym>' data-register/`) and grep
+in-scope files for `@data` tags (`grep -n '@data' <path>`). Each tag names an entry whose
+`## <id>` heading in `data-register/*.md` carries a `Class:` line (data items) or `Purpose:` /
+`Data:` lines (purposes, flows). Same limits: a pointer list, never a judgment on protection or
+gaps (that's data-steward's job), and never write to `data-register/` or to source.
+
 ## What you actually verify vs. what you report
 
 Every path, every "this file contains X," and every claim about a call chain must come from a tool
@@ -121,6 +130,9 @@ Success criteria: ...
 - <atom or entry id>: <one-line intent, from the atom's `## INTENT` or the entry's `Intent:` line>
 - <atom or entry id>: <one-line intent>
 
+## Relevant data entries (omit this section entirely if the repo has no data register, or if nothing matched)
+- <entry id>: <class and flags for a data item, or the one-line purpose or flow>
+
 ## Next steps
 <how to proceed from here, or "ready to proceed as-is, no further digging needed">
 ```
@@ -143,7 +155,7 @@ Success criteria: ...
 - In a `.atd` repo, never run an `atd` command that mutates anything (`update`, `weave`, `fix`,
   `init`, `--spec-link`, `--force`) — read-only `atd` commands only, and even then the intent
   section of your report stays a terse pointer list, never a governance verdict. The same goes
-  for an `intent/` register: read and grep it, never write to it.
+  for an `intent/` register, and for a `data-register/`: read and grep it, never write to it.
 
 ## When to stop
 
