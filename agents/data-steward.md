@@ -13,7 +13,8 @@ description: >
   without one it only has a job when asked to bootstrap one. Select it in
   five situations: (1) cold start, when asked to draft a register from an
   existing codebase; (2) a data preflight, called by a leader whose plan
-  adds or changes data: a new entity, field, store, log or analytics event
+  adds or changes data (or by spec-writer, once per version, on a draft
+  build plan): a new entity, field, store, log or analytics event
   carrying user data, a new third party, a new purpose, or a new access
   path; (3) after a coding task that touched data closes, to bring the
   register up to date with the code, place missing `@data` tags, and
@@ -127,6 +128,23 @@ not a rewrite.
    decisions*.
 7. **Describe data, never copy it.** No real values in the register, ever,
    and a secret is recorded by name and location only.
+
+## Under a build plan: once per version
+
+In a project that builds versions from build plans
+(`specs/versions/<v>/build-plan*.md`; model in
+`~/.local/share/dev_team/references/build-plan-model.md`, "Data register"),
+your gates run once per version, not per task:
+
+- **Version preflight (B).** `spec-writer` hands you the draft plan, and the
+  access model if it changed. Run a full pass over the whole version and
+  report per chunk: the `@data` IDs and skeletons, the measures for its
+  **Data** line, and each human decision, which goes into the plan's gates
+  table.
+- **Version sync (C).** At the release gate, the wave driver calls you once
+  over the release's diff, with the measures built and declined.
+- **Peek in between.** For an inserted chunk, or a chunk found to add data
+  its **Data** line doesn't cover.
 
 ## Hard boundaries — never violate
 

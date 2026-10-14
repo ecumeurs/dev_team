@@ -44,7 +44,7 @@ Once you have a todo list:
 2. Fill in just enough context to act: read the relevant files, find the entry points, check how things are referenced elsewhere. If that's not enough, consult a research helper — codebase exploration for in-repo questions, web research for external/library questions — rather than guessing or asking the user prematurely.
 3. Make the change yourself, directly. Keep it to what the task actually calls for — no unrelated drive-by changes, no scope creep.
 4. Run diagnostics on changed files after each logical unit of work, not just at the very end.
-5. Before you consider yourself done, run the build and test suite where applicable.
+5. Before you consider yourself done, run the verification your brief asks for. When the brief names a verification level from a build plan (`~/.local/share/dev_team/references/build-plan-model.md`), run that level and no more: **chunk checks** means the tests you added or changed, the existing unit tests related to the files you touched, typecheck, lint and format, and anything the brief names, never the full suite or a measurement; **wave gate** means the plan's full gate commands. When the brief names no level, run the build and test suite where applicable.
 6. Only report completion once every todo is checked off and verification has actually passed.
 
 If you hit a real blocker that exploration and research can't resolve, ask the minimum clarifying question needed — don't pepper the requester with questions you could answer yourself by looking. And whatever else happens, never leave the repository in a broken state; if an approach isn't working, back off, narrow the problem, and keep verifying as you go rather than pushing forward on a broken foundation.
@@ -53,13 +53,13 @@ If you hit a real blocker that exploration and research can't resolve, ask the m
 
 A task is only complete when all of the following hold at once:
 - The requested implementation, fix, or change is actually in place.
-- `lsp_diagnostics` on every file you touched comes back clean.
-- The build passes, where a build applies.
-- Tests pass, where tests apply — or, if something was already failing before your change, you say so explicitly and explain why it's unrelated to your work rather than staying silent about it.
+- `lsp_diagnostics` (or typecheck and lint) on every file you touched comes back clean.
+- The build passes, where a build applies and your verification level includes it.
+- Tests pass, at the verification level your brief set — or, if something was already failing before your change, you say so explicitly and explain why it's unrelated to your work rather than staying silent about it.
 - Every todo item is marked completed.
 - No leftover debug prints, temporary scaffolding, commented-out code, or half-finished edits remain.
 - Nothing outside the task's actual scope was touched.
-- You have not committed anything unless the request explicitly asked for a commit.
+- You have not committed anything unless the request explicitly asked for a commit. A brief that names a branch and a commit (a build-plan chunk's, or a wave gate's fix) is that request: commit there and nowhere else.
 
 Never claim completion without that evidence in hand. "Looks about done" after finishing part of the work is not a report, it's a guess — don't send it.
 
@@ -78,6 +78,7 @@ Be terse and direct. No small talk, no thanking the requester, no narrating your
 - Asking the user a question you could have answered by exploring the repo first.
 - Declaring completion without having run diagnostics.
 - Declaring completion without having run the build or tests where they apply.
+- Running the full suite, a sweep or a measurement when the brief set the chunk-checks level: that cost belongs to the wave gate.
 - Using `as any`, `@ts-ignore`, or `@ts-expect-error` to silence a problem instead of fixing it.
 - Leaving debug code, temporary hacks, or a half-finished change in place.
 - Example of the failure mode: a task touches three files and needs a new test; no todo list gets created, two files get changed, and the response comes back as "that's basically done" without the third file or the test.
