@@ -4,39 +4,6 @@ Git-tracked source of truth for this machine's coding-agent personas: a small
 "Coding Team" ported across OpenCode and Claude Code, plus the
 OpenCode provider config.
 
-## Why this exists
-
-This used to run on [crewbee](https://crewbeelab.github.io), a third-party
-OpenCode plugin providing a prebuilt multi-agent "Coding Team". It was dropped
-in favor of this repo because:
-
-- crewbee's built-in personas are written in Chinese — unusable as-is for an
-  English-speaking user.
-- crewbee is a large (~26k-line) third-party plugin running as arbitrary JS
-  with full user privileges — an ongoing audit burden for not much upside.
-- OpenCode already natively supports everything crewbee needed: named agents
-  with `mode: primary | subagent | all`, per-agent `model`/`permission`/`tools`,
-  and a built-in `task` delegation tool. crewbee was a schema + content layer
-  on top of native OpenCode capabilities, not a capability OpenCode lacked.
-- crewbee's plugin injected a stray top-level `crewbee` key into every chat
-  request, which Anthropic's strict schema rejected — this repo's removal
-  also let us drop the LiteLLM `request_sanitizer.py` workaround that existed
-  only to strip that key.
-
-The 8 crewbee "Coding Team" personas were extracted from crewbee's embedded
-source (`dist/src/agent-teams/embedded/coding-team/agents/*.js`), understood
-in depth, and rewritten from scratch in English — not machine-translated —
-preserving the load-bearing behavioral rules (completion gates, guardrails,
-delegation triggers) while dropping crewbee-internal plumbing that has no
-native OpenCode equivalent. Two agents beyond those 8 are new, designed from
-scratch rather than translated from crewbee: `documentalist`, which maintains
-a project's declared intent, either as an [ATD](../atd/) papertrail
-(`docs/*.atom.md`, `@spec-link`/`@test-link` congruence) or as the ATD-less
-intent register; and `spec-writer`, an ideation/specification partner for
-turning an unscoped project idea into a spec `coding-leader` can build from —
-see `references/software-quality-principles.md` for the project-agnostic
-quality checklist it draws on.
-
 ## Layout
 
 ```
@@ -115,7 +82,7 @@ primary|subagent|all`. Practical differences from `agents/`:
 |---|---|---|---|
 | `coding-leader` | primary | `gpt-5.6-sol` | Default owner for most coding work; holds context end-to-end. |
 | `coordination-leader` | all | `gpt-5.6-sol` | Alternate opening owner for highly ambiguous / multi-task requests that need scoping before implementation starts. |
-| `spec-writer` | all | `gpt-5.6-terra` | Ideation/specification partner for unscoped future work — turns a rough idea into a spec `coding-leader` can build from — and, once a version's master spec is approved, author and keeper of its build plan. |
+| `spec-writer` | all | `gpt-5.6-terra` | Ideation/specification partner for unscoped future work — turns a rough idea into a spec `coding-leader` can build from — and, once a version's master spec is approved, author and keeper of its build plan. Draws on `references/software-quality-principles.md`. |
 | `coding-executor` | subagent | `gpt-5.6-terra` | Bounded leaf implementation once scope is clear. |
 | `codebase-explorer` | subagent | `gpt-5.6-luna` | Read-only: locates code, call chains, existing patterns. |
 | `web-researcher` | subagent | `gpt-5.6-terra` | Read-only: external docs, library/version behavior, OSS references. |
