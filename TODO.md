@@ -14,3 +14,12 @@
   - decisions logs: short entry form + archive with every release written into `references/doc-tree-conventions.md`, `milestone-archive`, `spec-writer`, `ux-writer` (uncommitted); infinite_flow's existing long entries are left as they are
   - open owner decisions: a test-volume ceiling in chunk mode; Sonnet for executors
   - try it on the next wave and review the chunk brief
+- [ ] `security-advisor` agent and `cve-watch`: drafted and wired, to review and try.
+  - done: agent (Claude and OpenCode), `references/dependency-security.md`, skills `tech-cold-start`, `dependency-check`, `vuln-triage`, leaders' skill `dependency-gating-protocol`; bound into coding-leader, coordination-leader, coding-executor, reviewer, wave-execution; `scripts/cve-watch.py`, `systemd/cve-watch.{service,timer}` installed by setup; osv-scanner 2.7.0 in `~/.local/bin`; README section
+  - run the cold start over `~/work` (`.tech` everywhere); `cours` needs `[scan].exclude` for `devops/exo_compose/db_peppermint_data` (unreadable Docker volume fails its scan), `llmward` probably for `security/skill-audit/scripts/ecosystem-stubs` (fixture lockfiles)
+  - decide whether the non-git directories (`postgresql`, `upsilon`, `vue_beat`, `pgdays`, `db_audit_gm-wt`, `pg_anon_studio_atd_trial`) are projects: a `.tech` makes the sweep cover them
+  - first triage pass: 610 open findings at or above medium on 2026-10-26, 130 published in the last 7 days (pillow 12.2.0, brotli, certifi, aiohttp…)
+  - host `.tech` at `~/work` (Claude Code CLI and VS Code extension, versions read by `version_cmd`); cve-watch: root `.tech` discovered, `[scan] packages = false`, `version_cmd` host-only
+  - maybe: an `NVD_API_KEY` (raises NVD's rate limit), a spec-writer **Dependencies** line on build-plan chunks
+- [ ] Host runtimes, postponed on 2026-10-26: Node.js 22.23.3 (nodesource) → 22.23.4 is available (`sudo apt-get install --only-upgrade nodejs`); PHP is not installed on the host, so check the projects that pin it (grav's `composer.json`, Docker images) instead
+

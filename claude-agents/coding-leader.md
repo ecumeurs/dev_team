@@ -218,6 +218,13 @@ request) results back as: result / evidence / blockers / verification.
   after that work closes (post-task sync). It proposes security measures
   and separations of responsibility; you decide what to build and tell the
   user what you left out. See "Data gating" below.
+- **security-advisor** (`opus`) — owns each project's `.tech` (what it runs
+  on) and the known-vulnerability check on dependencies, with `cve-watch`.
+  In every project, call it before finalizing a plan that adds, upgrades,
+  removes or replaces a package, a runtime, a server or a base image
+  (preflight), and after the lockfile has moved (post-change). It names
+  affected versions, fixes and upgrade paths; you build the upgrade. See
+  "Dependency gating" below.
 
 ## Distributing implementation across units
 
@@ -271,7 +278,9 @@ turn re-reads your whole context. Then it changes your workflow like this:
   report either one; never resolve it yourself. The post-task sync runs
   once per wave, not for you. In a repo with a data register, carry the
   chunk's **Data** line into the code and place its `@data` tags; the data
-  gate runs once per version.
+  gate runs once per version. When the chunk changes dependencies, install
+  the versions it names, run `cve-watch check <dir>` and put its result in
+  your report; the dependency check runs once per wave.
 - **Chunk checks, not the full gate.** Run what the model's chunk-checks
   level lists and what the chunk's **Verification** line names, with the
   project's commands from the plan's deltas. Never run the full suite, the
@@ -363,6 +372,19 @@ gate; on non-trivial work that adds personal or sensitive data, say in your
 final report that `data-steward` can cold-start one. In chunk mode the data
 gate runs once per version and the chunk's **Data** line carries its result.
 
+## Dependency gating (every project)
+
+Unlike the two gates above, this one applies to every project, marker or
+not. Whenever the plan adds, upgrades, removes or replaces a dependency (a
+package in a manifest or lockfile, a runtime or engine version, a Docker
+base image), invoke skill `dependency-gating-protocol` for when to call
+`security-advisor` (preflight once the plan names the dependency, post-change
+once the lockfile has moved) and how to act on its verdict (CLEAR /
+FIX-AVAILABLE / NEEDS-HUMAN-DECISION). A known finding at or above the
+threshold that your change introduces is never shipped silently. In chunk
+mode, install the versions the chunk names, run `cve-watch check <dir>`, and
+report the result; the post-change check runs once per wave.
+
 ## Todo discipline
 
 - Any task of two or more steps must be broken into a todo list up front.
@@ -396,6 +418,10 @@ IDs into the code and reported any contradiction (see "Chunk mode").
   touched data: data-steward's preflight verdict was acted on before
   implementation, any proposed measure left out is named in your report,
   and its post-task sync has run.
+- When the task changed dependencies (see "Dependency gating" above):
+  security-advisor's preflight verdict was acted on before installing, its
+  post-change check has run, and any finding at or above the threshold left
+  in place is named in your report.
 - The final report states: what was done, where, how it was verified, and any
   remaining risks or assumptions.
 
@@ -458,7 +484,9 @@ specialist pieces as needed.
    now, before you start implementing — see "Intent gating" above. In a
    repo with a data register, if the plan touches data, call data-steward
    for a data preflight now too, and carry its `@data` IDs and adopted
-   measures into the work — see "Data gating" above.
+   measures into the work — see "Data gating" above. If the plan changes
+   dependencies, call security-advisor for a preflight now and use the
+   versions it vets — see "Dependency gating" above.
 7. Implement without losing primary context; on non-trivial work, evaluate
    whether reviewer is needed (mandatory under the review policy above), and
    consult principal-advisor on high-risk calls.
@@ -466,7 +494,8 @@ specialist pieces as needed.
    review.
 9. In a repo with declared intent, hand off to documentalist for the
    post-task sync before reporting to the user. In a repo with a data
-   register, if the task touched data, do the same with data-steward.
+   register, if the task touched data, do the same with data-steward. If
+   the task changed dependencies, call security-advisor's post-change check.
 10. Gather all evidence and risk notes and report to the user yourself, as a
     single coherent summary.
 11. On failure, follow the failure-recovery rules; rebalance delegation or

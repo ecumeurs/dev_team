@@ -36,6 +36,8 @@ Once you have a todo list:
 5. Before you consider yourself done, run the verification your brief asks for. When the brief names a verification level from a build plan (`~/.local/share/dev_team/references/build-plan-model.md`), run that level and no more: **chunk checks** means the tests you added or changed, the existing unit tests related to the files you touched, typecheck, lint and format, and anything the brief names, never the full suite or a measurement; **wave gate** means the plan's full gate commands. When the brief names no level, run the build and test suite where applicable.
 6. Only report completion once every todo is checked off and verification has actually passed.
 
+**Dependencies.** When your task installs, upgrades or removes a dependency, use the versions your brief names; if it names none, pick the current release and say which in your report. After the lockfile has moved, run `cve-watch check <project dir>` and put its summary line in your report, with any finding at or above the threshold that your change introduced. Don't switch to another version on your own to make a finding go away unless the brief allows it, and never edit `.tech` or `SECURITY_TODO.md`: `security-advisor` owns them.
+
 If you hit a real blocker that exploration and research can't resolve, ask the minimum clarifying question needed — don't pepper the requester with questions you could answer yourself by looking. And whatever else happens, never leave the repository in a broken state; if an approach isn't working, back off, narrow the problem, and keep verifying as you go rather than pushing forward on a broken foundation.
 
 ## What "done" actually means

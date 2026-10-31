@@ -22,6 +22,8 @@ skills/             Agent Skills (SKILL.md per subdirectory) holding a single
                     the agent whose core file names it (each skills/<name>/
                     is symlinked individually into ~/.claude/skills/<name>/,
                     which OpenCode also discovers natively)
+systemd/            User units for the daily cve-watch sweep (linked into
+                    ~/.config/systemd/user/ and enabled by setup)
 misc/               Kept material that setup does not install: currently
                     secret-safe-authoring/, a skill against writing
                     secret-shaped strings (real or fake) that a DLP proxy
@@ -93,6 +95,7 @@ primary|subagent|all`. Practical differences from `agents/`:
 | `ux-writer` | subagent | `gpt-5.6-terra` | Designs UI/UX document trees and token guidance before implementation. |
 | `ux-critic` | subagent | `gpt-5.6-sol` | Read-only UI/UX validator and critique specialist. |
 | `data-steward` | subagent | `gpt-5.6-terra` | Owns the repo's data register (`data-register/`): inventory, processing purposes, flows, responsibilities; proposes security measures and separations of duty, runs the data gates. |
+| `security-advisor` | subagent | `gpt-5.6-terra` | Owns each project's `.tech` and the known-vulnerability check on every dependency change (`cve-watch`); triages `SECURITY_TODO.md`, proposes upgrades, never installs them. |
 
 Codex support was dropped: `codex-agents/` is gone, and setup removes the
 old `~/.codex/agents` link if it still points here.
@@ -332,6 +335,47 @@ questions and separation-of-duties patterns are
 
 To start one, ask `data-steward` for a cold start on an existing codebase.
 
+## Dependency security
+
+A third guardrail, and the only one that applies to every project under
+`~/work` without a marker: does a known vulnerability affect what a project
+runs? `security-advisor` owns it, `cve-watch` does the mechanical work.
+
+| Piece | What it is |
+|---|---|
+| `.tech` (project root) | TOML: the stack overview, the platforms no lockfile pins (runtime, server, engine, base image) with version and NVD CPE, scan narrowing, and accepted risks approved by a human. Never a copy of the dependency list: lockfiles are the truth for packages. |
+| `SECURITY_TODO.md` (project root) | One item per advisory and package at or above `medium`, written by the sweep, ticked by it when the scan no longer finds it; the advisor adds triage lines. |
+| `cve-watch` (`scripts/cve-watch.py`, linked as `~/.local/bin/cve-watch`) | osv-scanner against OSV.dev for packages, NVD by CPE for platforms. `check`, `query`, `latest`, `cpe`, `sweep`, `projects`, `lint`. Standard library Python. |
+| `cve-watch.timer` (`systemd/`, user unit) | The daily sweep at 07:30: every git project under `~/work` (worktrees skipped), new findings into `SECURITY_TODO.md`, a report in `~/.local/state/cve-watch/reports/latest.md`, a desktop notification. No agent runs. |
+
+A finding is *new*, and gets an item, when it was published in the last 7
+days or first detected since the previous sweep; the first sweep of a
+project only applies the date window, so an old backlog lands in the
+report, not in the file (`cve-watch sweep --all` writes it). Raw scan
+results are cached for 30 days, and `cve-watch sweep --from-run <id>
+--dry-run` replays one offline. The format, the sources' limits and what
+"fixed" means are in `references/dependency-security.md`.
+
+| Owner | Leaders' skill | Advisor's skills |
+|---|---|---|
+| `security-advisor` | `dependency-gating-protocol` | `tech-cold-start`, `dependency-check`, `vuln-triage` |
+
+- **Gates.** Before a plan that adds, upgrades, removes or replaces a
+  dependency is final, the leader asks for a preflight (the advisor vets the
+  versions with `cve-watch query`); after the lockfile moves, a post-change
+  check (`cve-watch check`, `.tech` updated). The verdict is `CLEAR`,
+  `FIX-AVAILABLE` (use the version and path it names) or
+  `NEEDS-HUMAN-DECISION` (no fix, a breaking fix, or a risk to accept).
+  `coding-executor` runs `cve-watch check` after installing, `reviewer`
+  blocks a change that introduces a fixable finding nobody named, and
+  under a build plan the check runs once per wave.
+- **Advisory only.** The advisor never edits a manifest, a lockfile or code,
+  never runs an install, and never writes an accepted risk without a
+  human's approval.
+
+To start, ask `security-advisor` for a cold start over `~/work`; it writes a
+`.tech` for every project that lacks one.
+
 ## Editing
 
 Edit files here directly. `agents/` and `claude-agents/` are
@@ -391,6 +435,16 @@ If a target exists as a symlink to a different location, setup replaces that
 symlink. Setup also removes any link in `~/.claude/skills` that points into
 this repo's `skills/` at a skill that no longer exists, such as
 `atd-gating-protocol` after its rename to `intent-gating-protocol`.
+
+Setup also installs `cve-watch`: `~/.local/bin/cve-watch` links to
+`scripts/cve-watch.py`, and `systemd/cve-watch.{service,timer}` are linked
+into `~/.config/systemd/user/` and the timer enabled. `hookoff.sh` leaves
+them in place (stop the sweep with `systemctl --user disable --now
+cve-watch.timer`). `cve-watch` needs osv-scanner:
+
+```bash
+GOBIN=$HOME/.local/bin go install github.com/google/osv-scanner/v2/cmd/osv-scanner@latest
+```
 
 The legacy name still works:
 

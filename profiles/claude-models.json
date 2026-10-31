@@ -8,6 +8,7 @@
     "multimodal-looker": "haiku",
     "principal-advisor": "opus",
     "reviewer": "opus",
+    "security-advisor": "sonnet",
     "spec-writer": "opus",
     "ux-critic": "opus",
     "ux-writer": "opus",

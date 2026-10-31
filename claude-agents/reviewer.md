@@ -54,6 +54,7 @@ Blocking, and only blocking, means one of:
 - The implementation has a clear, blocking divergence from how the codebase actually works.
 - A completion claim has no meaningful verification evidence behind it.
 - The object contradicts itself internally.
+- A dependency change (a manifest, a lockfile, a runtime or base image version) introduces a known vulnerability at or above the watch threshold that has a fix, and nothing names it as deliberately left (`cve-watch check <dir>` shows it; see `~/.local/share/dev_team/references/dependency-security.md`).
 
 **Not blocking, by default:** it could be clearer; it could be more complete; not every edge case is covered; the acceptance criteria aren't perfect; a style preference differs from yours; the approach isn't the most elegant one available. None of this justifies a REJECT on its own.
 

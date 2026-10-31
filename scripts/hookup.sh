@@ -16,6 +16,13 @@
 # Unlike references, hookoff.sh DOES remove these links again — skills are
 # active automation an agent invokes, not inert reference docs.
 #
+# Also installs cve-watch, the mechanical side of security-advisor's
+# dependency-security guardrail: ~/.local/bin/cve-watch -> scripts/cve-watch.py
+# and the user timer systemd/cve-watch.{service,timer}, linked into
+# ~/.config/systemd/user and enabled. Like references, hookoff.sh leaves it in
+# place: it is a daily scan, not team presence. It needs osv-scanner (see the
+# README); without it setup still links everything and says so.
+#
 # Deliberately does NOT touch opencode.jsonc / the llmward provider lock —
 # that's a separate, permanent DLP-routing boundary, not "team presence".
 set -euo pipefail
@@ -28,7 +35,7 @@ failed=0
 ensure_link() {
   local src="$1" dst="$2" label="$3"
 
-  if [ ! -d "$src" ]; then
+  if [ ! -e "$src" ]; then
     echo "Warning: $src does not exist; skipping $label." >&2
     return 0
   fi
@@ -65,6 +72,26 @@ if [ -L "$HOME/.codex/agents" ]; then
       echo "Codex: removed legacy link $HOME/.codex/agents (Codex is no longer supported)"
       ;;
   esac
+fi
+
+# cve-watch: the command the advisor's skills call, and the daily timer.
+ensure_link "$REPO_DIR/scripts/cve-watch.py"     "$HOME/.local/bin/cve-watch"                   "cve-watch"       || failed=1
+ensure_link "$REPO_DIR/systemd/cve-watch.service" "$HOME/.config/systemd/user/cve-watch.service" "cve-watch:unit"  || failed=1
+ensure_link "$REPO_DIR/systemd/cve-watch.timer"   "$HOME/.config/systemd/user/cve-watch.timer"   "cve-watch:timer" || failed=1
+if command -v systemctl >/dev/null 2>&1 && systemctl --user show-environment >/dev/null 2>&1; then
+  systemctl --user daemon-reload
+  if systemctl --user enable --now cve-watch.timer >/dev/null 2>&1; then
+    echo "cve-watch:timer: enabled ($(systemctl --user show cve-watch.timer -p NextElapseUSecRealtime --value | sed 's/^$/next run pending/'))"
+  else
+    echo "cve-watch:timer: could not enable cve-watch.timer; run: systemctl --user enable --now cve-watch.timer" >&2
+    failed=1
+  fi
+else
+  echo "cve-watch:timer: no systemd user session; enable it later with: systemctl --user enable --now cve-watch.timer" >&2
+fi
+if ! command -v osv-scanner >/dev/null 2>&1 && [ ! -x "$HOME/.local/bin/osv-scanner" ]; then
+  echo "cve-watch: osv-scanner is missing; install it with:" >&2
+  echo "  GOBIN=\$HOME/.local/bin go install github.com/google/osv-scanner/v2/cmd/osv-scanner@latest" >&2
 fi
 
 # Prune links left behind by a renamed or removed skill: a symlink in

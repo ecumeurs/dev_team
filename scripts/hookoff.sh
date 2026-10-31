@@ -15,6 +15,11 @@
 # symlink pointing back into this repo's skills/ directory; any other skill
 # living in ~/.claude/skills (hand-installed, unrelated) is left untouched.
 #
+# Deliberately does NOT remove cve-watch (~/.local/bin/cve-watch and the
+# cve-watch.timer user unit): the daily sweep is mechanical, not team
+# presence, and SECURITY_TODO.md should keep being maintained while the
+# personas are off. Stop it with: systemctl --user disable --now cve-watch.timer
+#
 # Deliberately does NOT touch opencode.jsonc / the llmward provider lock —
 # that's a separate, permanent DLP-routing boundary, not "team presence".
 set -euo pipefail
@@ -84,3 +89,6 @@ fi
 echo
 echo "All supported harnesses now fall back to their stock built-in agents only."
 echo "Re-run scripts/hookup.sh to bring the dev_team set back."
+if systemctl --user is-enabled cve-watch.timer >/dev/null 2>&1; then
+  echo "cve-watch.timer stays enabled; stop it with: systemctl --user disable --now cve-watch.timer"
+fi

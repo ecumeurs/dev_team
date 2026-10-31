@@ -165,8 +165,9 @@ Each of these follows the model's "Changing a wave once it starts":
   with its dependents in the wave; `spec-writer` moves it; log why.
 - **A chunk must be inserted or split.** `spec-writer` revises the plan
   first. An inserted chunk gets a `documentalist` peek over its files (and a
-  `data-steward` peek if it adds data the version preflight didn't cover)
-  before it starts; log both.
+  `data-steward` peek if it adds data the version preflight didn't cover,
+  and a `security-advisor` preflight if it adds a dependency no chunk
+  named) before it starts; log them.
 - **Other agents commit on the wave branch** (captures, plan revisions,
   design). Fine; tell running chunk owners only when it changes what they
   build.
@@ -189,6 +190,9 @@ When every chunk still in the wave is merged:
    for the post-task sync over the wave's diff (from the wave branch's base
    on `main`), naming every merged chunk's **Revisions** to apply and every
    owner confirmation relayed during the wave. It commits on the wave
+   branch. If any chunk changed dependencies, also dispatch
+   `security-advisor` once for a post-change check over the wave's diff
+   (skill `dependency-gating-protocol`); it updates `.tech` on the wave
    branch.
 
 ## Report and merge
