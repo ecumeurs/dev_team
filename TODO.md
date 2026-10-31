@@ -14,6 +14,11 @@
   - decisions logs: short entry form + archive with every release written into `references/doc-tree-conventions.md`, `milestone-archive`, `spec-writer`, `ux-writer` (uncommitted); infinite_flow's existing long entries are left as they are
   - open owner decisions: a test-volume ceiling in chunk mode; Sonnet for executors
   - try it on the next wave and review the chunk brief
+- [ ] `doc-ids` (register numbering): written and wired, to try on a real wave.
+  - done: `scripts/doc-ids.py` (`next`, `lint`, `compare`, `renumber`), linked by hookup; `doc-tree-conventions.md` "Numbering" (the collision exception to "never renumber"); spec-writer and ux-writer (both ports), `milestone-archive` (no next ID in headers, lint in its check), `wave-execution` (compare before the wave merges)
+  - tested on infinite_flow: `compare 68a04c4^1 88caa03` finds the D339–D341 collision and the O177 clash; renumber and the duplicate flow on a scratch clone
+  - infinite_flow's lint warnings to settle by its writers: stale "continues from" lines in both decisions logs; spec D400–D414 cited bare in `ui_ux/`; the wave log's "Next free IDs" lines can go
+  - maybe: a pre-commit hook running `doc-ids lint` in projects with a spec tree
 - [ ] `security-advisor` agent and `cve-watch`: drafted and wired, to review and try.
   - done: agent (Claude and OpenCode), `references/dependency-security.md`, skills `tech-cold-start`, `dependency-check`, `vuln-triage`, leaders' skill `dependency-gating-protocol`; bound into coding-leader, coordination-leader, coding-executor, reviewer, wave-execution; `scripts/cve-watch.py`, `systemd/cve-watch.{service,timer}` installed by setup; osv-scanner 2.7.0 in `~/.local/bin`; README section
   - run the cold start over `~/work` (`.tech` everywhere); `cours` needs `[scan].exclude` for `devops/exo_compose/db_peppermint_data` (unreadable Docker volume fails its scan), `llmward` probably for `security/skill-audit/scripts/ecosystem-stubs` (fixture lockfiles)

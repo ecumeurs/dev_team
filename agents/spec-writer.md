@@ -149,6 +149,11 @@ resume between sessions.
   shape is in `~/.local/share/dev_team/references/doc-tree-conventions.md`
   ("Decision entries"). This log is what lets a session resume cold, with the
   index and the open questions, without replaying the whole conversation.
+- **Numbers come from `doc-ids`.** Take each new ID with `doc-ids next spec O`
+  (`doc-ids next spec D` for a decision) when you write the entry, never from
+  the log, its header or a wave log. Run `doc-ids lint spec` before
+  committing a register change. Collisions between branches and the one case
+  that renumbers are in `doc-tree-conventions.md` ("Numbering").
 - **Names follow
   `~/.local/share/dev_team/references/doc-tree-conventions.md`**, which
   `ux-writer`'s `ui_ux/` tree shares: lowercase kebab-case, the same register

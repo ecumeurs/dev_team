@@ -23,6 +23,10 @@
 # place: it is a daily scan, not team presence. It needs osv-scanner (see the
 # README); without it setup still links everything and says so.
 #
+# Also installs doc-ids, the numbering of the spec and UI/UX trees' registers
+# (next free ID, duplicate lint, cross-branch compare, renumber):
+# ~/.local/bin/doc-ids -> scripts/doc-ids.py. hookoff.sh leaves it in place.
+#
 # Deliberately does NOT touch opencode.jsonc / the llmward provider lock —
 # that's a separate, permanent DLP-routing boundary, not "team presence".
 set -euo pipefail
@@ -73,6 +77,9 @@ if [ -L "$HOME/.codex/agents" ]; then
       ;;
   esac
 fi
+
+# doc-ids: the command the writers take register IDs from.
+ensure_link "$REPO_DIR/scripts/doc-ids.py"       "$HOME/.local/bin/doc-ids"                     "doc-ids"         || failed=1
 
 # cve-watch: the command the advisor's skills call, and the daily timer.
 ensure_link "$REPO_DIR/scripts/cve-watch.py"     "$HOME/.local/bin/cve-watch"                   "cve-watch"       || failed=1

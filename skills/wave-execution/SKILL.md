@@ -199,7 +199,11 @@ When every chunk still in the wave is merged:
 
 Give the owner a short report: chunks merged, chunks moved and why, the
 gate's results, the bundle figure, the sync's changes, what needs the
-owner's sign-off. Log it. Merge the wave branch `--no-ff` into `main` only when the
+owner's sign-off. Log it. Before the merge, run `doc-ids compare main <wave
+branch>`. A collision, meaning `main` took a number for a ruling while the wave
+ran, is renumbered on the wave branch first and committed there (the command
+it prints; `doc-tree-conventions.md`, "Numbering").
+Merge the wave branch `--no-ff` into `main` only when the
 owner asks, with the figures in the merge message, then remove the wave's
 worktrees and branches. Ask whether to start the next wave.
 

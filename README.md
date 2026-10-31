@@ -131,6 +131,14 @@ The model is `references/build-plan-model.md`.
 To start one, ask `spec-writer` to write the build plan for an approved master spec;
 then, from your top-level session, ask to run wave 1 with skill `wave-execution`.
 
+Register IDs (`D`, `O`, `Q` in `specs/` and `ui_ux/`) come from `doc-ids`
+(`scripts/doc-ids.py`, linked as `~/.local/bin/doc-ids`), never from reading
+a log: `next` hands out and reserves the next free number across every
+worktree of the repo, `lint` finds an ID defined twice, `compare main
+<branch>` finds the numbers two branches both took before they merge, and
+`renumber` moves an entry and its citations to a new number on one branch.
+The rules are in `references/doc-tree-conventions.md` ("Numbering").
+
 ## Intent guardrail: ATD or the intent register
 
 The leaders check every change against declared business intent. There is a
@@ -435,6 +443,8 @@ If a target exists as a symlink to a different location, setup replaces that
 symlink. Setup also removes any link in `~/.claude/skills` that points into
 this repo's `skills/` at a skill that no longer exists, such as
 `atd-gating-protocol` after its rename to `intent-gating-protocol`.
+
+Setup also links `~/.local/bin/doc-ids` to `scripts/doc-ids.py`.
 
 Setup also installs `cve-watch`: `~/.local/bin/cve-watch` links to
 `scripts/cve-watch.py`, and `systemd/cve-watch.{service,timer}` are linked

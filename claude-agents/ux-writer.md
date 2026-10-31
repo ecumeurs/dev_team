@@ -167,6 +167,12 @@ the release closes (skill `milestone-archive`). The entry shape is in
 `~/.local/share/dev_team/references/doc-tree-conventions.md` ("Decision
 entries").
 
+Numbers come from `doc-ids`. Take each new ID with `doc-ids next ux Q`
+(`doc-ids next ux D` for a decision) when you write the entry, never from the
+log or its header. Run `doc-ids lint ux` before committing a register change.
+Collisions between branches and the one case that renumbers are in the same
+reference ("Numbering").
+
 The spec tree numbers its decisions `D1`, `D2`, … independently of yours. When
 a register entry cites the spec tree, or anything outside `ui_ux/` cites
 yours (an issue, a commit, a report), qualify the ID with its tree:

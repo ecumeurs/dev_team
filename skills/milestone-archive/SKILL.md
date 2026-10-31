@@ -122,8 +122,9 @@ resolved fit findings against a closed version) follows the classes above.
     question register), don't force a range. Extract each closed entry to its
     own file (`open-questions-Q15.md`), and name each one in the live header.
   - The live log keeps a header that names each archived range and its link,
-    says that archived IDs keep their meaning, and gives the next ID
-    ("Numbering continues from D45"). Never renumber anything.
+    says that archived IDs keep their meaning, and says new IDs come from
+    `doc-ids next`. Don't write a next ID into it: that line goes stale with
+    the first new entry. Never renumber anything.
   - A citation by ID elsewhere stays valid through that header, so don't
     rewrite it.
   - In an append-only log, whether live or archived, only link paths may
@@ -194,8 +195,9 @@ Check every item before you report the pass as done:
    has a "now lives" row or is explicitly marked as history.
 3. **Nothing open was archived.** The open IDs recorded in step 1 all still
    appear in the live register, and every pending todo item is still live.
-4. **Numbering is continuous.** The live log's header names every archived
-   range and the next ID, and no ID was reused or renumbered.
+4. **Numbering is intact.** The live log's header names every archived
+   range, `doc-ids lint <tree>` reports no error, and no ID was reused or
+   renumbered.
 5. **The formatter passes on the changed files.** Run the host's formatter or
    linter check on exactly the files you changed. Run the same check on those
    files at the base commit to separate pre-existing failures from new ones,

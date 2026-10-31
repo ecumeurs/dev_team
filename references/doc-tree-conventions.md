@@ -137,6 +137,37 @@ the clash. The master spec and the UI/UX tier documents carry no tracking IDs
 at all, so the rule only ever applies to registers and to text outside the
 trees.
 
+## Numbering: `doc-ids`
+
+A new ID comes from the `doc-ids` command, never from reading the log. The
+header's "continues from" line goes stale with the first new entry, and
+another branch or worktree may already hold the next number.
+
+- **`doc-ids next spec D`** (or `spec O`, `ux D`, `ux Q`) prints the next
+  free ID and reserves it for every worktree of the repo. It reads this
+  worktree, every other one, the archives and the earlier reservations. Ask
+  for it when you write the entry. `--peek` shows the number without
+  reserving it.
+- **`doc-ids lint`** before committing a register change. An ID defined
+  twice is an error. A citation past the highest ID, the other tree's ID
+  cited bare, and a stale "continues from" line are warnings.
+- **`doc-ids compare main <branch>`** before merging a branch that wrote to
+  a register (main, or whichever branch it merges into, comes first). A
+  collision, meaning both sides added a different entry under one number, is
+  fixed on the incoming branch before the merge, with the command it prints.
+- **`doc-ids renumber <tree> <ID>`** prints a dry run, then `--apply` writes
+  it. It rewrites the entry and every citation that can only mean it. It lists
+  the rest for you to settle by hand: a mention inside a range
+  (`D339–D341`), an unqualified mention outside the trees, archived text,
+  and a citation that may mean another entry.
+- **A collision is the one case that renumbers.** The entry already on the
+  target branch keeps its number. The incoming one is renumbered with its
+  citations, and the log's header records the old number ("D350 was D339 on
+  branch `plan-migration`"). An ID already on `main` is never renumbered.
+- **A duplicate already merged** shows in `doc-ids lint`, with each entry's
+  origin and every citation. Renumber the newer one with
+  `--def FILE:LINE`, and `--take` each citation that means it.
+
 ## The intent record is not a third tree
 
 The declared-intent record — ATD's `docs/` or, without ATD, the intent
