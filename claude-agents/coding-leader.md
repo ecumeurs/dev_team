@@ -247,8 +247,12 @@ You are in chunk mode when your brief names a chunk of a build plan
 session acting as wave driver. The model is
 `~/.local/share/dev_team/references/build-plan-model.md`; read its "Terms",
 "Verification levels" and "Branches" sections, then the chunk in full, the
-plan's read-first section and its workflow deltas. Then it changes your
-workflow like this:
+plan's read-first section and its workflow deltas. Normally the brief embeds
+the chunk's text, the read-first lines and the deltas: work from those and
+don't open the plan file. Open it only for a detail the brief doesn't carry,
+and then read a narrow window (search for the heading, read that section),
+never the whole file: build plans run to thousands of lines, and every extra
+turn re-reads your whole context. Then it changes your workflow like this:
 
 - **The chunk is the plan.** Its Goal, Scope, Files, Done when and
   Verification are settled, and so are the spec and the design it points
@@ -286,8 +290,11 @@ workflow like this:
 - **Review.** None by default; the wave gate is the integration check. Ask
   `reviewer` only when the chunk is high-risk (a data migration, a
   contract change, a guard you had to weaken), per the review policy.
-- **Pause cleanly.** If your context is getting heavy, or the driver asks
-  you to pause, reach a point where your tests pass or are listed as
+- **Pause cleanly.** If your context is getting heavy (as a rule of thumb
+  about 200k tokens, or around 150 tool calls; a bigger context makes every
+  further turn dearer, and a fresh owner starting from a WIP commit and a
+  report is cheaper than one more long stretch), or the driver asks you to
+  pause, reach a point where your tests pass or are listed as
   failing, make a WIP commit on your branch, and report what is done and
   what is next. A fresh owner resumes from it.
 - **Report to the driver,** in the format the brief asks for: commits,

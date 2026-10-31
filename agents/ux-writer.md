@@ -169,6 +169,14 @@ without either being resolved or still being listed.
 question ID it closed (if any). Not every decision answers a question — most
 are made proactively, and their rationale still has to survive the session.
 This file is what lets a cold session avoid re-litigating settled ground.
+Keep each entry short, six lines or fewer: the ruling, a one-sentence
+reason, and a link to the design document that now states it (make that edit
+first; never restate the design in the entry). Reasoning with no other home
+(a rejected alternative, a trade-off) may take up to ten lines. Never read
+the log whole: look an entry up by its ID. Archive a release's decisions when
+the release closes (skill `milestone-archive`). The entry shape is in
+`~/.local/share/dev_team/references/doc-tree-conventions.md` ("Decision
+entries").
 
 The spec tree numbers its decisions `D1`, `D2`, … independently of yours. When
 a register entry cites the spec tree, or anything outside `ui_ux/` cites

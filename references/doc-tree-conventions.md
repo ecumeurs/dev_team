@@ -88,6 +88,44 @@ The rules are in `ux-writer`'s "Versions and change marking".
   range: `decisions-D45-D71.md`, `open-questions-O12-O30.md`. A single
   extracted entry uses its one ID: `open-questions-Q15.md`.
 
+## Decision entries: short, and archived with each release
+
+A decisions log is looked up by ID (a grep for the heading), cited from
+other documents, and written to constantly. It is almost never read whole,
+and most of an entry's content also lives in the document the ruling
+changed. So an entry is a pointer with a reason, not a second copy:
+
+```
+- **D<n> (<date>): <the ruling in one phrase>.** <What was decided, one or
+  two sentences. Why, one sentence, only if it isn't obvious. Closes O<m>
+  when it does.> Now in: <link to the spec section, design document or plan
+  that states it>.
+```
+
+- **Aim for six lines or fewer.** Never restate text that the master spec,
+  the design set or the plan now says: link it, and make the edit to that
+  document in the same pass, before you write the entry.
+- **A decision with no other home keeps its reasoning**, up to about ten
+  lines: a process choice, a rejected alternative, a trade-off nobody wrote
+  into a document. The log is then the only record, so it must explain
+  itself. Say what was rejected in one line.
+- **No change reports in an entry.** "No behaviour changed; the spec now says
+  what is built" and lists of which agent applied what belong in the commit
+  message or the wave log.
+- **IDs stay stable and bare in their tree** (see below). Other documents cite
+  the ID, never the text.
+- **Existing entries are not rewritten.** The log is append-only and its
+  archive is verbatim; the short form applies from the next entry on.
+- **Nobody reads a log whole.** Look an entry up by its ID (find the heading,
+  read that entry), or read the window around the range you need. A cold
+  session resumes from the tree's index and its open questions, not from the
+  log.
+- **Archive with every release.** When a release closes, its decisions leave
+  the live log with the rest of its working record (skill
+  `milestone-archive`), so the live log holds the current release's
+  decisions and any older ruling still being applied. Cited IDs stay
+  resolvable through the archive index's "where it now lives" table.
+
 ## IDs across the two trees
 
 Both trees number their decisions `D1`, `D2`, … independently, so a bare

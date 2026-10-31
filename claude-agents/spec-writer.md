@@ -128,8 +128,16 @@ resume between sessions.
   disappear from the text without either being resolved (moved to the
   decisions log) or still being listed here.
 - **A Decisions log**, `specs/decisions.md`, append-only, recording what was
-  decided, briefly why, and which open-question ID it resolved (if any). This
-  is what lets a session resume cold without replaying the whole conversation.
+  decided, briefly why, and which open-question ID it resolved (if any). Keep
+  each entry short, six lines or fewer: the ruling, a one-sentence reason,
+  and a link to the spec section or plan that now states it (make that edit
+  first; never restate the spec in the entry). Reasoning with no other home
+  (a rejected alternative, a process choice) may take up to ten lines. Never
+  read the log whole: look an entry up by its ID. Archive a release's
+  decisions when the release closes (skill `milestone-archive`). The entry
+  shape is in `~/.local/share/dev_team/references/doc-tree-conventions.md`
+  ("Decision entries"). This log is what lets a session resume cold, with the
+  index and the open questions, without replaying the whole conversation.
 - **Names follow
   `~/.local/share/dev_team/references/doc-tree-conventions.md`**, which
   `ux-writer`'s `ui_ux/` tree shares: lowercase kebab-case, the same register

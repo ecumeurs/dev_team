@@ -72,16 +72,27 @@ plan's deltas name).
 Dispatch chunks in the wave's order (topological, ties by number), at most
 κ in flight (the plan's delta, default 1). One `coding-leader` per chunk,
 in the background, with the brief below. Fill it from the plan and the wave
-log; don't paraphrase the chunk's text and don't pre-settle its design
-beyond what the plan, the spec and the design set already settle: that
-judgment is the chunk owner's.
+log; paste the chunk's text verbatim, don't paraphrase it, and don't
+pre-settle its design beyond what the plan, the spec and the design set
+already settle: that judgment is the chunk owner's. You read the chunk's
+section once, to paste it; the owner then has no reason to search the plan
+(a plan runs to thousands of lines, and each search turn re-reads the
+owner's whole context). If the read-first or deltas sections are long
+(over about 80 lines), paste only what this chunk needs and say which
+heading holds the rest.
 
 ```
 Chunk mode. Build chunk <id> — <title> of <release>, wave <n>.
 
-Plan: <build plan path>, section "Chunk <id>" (read it in full), plus
-§<read-first section> and the workflow deltas. Model:
-~/.local/share/dev_team/references/build-plan-model.md.
+Plan: <build plan path> (for reference; the text you need is below, so
+don't open it unless a detail is missing, and then read only that section).
+Model: ~/.local/share/dev_team/references/build-plan-model.md.
+
+Chunk <id>, as written in the plan:
+<the chunk's section, pasted verbatim>
+
+Read first, from the plan: <the read-first lines, pasted, or "none">.
+Workflow deltas, from the plan: <the deltas, pasted>.
 
 Settled for this chunk:
 - Wave preflight verdict: <verdict>; governing entries: <ids>.
@@ -110,7 +121,8 @@ chunk; the chunk needs an architectural decision nobody captured; the code
 must differ from the spec or the design. Make a WIP commit on your branch
 first. Report it; never fix it silently.
 
-If your context gets heavy before you finish: reach a point where the
+If your context gets heavy before you finish (about 200k tokens, or around
+150 tool calls): reach a point where the
 checks you've written pass or are clearly listed as failing, make a WIP
 commit on your branch, and report what is done and what is next. A fresh
 owner will resume from it.
@@ -186,6 +198,18 @@ gate's results, the bundle figure, the sync's changes, what needs the
 owner's sign-off. Log it. Merge the wave branch `--no-ff` into `main` only when the
 owner asks, with the figures in the merge message, then remove the wave's
 worktrees and branches. Ask whether to start the next wave.
+
+## Between waves: start fresh
+
+Your own context grows with every report and gate result, and a session
+idle for more than a few minutes (a long chunk, the owner away) pays to
+rebuild all of it. After a wave has merged and its log entry is committed,
+suggest to the owner that the next wave starts in a fresh session. The log
+is what makes that safe, so before closing a wave make sure its entry holds
+what a new driver needs: open gates and who holds them, decisions taken,
+chunks moved, branches left, and anything promised to the owner. A fresh
+driver reads the model once, the plan's header, gates table, waves table and
+deltas, and the log's last entry; nothing else.
 
 ## Release end
 

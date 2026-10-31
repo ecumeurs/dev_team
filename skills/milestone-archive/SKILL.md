@@ -18,6 +18,12 @@ and name that milestone first, for example `v1` or `2026-09-26 v1.0 gate`. The
 name gives the archive folder its slug (`archive/v1/`,
 `archive/2026-09-26-v1.0-gate/`). Name everything as
 `~/.local/share/dev_team/references/doc-tree-conventions.md` sets out.
+**Cadence: every release.** A release closing (the last step after a build
+plan's release gate) is a milestone: archive it then, so the live decisions
+log holds the current release's decisions and any older ruling still being
+applied, and the log never grows past what a grep can cheaply search. Do not
+wait for a bigger milestone.
+
 An existing archive in another shape stays as it is: renaming it is a
 migration the user asks for, not part of an archive pass.
 
