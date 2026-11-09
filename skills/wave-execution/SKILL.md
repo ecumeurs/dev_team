@@ -121,8 +121,8 @@ chunk; the chunk needs an architectural decision nobody captured; the code
 must differ from the spec or the design. Make a WIP commit on your branch
 first. Report it; never fix it silently.
 
-If your context gets heavy before you finish (about 200k tokens, or around
-150 tool calls): reach a point where the
+If your context gets heavy before you finish (after about 100 tool calls,
+counted since you started): reach a point where the
 checks you've written pass or are clearly listed as failing, make a WIP
 commit on your branch, and report what is done and what is next. A fresh
 owner will resume from it.

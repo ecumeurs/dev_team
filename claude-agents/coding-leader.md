@@ -300,7 +300,7 @@ turn re-reads your whole context. Then it changes your workflow like this:
   `reviewer` only when the chunk is high-risk (a data migration, a
   contract change, a guard you had to weaken), per the review policy.
 - **Pause cleanly.** If your context is getting heavy (as a rule of thumb
-  about 200k tokens, or around 150 tool calls; a bigger context makes every
+  after about 100 tool calls, counted since you started; a bigger context makes every
   further turn dearer, and a fresh owner starting from a WIP commit and a
   report is cheaper than one more long stretch), or the driver asks you to
   pause, reach a point where your tests pass or are listed as
