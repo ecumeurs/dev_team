@@ -83,6 +83,12 @@ read-first or deltas sections are long (over about 80 lines or 6 KB; a
 table of long rows passes the first and not the second), paste only what
 this chunk needs and say which heading holds the rest.
 
+The brief's first line is how the wave's figures find their agents
+(`agent-stats`, below): keep it as written, and if you put a brief in a
+file, the prompt you dispatch still opens with that line. Every other brief
+of the wave (a preflight, a plan revision, a fix, the gate, the sync) names
+`<release> wave <n>` or the wave branch in its first lines.
+
 ```
 Chunk mode. Build chunk <id> — <title> of <release>, wave <n>.
 
@@ -143,7 +149,10 @@ When a chunk owner reports:
 
 - **Merged.** Check the report against the chunk's **Done when** (not the
   diff). Set **Status** to `merged (w<n>, <commit>)` and add the **Record**
-  line. Start the next chunk.
+  line. In the wave log, add the chunk's figures: the output of
+  `agent-stats chunk <id> --line`, run in the repo (agents, tool calls,
+  tokens, largest context, cost). They go in the log, not the plan, which
+  chunk owners read. Start the next chunk.
 - **Built, waiting on a merge gate.** Status `built`; merge its branch
   into the wave branch yourself once the gate clears (it no longer counts
   against κ).
@@ -206,7 +215,10 @@ When every chunk still in the wave is merged:
 
 Give the owner a short report: chunks merged, chunks moved and why, the
 gate's results, the bundle figure, the sync's changes, what needs the
-owner's sign-off. Log it. Before the merge, run `doc-ids compare main <wave
+owner's sign-off, and the wave's cost line (`agent-stats wave <n> --line`).
+Log it, with the wave's figures from `agent-stats wave <n> --md` (cost,
+tokens and largest context, split by role, by chunk and by activity); an
+agent over 300k tokens of context is marked, and worth a line on why. Before the merge, run `doc-ids compare main <wave
 branch>`. A collision, meaning `main` took a number for a ruling while the wave
 ran, is renumbered on the wave branch first and committed there (the command
 it prints; `doc-tree-conventions.md`, "Numbering").

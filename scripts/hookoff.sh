@@ -20,7 +20,8 @@
 # presence, and SECURITY_TODO.md should keep being maintained while the
 # personas are off. Stop it with: systemctl --user disable --now cve-watch.timer
 #
-# Nor ~/.local/bin/doc-ids: a plain command, harmless with the team off.
+# Nor ~/.local/bin/doc-ids, doc-get or agent-stats: plain commands, harmless
+# with the team off.
 #
 # Deliberately does NOT touch opencode.jsonc / the llmward provider lock —
 # that's a separate, permanent DLP-routing boundary, not "team presence".

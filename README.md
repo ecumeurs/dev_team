@@ -151,6 +151,19 @@ shape, which is what makes their pieces addressable, is defined in
 `references/ui-ux-docs.md` and checked by `doc-get lint ui`; `doc-get lint
 plan` checks that everything a build plan cites resolves.
 
+What a chunk or a wave cost comes from `agent-stats` (`scripts/agent-stats.py`,
+linked as `~/.local/bin/agent-stats`), which reads the Claude Code session
+transcripts: `agent-stats chunk <id>` and `agent-stats wave <n>` give the
+agents, tool calls, tokens, the largest context any agent reached and the cost
+at API list prices, split by role, by chunk and by activity (dispatch, reading
+the plan, spec, design or intent, source, checks, git). It finds a chunk's
+agents from the brief's first line ("Chunk mode. Build chunk 10 — … of v3.3,
+wave 2"), so `wave-execution` keeps that line, and puts the figures in the wave
+log (`--line` for a chunk, `--md` for the wave). `agent-stats list` shows what
+the briefs name. `scripts/token-report.py`, `chunk-report.py` and
+`wave-report.py` are the earlier analysis scripts (per-agent cost, cost per
+changed line, waves cut at their merges).
+
 ## Intent guardrail: ATD or the intent register
 
 The leaders check every change against declared business intent. There is a
@@ -456,7 +469,8 @@ symlink. Setup also removes any link in `~/.claude/skills` that points into
 this repo's `skills/` at a skill that no longer exists, such as
 `atd-gating-protocol` after its rename to `intent-gating-protocol`.
 
-Setup also links `~/.local/bin/doc-ids` to `scripts/doc-ids.py`.
+Setup also links `~/.local/bin/doc-ids`, `doc-get` and `agent-stats` to their
+scripts in `scripts/`.
 
 Setup also installs `cve-watch`: `~/.local/bin/cve-watch` links to
 `scripts/cve-watch.py`, and `systemd/cve-watch.{service,timer}` are linked

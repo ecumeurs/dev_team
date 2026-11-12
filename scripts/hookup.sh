@@ -31,6 +31,11 @@
 # section, register entry, atom or design item, or a chunk's pack):
 # ~/.local/bin/doc-get -> scripts/doc-get.py. hookoff.sh leaves it in place.
 #
+# Also installs agent-stats, a chunk's or a wave's figures from the session
+# transcripts (tool calls, tokens, largest context, cost, split by role, chunk
+# and activity): ~/.local/bin/agent-stats -> scripts/agent-stats.py.
+# hookoff.sh leaves it in place.
+#
 # Deliberately does NOT touch opencode.jsonc / the llmward provider lock —
 # that's a separate, permanent DLP-routing boundary, not "team presence".
 set -euo pipefail
@@ -87,6 +92,9 @@ ensure_link "$REPO_DIR/scripts/doc-ids.py"       "$HOME/.local/bin/doc-ids"     
 
 # doc-get: the command every agent reads the trees' targeted pieces with.
 ensure_link "$REPO_DIR/scripts/doc-get.py"       "$HOME/.local/bin/doc-get"                     "doc-get"         || failed=1
+
+# agent-stats: the wave driver's figures for each chunk and wave.
+ensure_link "$REPO_DIR/scripts/agent-stats.py"   "$HOME/.local/bin/agent-stats"                 "agent-stats"     || failed=1
 
 # cve-watch: the command the advisor's skills call, and the daily timer.
 ensure_link "$REPO_DIR/scripts/cve-watch.py"     "$HOME/.local/bin/cve-watch"                   "cve-watch"       || failed=1

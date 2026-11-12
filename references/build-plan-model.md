@@ -35,7 +35,7 @@ chunk into waves.
 | **Wave gate** | The full verification at the end of a wave, then the post-task sync. |
 | **Release gate** | The final check of the whole release against the master spec's definition of done. It runs after the last wave's gate. It is a step, not a wave. |
 | **Wave driver** | Whoever runs the waves: the user's top-level session by default. |
-| **Wave log** | The execution record next to the plan (`wave-log.md`, or `wave-log-<release>.md` beside a `build-plan-<release>.md`): what each preflight found, each gate's results and figures, what was moved and why, each report to the owner. |
+| **Wave log** | The execution record next to the plan (`wave-log.md`, or `wave-log-<release>.md` beside a `build-plan-<release>.md`): what each preflight found, each gate's results and figures, what was moved and why, each report to the owner, and each chunk's and wave's cost figures (`agent-stats`). |
 | **κ (concurrency)** | How many chunks may be in flight at once. Default 1. |
 
 ## Roles

@@ -8,10 +8,10 @@
   - try it: cold start on a real repo with personal data
 - [ ] Build plans (wave model): written for both ports and the skills (`references/build-plan-model.md`, skills `build-plan-authoring` and `wave-execution`, coding-leader chunk mode, documentalist wave mode, data-steward once per version).
   - migrate infinite_flow's v3 plans onto the model, when the owner asks: one shared workflow instead of four §3 copies, a status line per chunk, a wave log for the wave records, waves of v3.1–v3.3 re-formed (v3.1's chunk 16 back to wave 5, v3.2's waves 5, 10 and 11, v3.3's wave 6)
-  - token levers done in the skills (uncommitted): the chunk brief embeds the chunk text so leaders don't search the plan; a ~100-call hand-over rule for chunk owners (was ~200k tokens / ~150 calls; agents went by calls and reached ~400k); "Between waves: start fresh" in `wave-execution`. Measure them on v3.1's first wave against the v3 baseline (`scripts/chunk-report.py`: median $17.7 per chunk, $1.00 per 100 code+test lines, leader peak context 570k, ~2,000 plan greps)
+  - token levers done in the skills (`60d9e7a`): the chunk brief embeds the chunk text so leaders don't search the plan; a ~100-call hand-over rule for chunk owners (was ~200k tokens / ~150 calls; agents went by calls and reached ~400k); "Between waves: start fresh" in `wave-execution`. Measure them on v3.1's first wave against the v3 baseline (`scripts/chunk-report.py`: median $17.7 per chunk, $1.00 per 100 code+test lines, leader peak context 570k, ~2,000 plan greps)
   - migration prepared on infinite_flow branch `plan-migration` (worktree `../infinite_flow-plan-migration`): v3.1 first, then v3.2 and v3.3; merge only after v3.0 is finished
-  - `scripts/token-report.py`, `scripts/chunk-report.py`: written, uncommitted; to do: HTML graphs, a survival measure
-  - decisions logs: short entry form + archive with every release written into `references/doc-tree-conventions.md`, `milestone-archive`, `spec-writer`, `ux-writer` (uncommitted); infinite_flow's existing long entries are left as they are
+  - `scripts/token-report.py`, `scripts/chunk-report.py`: committed in `60d9e7a`; to do: HTML graphs, a survival measure
+  - decisions logs: short entry form + archive with every release written into `references/doc-tree-conventions.md`, `milestone-archive`, `spec-writer`, `ux-writer` (`60d9e7a`); infinite_flow's existing long entries are left as they are
   - open owner decisions: a test-volume ceiling in chunk mode; Sonnet for executors
   - try it on the next wave and review the chunk brief
 - [ ] `doc-ids` (register numbering): written and wired, to try on a real wave.
@@ -27,6 +27,11 @@
   - infinite_flow against it: `lint ui` 276 errors (261 unlabelled handoff items, 3 flow documents with no sections, missing Flow/Routing Rules sections), `lint plan` 7 unresolved references in v3.3's plan; the migration is the owner's call (one root pass by ux-writer, `versions/` untouched)
   - pg_anon_studio's `ui_ux/` predates the tree conventions (index.md, qna.md): a migration too, when asked
   - maybe: point documentalist, spec-writer, ux-writer and coding-executor at it too
+- [ ] `agent-stats` (a chunk's or a wave's figures from the transcripts): written and wired, to try on a real wave.
+  - done: `scripts/agent-stats.py` (`chunk`, `wave`, `list`; `--line`, `--md`, `--json`), linked by hookup; `wave-execution` (the brief's first line kept, figures in the wave log, the report's cost line); `build-plan-model.md` (wave log contents)
+  - tested on infinite_flow: every v3.2 and v3.3 wave and chunk found; v3.3 waves 1 and 2 match `wave-report.py` per role (wave 1 $58.48, wave 2 $48.46)
+  - attribution is by brief text, since a transcript's `gitBranch`/`cwd` is the session's start, not where an agent worked
+  - maybe: fold `token-report.py`/`chunk-report.py`/`wave-report.py` into it (one price table; theirs has Sonnet 5.5 cache reads at $0.20, now $0.10), and add cost per changed line from `chunk-report`
 - [ ] `security-advisor` agent and `cve-watch`: drafted and wired, to review and try.
   - done: agent (Claude and OpenCode), `references/dependency-security.md`, skills `tech-cold-start`, `dependency-check`, `vuln-triage`, leaders' skill `dependency-gating-protocol`; bound into coding-leader, coordination-leader, coding-executor, reviewer, wave-execution; `scripts/cve-watch.py`, `systemd/cve-watch.{service,timer}` installed by setup; osv-scanner 2.7.0 in `~/.local/bin`; README section
   - run the cold start over `~/work` (`.tech` everywhere); `cours` needs `[scan].exclude` for `devops/exo_compose/db_peppermint_data` (unreadable Docker volume fails its scan), `llmward` probably for `security/skill-audit/scripts/ecosystem-stubs` (fixture lockfiles)
