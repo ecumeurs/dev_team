@@ -277,14 +277,19 @@ def find_item(doc: Doc, ref: str, exact: bool = False) -> Span:
     lo, hi, scope = 0, len(doc.lines), ""
     if ":" in ref:
         head, rest = ref.rsplit(":", 1)
-        try:
-            s = find_item(doc, head.strip(), exact)
-            lo, hi, scope, ref = s.start, s.end, s.what + ": ", rest.strip()
+        s = None
+        try:                # a heading wins a scope over an item of the same name
+            s = find_section(doc, head.strip(), exact=True)
         except Missing:
-            pass
+            try:
+                s = find_item(doc, head.strip(), exact)
+            except Missing:
+                pass
+        if s is not None:
+            lo, hi, scope, ref = s.start, s.end, s.what + ": ", rest.strip()
     cands: list[tuple[str, object]] = []
     for i, lvl, title in headings(doc):
-        if lo <= i < hi:
+        if lo <= i < hi and not (scope and i == lo):
             cands.append((norm(title), ("h", i, lvl, title)))
     for i, label, indent in labelled_items(doc, lo, hi):
         if scope and i == lo:
@@ -840,7 +845,7 @@ def pack(root: Path, args) -> int:
 SCREEN_SECTIONS = ["Layout Tree", "Components and Content", None, "Focus and Keyboard", "Responsive Behavior", "States"]
 SCREEN_REQUIRED = {"Layout Tree", "Components and Content", "Responsive Behavior", "States"}
 FLOW_SECTIONS = ["Flow", None, "Routing Rules"]
-FLOW_REQUIRED = {"Flow", "Routing Rules"}
+FLOW_REQUIRED: set[str] = set()     # both expected, not required: see ui-ux-docs.md
 REGISTERS = {"decisions.md", "open-questions.md", "todo.md"}
 REG_ID_RE = re.compile(r"(?<![\w§./#-])(?:(?:spec|ux) )?[DOQ]\d{2,}(?![\w.])")
 ITEM_RE = re.compile(r"^(\s*)[-*]\s+")
@@ -889,6 +894,10 @@ def lint_doc(doc: Doc, kind: str) -> list[tuple[int, str, str]]:
                     err(0, f"no '## {name}' section")
                 elif name == "Focus and Keyboard":
                     warn(0, "no '## Focus and Keyboard' section (required when the screen has anything focusable)")
+                elif name == "Flow":
+                    warn(0, "no '## Flow' section (expected unless each diagram belongs to one stage)")
+                elif name == "Routing Rules":
+                    warn(0, "no '## Routing Rules' section (expected unless each stage holds its own routing items)")
         rank = {norm(n): k for k, n in enumerate(order) if n}
         spot = order.index(None)
         ranks = [(rank.get(norm(t), spot), i, t) for i, _, t in h2]
@@ -947,7 +956,8 @@ def lint_doc(doc: Doc, kind: str) -> list[tuple[int, str, str]]:
         line = doc.lines[i]
         if not line.startswith(">"):
             continue
-        for m in re.finditer(r"\[([^\]]+)\]\(#([^)\s]+)\)(?::\s*([^;)]+))?", line):
+        # "([A](#a): Label, [B](#b))": a label runs to ";", ")" or the next link.
+        for m in re.finditer(r"\[([^\]]+)\]\(#([^)\s]+)\)(?::\s*((?:(?!,\s*\[)[^;)])+))?", line):
             heading = next((t for _, _, t in hs if slug(t) == m.group(2)), None)
             if heading is None:
                 warn(i, f"change line links #{m.group(2)}, which no heading has")

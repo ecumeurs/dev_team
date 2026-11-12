@@ -146,9 +146,13 @@ into the document.
 
 | Section | Holds | |
 |---|---|---|
-| `## Flow` | The mermaid diagram or numbered step map, naming each screen by its `screens/` name. | required |
+| `## Flow` | The flow's overall mermaid diagram or numbered step map, naming each screen by its `screens/` name. | expected; a flow whose diagrams each belong to one stage keeps them in their stage sections instead |
 | `## <Stage or topic>` | One section per stage of the flow or per topic that cuts across stages ("Entering and Leaving Jam Mode", "Saving the Session"), its rules as labelled items. | as needed |
-| `## Routing Rules` | One labelled item per routing condition: what sends the user where, and when. | required |
+| `## Routing Rules` | One labelled item per routing condition: what sends the user where, and when. | expected; routing conditions that belong to one stage may stay, as labelled items, in that stage's section |
+
+What makes a flow readable in pieces is that every routing condition is a
+labelled item somewhere; gathering them in one section is the default, not
+a reason to empty the stage sections other documents cite.
 
 ## Intent documents
 
@@ -184,8 +188,10 @@ message` and exits 1 when any error is found.
 - **Errors** break an address: a tier document over 2 KB with no `##`
   section; a second `#` heading; two headings with one title; an unlabelled
   item in a handoff; two sibling labels that are the same; a required
-  section missing from a screen or flow handoff.
-- **Warnings** make reading harder: sections out of order; a heading
+  section missing from a screen handoff.
+- **Warnings** make reading harder: an expected section missing (a
+  screen's Focus and Keyboard, a flow's Flow or Routing Rules); sections
+  out of order; a heading
   deeper than `###`; a section over 20 KB without `###` groups; an item
   over 4 KB without labelled sub-items; a change-block line whose link or
   label doesn't resolve; a register ID (`D12`, `Q4`) in a tier document.
