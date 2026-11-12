@@ -609,6 +609,10 @@ def toc(doc: Doc, labels: bool) -> str:
     hs = headings(doc)
     out = [f"==> {doc.rel} · {len(doc.lines)} lines <=="]
     items = labelled_items(doc) if labels else []
+    first = hs[0][0] if hs else len(doc.lines)
+    for j, label, indent in items:
+        if j < first:
+            out.append(f"{' ' * indent}• {norm(label)}  [{j + 1}]")
     for n, (i, lvl, title) in enumerate(hs):
         end = section_end(doc, i, lvl)
         size = sum(len(x) + 1 for x in doc.lines[i:end])
