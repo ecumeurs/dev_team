@@ -19,6 +19,8 @@ Commands:
   ui        a UI/UX document's section or labelled item ("Seventh chord symbols")
   toc       a document's headings (and, for UI/UX documents, item labels) with line ranges
   pack      a chunk and everything its Spec sections, Design docs and Atoms lines point to
+  lint      ui: the UI/UX tier documents against references/ui-ux-docs.md;
+            plan: every reference a build plan's chunks make resolves
 
 Every extract starts with a marker line, `==> path:first-last · what <==`, so
 the reader can cite it. Nothing is printed when the target is missing or
@@ -180,16 +182,24 @@ def sec_number(title: str) -> str | None:
     return m.group(1).lower() if m else None
 
 
-def pick(ref: str, cands: list[tuple[str, object]], kind: str, where: str, show=None):
-    """Choose one candidate by name: exact, then prefix, then substring. `cands` holds
+def pick(ref: str, cands: list[tuple[str, object]], kind: str, where: str, show=None, exact: bool = False):
+    """Choose one candidate by name: exact (case and punctuation aside), then, unless
+    `exact`, by prefix, then by substring, saying so on stderr. A citation is resolved
+    with `exact`: a near name is a different name, not a guess to make. `cands` holds
     (normalized name, value); several names may point to one value."""
     r = norm(ref)
-    for test in (lambda n: n == r, lambda n: n.startswith(r), lambda n: r in n):
-        hits = []
+    tests = [("exact", lambda n: n == r)]
+    if not exact:
+        tests += [("prefix", lambda n: n.startswith(r)), ("substring", lambda n: r in n)]
+    for how, test in tests:
+        hits, names = [], []
         for n, v in cands:
             if test(n) and v not in hits:
                 hits.append(v)
+                names.append(n)
         if len(hits) == 1:
+            if how != "exact":
+                note(f"{kind} {ref!r} matched {names[0]!r} by {how}; cite it by that name")
             return hits[0]
         if len(hits) > 1:
             names = [show(v) for v in hits] if show else sorted({n for n, v in cands if test(n)})
@@ -200,7 +210,7 @@ def pick(ref: str, cands: list[tuple[str, object]], kind: str, where: str, show=
     raise Missing(f"no {kind} {ref!r} in {where}{hint}")
 
 
-def find_section(doc: Doc, ref: str, shallow: bool = False) -> Span:
+def find_section(doc: Doc, ref: str, shallow: bool = False, exact: bool = False) -> Span:
     ref = ref.strip()
     if "#" in ref:
         ref = ref.split("#", 1)[1]
@@ -224,7 +234,7 @@ def find_section(doc: Doc, ref: str, shallow: bool = False) -> Span:
     if len(anchor) == 1:
         h = anchor[0]
     else:
-        h = pick(ref, cands, "section", doc.rel, show=lambda h: f"{norm(h[2])} (line {h[0] + 1})")
+        h = pick(ref, cands, "section", doc.rel, show=lambda h: f"{norm(h[2])} (line {h[0] + 1})", exact=exact)
     i, lvl, title = h
     return Span(doc, i, section_end(doc, i, lvl, shallow), title)
 
@@ -261,14 +271,14 @@ def item_end(doc: Doc, start: int, indent: int, limit: int | None = None) -> int
     return trim(doc, start, i)
 
 
-def find_item(doc: Doc, ref: str) -> Span:
+def find_item(doc: Doc, ref: str, exact: bool = False) -> Span:
     """A heading, or a list item by its bold label. "Scope: label" looks inside the
     scope first, a heading or another item ("Jam's controls: Foundation")."""
     lo, hi, scope = 0, len(doc.lines), ""
     if ":" in ref:
         head, rest = ref.rsplit(":", 1)
         try:
-            s = find_item(doc, head.strip())
+            s = find_item(doc, head.strip(), exact)
             lo, hi, scope, ref = s.start, s.end, s.what + ": ", rest.strip()
         except Missing:
             pass
@@ -281,7 +291,7 @@ def find_item(doc: Doc, ref: str) -> Span:
             continue
         cands.append((norm(label), ("item", i, indent, label)))
     kind, i, lvl, title = pick(ref, cands, "heading or item", doc.rel + (f" ({scope.rstrip(': ')})" if scope else ""),
-                               show=lambda v: f"{norm(v[3])} (line {v[1] + 1})")
+                               show=lambda v: f"{norm(v[3])} (line {v[1] + 1})", exact=exact)
     if kind == "h":
         return Span(doc, i, min(section_end(doc, i, lvl), hi), scope + title)
     return Span(doc, i, item_end(doc, i, lvl, hi), scope + norm(title))
@@ -646,7 +656,7 @@ def design_refs(doc: Doc, ref: str) -> list[tuple[Span | None, str, str]]:
     """One reference from a plan's Design docs parenthesis: "label", "Heading: label",
     or a comma list of either under one heading ("Heading: a, b, c")."""
     try:
-        return [(find_item(doc, ref), ref, "")]
+        return [(find_item(doc, ref, exact=True), ref, "")]
     except Missing as e:
         first = str(e)
     if "," not in ref:
@@ -658,15 +668,15 @@ def design_refs(doc: Doc, ref: str) -> list[tuple[Span | None, str, str]]:
             continue
         r = f"{head}: {part}" if sep else part
         try:
-            out.append((find_item(doc, r), r, ""))
+            out.append((find_item(doc, r, exact=True), r, ""))
         except Missing as e:
             out.append((None, r, str(e)))
     return out
 
 
-def pack(root: Path, args) -> int:
-    plan = load(plan_path(root, args.plan, args.release), root)
-    chunk = find_chunk(plan, args.id)
+def gather(root: Path, plan: Doc, chunk: Span, args) -> tuple[list[tuple[str, Span]], list[str], list[str]]:
+    """What a chunk's Spec sections, Design docs and Atoms lines point to, as
+    (blocks within the budget, pointers to the rest, references that don't resolve)."""
     fields = {norm(n): s for n, s in chunk_fields(chunk)}
     budget = args.max_bytes
     blocks: list[tuple[str, Span]] = []
@@ -677,8 +687,8 @@ def pack(root: Path, args) -> int:
     def add(group: str, span: Span, cmd: str) -> None:
         nonlocal budget
         key = (span.doc.path, span.start, span.end)
-        if key in used:
-            return
+        if any(d == key[0] and a <= key[1] and key[2] <= b for d, a, b in used):
+            return          # already printed, whole or inside a larger block
         used.add(key)
         size = len(span.text().encode()) + 1
         if size > budget:
@@ -733,7 +743,7 @@ def pack(root: Path, args) -> int:
                             add("Design docs", span, f"doc-get ui {rel(p)} {ref!r}")
             elif anchor:
                 try:
-                    add("Spec sections", find_section(load(p, root), anchor), f"doc-get section {rel(p)} {anchor}")
+                    add("Spec sections", find_section(load(p, root), anchor, exact=True), f"doc-get section {rel(p)} {anchor}")
                 except Missing as e:
                     problems.append(str(e))
             else:
@@ -745,7 +755,7 @@ def pack(root: Path, args) -> int:
                 problems.append(f"items {wanted}: the plan links no single definition-of-done section to read them from")
             else:
                 try:
-                    sec = find_section(load(dod[0], root), dod[1])
+                    sec = find_section(load(dod[0], root), dod[1], exact=True)
                     for span in numbered_items(sec, wanted):
                         add("Spec items", span, f"doc-get spec {dod[1]} --item {span.what.rsplit(' ', 1)[-1]}")
                 except Missing as e:
@@ -788,6 +798,13 @@ def pack(root: Path, args) -> int:
         elif p is not None:
             pointers.append(f"{m.group(1)}: " + (f"doc-get section {rel(p)} {anchor}" if anchor else f"doc-get toc {rel(p)}"))
 
+    return blocks, pointers, problems
+
+
+def pack(root: Path, args) -> int:
+    plan = load(plan_path(root, args.plan, args.release), root)
+    chunk = find_chunk(plan, args.id)
+    blocks, pointers, problems = gather(root, plan, chunk, args)
     print(f"# Pack: {chunk.what}")
     print(f"\nFrom {plan.rel}. Each block below is printed verbatim from the file and lines its marker names.")
     if not args.refs_only:
@@ -810,6 +827,185 @@ def pack(root: Path, args) -> int:
         for p in problems:
             print(f"- {p}")
     return 0
+
+
+# --------------------------------------------------------------------------- lint ui
+
+# references/ui-ux-docs.md: the sections each handoff holds, in order. None
+# stands for the screen-specific sections, which sit at that place.
+SCREEN_SECTIONS = ["Layout Tree", "Components and Content", None, "Focus and Keyboard", "Responsive Behavior", "States"]
+SCREEN_REQUIRED = {"Layout Tree", "Components and Content", "Responsive Behavior", "States"}
+FLOW_SECTIONS = ["Flow", None, "Routing Rules"]
+FLOW_REQUIRED = {"Flow", "Routing Rules"}
+REGISTERS = {"decisions.md", "open-questions.md", "todo.md"}
+REG_ID_RE = re.compile(r"(?<![\w§./#-])(?:(?:spec|ux) )?[DOQ]\d{2,}(?![\w.])")
+ITEM_RE = re.compile(r"^(\s*)[-*]\s+")
+
+
+def tier_kind(rel: str) -> str | None:
+    parts = rel.split("/")
+    if parts[0] != "ui_ux" or len(parts) < 2 or parts[1] in ("versions", "archive"):
+        return None
+    if len(parts) == 4 and parts[1] in ("screens", "flows") and parts[3] in ("handoff.md", "intent.md"):
+        return f"{parts[1][:-1]}-{parts[3][:-3]}"
+    if len(parts) == 2 and parts[1].endswith(".md") and parts[1] not in REGISTERS:
+        return "root"
+    return None
+
+
+def lint_doc(doc: Doc, kind: str) -> list[tuple[int, str, str]]:
+    out: list[tuple[int, str, str]] = []
+    err = lambda i, m: out.append((i, "error", m))
+    warn = lambda i, m: out.append((i, "warning", m))
+    hs = headings(doc)
+    size = sum(len(x) + 1 for x in doc.lines)
+    h1 = [h for h in hs if h[1] == 1]
+    if len(h1) > 1:
+        err(h1[1][0], "a second '#' heading; the title is the only one")
+    h2 = [h for h in hs if h[1] == 2]
+    if not h2 and size > 2048:
+        err(0, f"no '##' section in {size // 1024} KB: nothing in it can be addressed")
+    seen: dict[str, int] = {}
+    for i, lvl, title in hs:
+        if lvl > 3:
+            warn(i, f"'{'#' * lvl}' heading: sections go two levels deep; label a sub-item instead")
+        key = slug(title)
+        if key in seen:
+            err(i, f"heading {title!r} repeats line {seen[key] + 1}; both share one anchor")
+        else:
+            seen[key] = i
+
+    # Required sections and their order.
+    if kind in ("screen-handoff", "flow-handoff"):
+        order, required = (SCREEN_SECTIONS, SCREEN_REQUIRED) if kind == "screen-handoff" else (FLOW_SECTIONS, FLOW_REQUIRED)
+        names = {norm(t): (i, t) for i, _, t in h2}
+        for name in order:
+            if name and norm(name) not in names:
+                if name in required:
+                    err(0, f"no '## {name}' section")
+                elif name == "Focus and Keyboard":
+                    warn(0, "no '## Focus and Keyboard' section (required when the screen has anything focusable)")
+        rank = {norm(n): k for k, n in enumerate(order) if n}
+        spot = order.index(None)
+        ranks = [(rank.get(norm(t), spot), i, t) for i, _, t in h2]
+        for (r1, _, t1), (r2, i2, t2) in zip(ranks, ranks[1:]):
+            if r2 < r1:
+                warn(i2, f"section {t2!r} comes after {t1!r}; the order is " + ", ".join(n or "<specific>" for n in order))
+
+    # Section sizes.
+    for i, lvl, title in h2:
+        end = section_end(doc, i, 2)
+        kb = sum(len(x) + 1 for x in doc.lines[i:end]) // 1024
+        if kb > 20 and not any(l == 3 and i < j < end for j, l, _ in hs):
+            warn(i, f"section {title!r} is {kb} KB with no '###' groups")
+
+    # Items: labels, uniqueness among siblings, size.
+    first = h2[0][0] if h2 else len(doc.lines)
+    parents: list[tuple[int, int]] = []          # (indent, line) of the open items
+    siblings: dict[tuple, dict[str, int]] = {}
+    section = None
+    for i in range(first, len(doc.lines)):
+        if doc.fence[i]:
+            continue
+        line = doc.lines[i]
+        h = HEADING_RE.match(line)
+        if h:
+            section, parents = i, []
+            continue
+        m = ITEM_RE.match(line)
+        if not m:
+            if line.strip() and not line[0].isspace():
+                parents = []
+            continue
+        indent = len(m.group(1).expandtabs(4))
+        while parents and parents[-1][0] >= indent:
+            parents.pop()
+        parent = parents[-1][1] if parents else None
+        parents.append((indent, i))
+        lab = LABEL_RE.match(line)
+        if indent == 0 and not lab and kind.endswith("handoff"):
+            err(i, "item with no bold label: nothing can point at it")
+        if lab:
+            name = norm(lab.group(2))
+            group = siblings.setdefault((section, parent), {})
+            if name in group:
+                err(i, f"label {lab.group(2).strip()!r} repeats line {group[name] + 1} among its siblings")
+            else:
+                group[name] = i
+        if indent == 0 and kind.endswith("handoff"):
+            end = item_end(doc, i, 0)
+            kb = sum(len(x) + 1 for x in doc.lines[i:end]) // 1024
+            if kb >= 4 and not any(LABEL_RE.match(doc.lines[j]) for j in range(i + 1, end)):
+                warn(i, f"item of {kb} KB with no labelled sub-items")
+
+    # The change block: a line's "(link): label" must resolve.
+    for i in range(0, first):
+        line = doc.lines[i]
+        if not line.startswith(">"):
+            continue
+        for m in re.finditer(r"\[([^\]]+)\]\(#([^)\s]+)\)(?::\s*([^;)]+))?", line):
+            heading = next((t for _, _, t in hs if slug(t) == m.group(2)), None)
+            if heading is None:
+                warn(i, f"change line links #{m.group(2)}, which no heading has")
+            elif m.group(3):
+                try:
+                    find_item(doc, f"{heading}: {m.group(3).strip()}", exact=True)
+                except Missing:
+                    warn(i, f"change line names {m.group(3).strip()!r} in {heading!r}, which isn't a label there")
+
+    # The two-register rule.
+    for i, line in enumerate(doc.lines):
+        if not doc.fence[i]:
+            for m in REG_ID_RE.finditer(line):
+                warn(i, f"register ID {m.group(0)!r} in a tier document")
+                break
+    return out
+
+
+def lint_plan(root: Path, args) -> int:
+    """Every reference a build plan's chunks make that `pack` can't resolve."""
+    plan = load(plan_path(root, args.plan, args.release), root)
+    opts = argparse.Namespace(max_bytes=1 << 40, no_design=False, no_intent=False, atom_sections="intent",
+                              plan_section=None)
+    chunks = errors = 0
+    for i, lvl, title in headings(plan):
+        if not CHUNK_RE.match(plan.lines[i]):
+            continue
+        chunks += 1
+        chunk = Span(plan, i, section_end(plan, i, lvl), title)
+        _, pointers, problems = gather(root, plan, chunk, opts)
+        for p in problems:
+            print(f"{plan.rel}:{i + 1}: error: {title}: {p}")
+        for p in pointers:
+            if "no section named in the plan" in p:
+                print(f"{plan.rel}:{i + 1}: warning: {title}: {p.split(': doc-get')[0]}")
+        errors += len(problems)
+    print(f"doc-get lint plan: {plan.rel}, {chunks} chunks, {errors} unresolved references", file=sys.stderr)
+    return 1 if errors else 0
+
+
+def lint_ui(root: Path, args) -> int:
+    if args.paths:
+        files = [resolve_keyword(root, x, args) for x in args.paths]
+    else:
+        files = sorted((root / "ui_ux").rglob("*.md")) if (root / "ui_ux").is_dir() else []
+    findings: list[tuple[Doc, int, str, str]] = []
+    checked = 0
+    for f in files:
+        doc = load(f, root)
+        kind = tier_kind(doc.rel)
+        if kind is None:
+            if args.paths:
+                note(f"{doc.rel} is not a root tier document; skipped")
+            continue
+        checked += 1
+        findings += [(doc, i, sev, msg) for i, sev, msg in lint_doc(doc, kind)]
+    for doc, i, sev, msg in findings:
+        print(f"{doc.rel}:{i + 1}: {sev}: {msg}")
+    errors = sum(1 for f in findings if f[2] == "error")
+    warnings = len(findings) - errors
+    print(f"doc-get lint ui: {checked} documents, {errors} errors, {warnings} warnings", file=sys.stderr)
+    return 1 if errors else 0
 
 
 # --------------------------------------------------------------------------- CLI
@@ -870,6 +1066,10 @@ def main(argv: list[str]) -> int:
     p.add_argument("--no-design", action="store_true")
     p.add_argument("--no-intent", action="store_true")
 
+    li = sub.add_parser("lint", help="check the UI/UX documents' format, or a build plan's references")
+    li.add_argument("what", choices=["ui", "plan"], help="ui: the UI/UX tier documents; plan: the build plan's references")
+    li.add_argument("paths", nargs="*", help="ui only: these tier documents (default: every root tier document)")
+
     args = ap.parse_args(argv)
     root = project_root(Path(args.dir))
     try:
@@ -897,6 +1097,8 @@ def main(argv: list[str]) -> int:
             doc = load(path, root)
             print(toc(doc, args.labels or "ui_ux" in doc.rel.split("/")[0:1]))
             return 0
+        elif args.cmd == "lint":
+            return lint_ui(root, args) if args.what == "ui" else lint_plan(root, args)
         elif args.cmd == "pack":
             return pack(root, args)
         print("\n\n".join(s.render() for s in spans))

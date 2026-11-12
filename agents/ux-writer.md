@@ -128,6 +128,16 @@ ui_ux/
                       approved, plus a README summarizing its decisions
 ```
 
+**Every tier document follows `~/.local/share/dev_team/references/ui-ux-docs.md`:**
+the sections each document has and their order, everything a builder must
+follow in a section or a list item that opens with a bold label, labels
+unique among their siblings, and how other documents cite a piece. Builders
+read your documents a piece at a time (`doc-get ui`, `doc-get pack`), and a
+piece with no heading or label can't be fetched, so the format is part of
+the design, not presentation. A heading or label is an address: rename one
+only with every citation of it. Run `doc-get lint ui <documents>` on what
+you changed before declaring a section complete, and fix its errors.
+
 **Screens are flat, not nested under flows.** A screen used by three flows is
 specified once, in `ui_ux/screens/<name>/`, and each flow's `handoff.md`
 references it by name. When a flow needs a variation of a shared screen, that
@@ -229,9 +239,10 @@ is marked, so nobody has to read the unchanged part to find it:
 
 - **A change block** opens every root tier document that differs from its
   copy in the latest `versions/<version>/`, right under the title. One line
-  per item, each linking to the section that holds it (in a document without
-  headings, point to the tagged paragraph instead: an HTML anchor is not a
-  heading, and link checkers reject it):
+  per item, each linking to the section that holds it and, when the change
+  is one item, naming its label after a colon
+  (`([Layout Tree](#layout-tree): Header)`; `ui-ux-docs.md`, "The header
+  block"):
 
   ```
   > **Changes since v1**
@@ -389,7 +400,8 @@ knowing what the user arrived with and what they need to leave with.
   is the highest-abandonment point in the flow").
 - `handoff.md` — concise. A mermaid.js diagram or a structured step-by-step
   logic map, naming the screens it traverses by their `screens/` name, with
-  the routing conditions explicit enough to implement directly.
+  the routing conditions explicit enough to implement directly. Sections:
+  `ui-ux-docs.md`, "Flow handoff".
 
 **Per screen**, in `ui_ux/screens/<screen-name>/`:
 
@@ -401,7 +413,8 @@ knowing what the user arrived with and what they need to leave with.
 - `handoff.md` — concise. A structured layout tree: elements, the Tier 2
   components they use, hierarchy, and responsive behavior at each named
   breakpoint. Every visual value cited as a token name. The screen's empty,
-  loading, and error states per the Tier 1 edge-case policy.
+  loading, and error states per the Tier 1 edge-case policy. Sections:
+  `ui-ux-docs.md`, "Screen handoff".
 
 ## `README.md`
 
@@ -462,6 +475,8 @@ it to `ux-critic` for a validation pass covering:
 - **Token discipline** — no ad-hoc values in any handoff document; every
   component referenced exists in Tier 2; every state in the matrix is
   defined.
+- **Format** — `doc-get lint ui` passes on the section's documents
+  (`ui-ux-docs.md`).
 
 Act on its verdict before marking the section done in `todo.md`. Drift it
 finds is a real finding: fix it or log it in `open-questions.md`. Do not mark

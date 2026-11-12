@@ -62,8 +62,13 @@ plan) sits next to it and belongs to the wave driver.
    IDs and adopted measures into each chunk's **Data** line, a measure it
    proposes and the owner declines into the gates table as declined, and
    each human decision it raises into the gates table as a gate.
-8. **Review and approve.** Ask `ux-writer` to check the chunks that build
-   interface against the design set when the plan is large. Put the plan to
+8. **Review and approve.** Run `doc-get lint plan`: every spec anchor,
+   definition-of-done item, design piece and intent ID a chunk names must
+   resolve exactly (how to name design pieces: `build-plan-model.md`'s chunk
+   template and `ui-ux-docs.md`, "Citing a piece"). Fix each one it lists;
+   a piece the design set doesn't have is a question for `ux-writer`, not a
+   description to write instead. Ask `ux-writer` to check the chunks that
+   build interface against the design set when the plan is large. Put the plan to
    the owner; it is approved only when the owner says so (record it in
    `decisions.md`).
 

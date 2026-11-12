@@ -23,7 +23,9 @@
   - done: `scripts/doc-get.py` (`chunk`, `spec`, `section`, `decision`, `question`, `intent`, `ui`, `toc`, `pack`), linked by hookup; `doc-tree-conventions.md` "Reading"; `build-plan-model.md` (how a chunk names design items); `wave-execution` brief; coding-leader chunk mode (both ports)
   - tested on infinite_flow: every v3.2 and v3.3 chunk packs; 15 design references stay unresolved (prose, class names, misnamed items), listed, not guessed
   - why: v3.3 wave 1's agents read the docs through grep windows (`sed -n 5283,5318p`, `| head -60`); the goal is clean context, not tokens
-  - maybe: ux-writer gives every handoff item a bold label (some are unlabelled), and spec-writer cites design items by exact label; then `pack` resolves every chunk
+  - done: `references/ui-ux-docs.md` (the UI/UX documents' format: sections per document, labelled items, citing), `doc-get lint ui` and `lint plan`; wired into ux-writer (both ports), `ux-validate`, `build-plan-authoring`, `build-plan-model.md`, `doc-tree-conventions.md`
+  - infinite_flow against it: `lint ui` 276 errors (261 unlabelled handoff items, 3 flow documents with no sections, missing Flow/Routing Rules sections), `lint plan` 7 unresolved references in v3.3's plan; the migration is the owner's call (one root pass by ux-writer, `versions/` untouched)
+  - pg_anon_studio's `ui_ux/` predates the tree conventions (index.md, qna.md): a migration too, when asked
   - maybe: point documentalist, spec-writer, ux-writer and coding-executor at it too
 - [ ] `security-advisor` agent and `cve-watch`: drafted and wired, to review and try.
   - done: agent (Claude and OpenCode), `references/dependency-security.md`, skills `tech-cold-start`, `dependency-check`, `vuln-triage`, leaders' skill `dependency-gating-protocol`; bound into coding-leader, coordination-leader, coding-executor, reviewer, wave-execution; `scripts/cve-watch.py`, `systemd/cve-watch.{service,timer}` installed by setup; osv-scanner 2.7.0 in `~/.local/bin`; README section

@@ -92,9 +92,10 @@ Architecture capture: <what the wave preflight must record, or "none">
   name definition-of-done items as "items 2, 11". After a design document's
   link, name its sections or labelled items in parentheses, exactly as the
   document writes them, separated by semicolons:
-  `(Notation Contract: Seventh chord symbols; States)`. `doc-get pack`
-  reads exactly these, so a prose description there ("where the level never
-  moves") resolves to nothing.
+  `(Notation Contract: Seventh chord symbols; States)`; the naming rules are
+  `ui-ux-docs.md`, "Citing a piece". `doc-get pack` reads exactly these, so
+  a prose description there ("where the level never moves") resolves to
+  nothing; `doc-get lint plan` lists every reference that doesn't resolve.
 - Atoms (or intent entries): the governing IDs known when the plan was written.
 - Data: `@data` IDs and adopted measures, when the project has a data register.
 - Revisions: intent changes the wave sync applies once this chunk is merged

@@ -5,7 +5,7 @@ description: Use when ux-critic is invoked as validator — by ux-writer when a 
 
 # UX Validator Mode
 
-Read the relevant tier documents and check four things.
+Read the relevant tier documents and check four things, then the format.
 
 **Tier 1 ↔ Tier 3 coherence.** The flow index in `strategy.md` lists exactly
 the flows that exist in `flows/` — no phantom entries, no unlisted folders.
@@ -56,6 +56,12 @@ text; and a document with no counterpart in `versions/` carries a single
 a block entry that points nowhere is DRIFT. So is any edit to a `versions/`
 folder after it was frozen (check its `git log`), unless `decisions.md`
 records it as a correction to match what that version shipped.
+
+**Format.** Run `doc-get lint ui <the section's documents>` (format:
+`~/.local/share/dev_team/references/ui-ux-docs.md`). Each document with
+errors is one DRIFT finding: name the document and its error count, and
+quote the first two errors. Its warnings are not findings unless one
+hides a piece a builder needs (a 90 KB section with no groups, say).
 
 **Also check the ID discipline**: no question or decision ID (`Q4`, `D7`, or
 equivalent) appears in any tier document. Those belong only in

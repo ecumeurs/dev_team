@@ -146,7 +146,10 @@ atom section or design item, from its heading to the next one at its level,
 or nothing and the candidates when the target is missing or ambiguous.
 `doc-get pack <chunk>` gathers what a chunk's Spec sections, Design docs and
 Atoms lines point to; chunk owners start from it. The commands are in
-`references/doc-tree-conventions.md` ("Reading").
+`references/doc-tree-conventions.md` ("Reading"). The UI/UX documents'
+shape, which is what makes their pieces addressable, is defined in
+`references/ui-ux-docs.md` and checked by `doc-get lint ui`; `doc-get lint
+plan` checks that everything a build plan cites resolves.
 
 ## Intent guardrail: ATD or the intent register
 

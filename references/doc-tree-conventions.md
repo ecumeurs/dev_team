@@ -60,7 +60,9 @@ archived.
 
 `strategy.md`, `ui_common.css`, `motion.md`, `flows/<flow-name>/` and
 `screens/<screen-name>/`, each of the last two holding `intent.md` and
-`handoff.md`. The layout is set in `ux-writer`'s document tree.
+`handoff.md`. The layout is set in `ux-writer`'s document tree; the shape of
+each document (its sections, its labelled items, how a piece is cited) in
+`ui-ux-docs.md` in this directory.
 
 ```
 ui_ux/
@@ -188,10 +190,14 @@ or ambiguous, it prints nothing and exits 1, naming the candidates.
 | A design section or labelled item | `doc-get ui phrase-workspace "Notation Contract: Seventh chord symbols"` |
 | What a document holds, before reading any of it | `doc-get toc spec`, `doc-get toc --ui flows/jam` |
 | A chunk with every spec section, design item and intent entry its lines point to | `doc-get pack 10` (`--refs-only` leaves the chunk's own text out) |
+| Check the UI/UX documents' format | `doc-get lint ui` (`ui-ux-docs.md`) |
+| Check that every reference a plan's chunks make resolves | `doc-get lint plan` |
 
 A design item is addressed by its heading or the bold label that opens its
 list item (`- **[v3.3 new]** **Seventh chord symbols.**`), scoped with
-`Heading: label` or `Item: sub-item` when a label repeats. `pack` resolves
+`Heading: label` or `Item: sub-item` when a label repeats (`ui-ux-docs.md`).
+A lookup typed by hand may match a name by prefix and says so; a citation
+(`pack`, `lint`) must match exactly. `pack` resolves
 what the plan names exactly; anything it can't resolve it lists under
 "Unresolved references" rather than guess, and a reader reports those
 instead of searching for them.
