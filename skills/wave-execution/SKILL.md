@@ -77,9 +77,11 @@ pre-settle its design beyond what the plan, the spec and the design set
 already settle: that judgment is the chunk owner's. You read the chunk's
 section once, to paste it; the owner then has no reason to search the plan
 (a plan runs to thousands of lines, and each search turn re-reads the
-owner's whole context). If the read-first or deltas sections are long
-(over about 80 lines), paste only what this chunk needs and say which
-heading holds the rest.
+owner's whole context). Take each piece with `doc-get` (`doc-get chunk
+<id>`, `doc-get section plan "Read first"`), never a grep window. If the
+read-first or deltas sections are long (over about 80 lines or 6 KB; a
+table of long rows passes the first and not the second), paste only what
+this chunk needs and say which heading holds the rest.
 
 ```
 Chunk mode. Build chunk <id> — <title> of <release>, wave <n>.
@@ -87,6 +89,11 @@ Chunk mode. Build chunk <id> — <title> of <release>, wave <n>.
 Plan: <build plan path> (for reference; the text you need is below, so
 don't open it unless a detail is missing, and then read only that section).
 Model: ~/.local/share/dev_team/references/build-plan-model.md.
+
+Before you plan, run `doc-get pack <id> --refs-only` in your worktree: it
+prints the spec sections, design items and intent entries this chunk's
+lines point to, and nothing else. Read any other piece of the trees with
+`doc-get` too, never a grep window, and report what it lists as unresolved.
 
 Chunk <id>, as written in the plan:
 <the chunk's section, pasted verbatim>

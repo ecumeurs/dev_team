@@ -88,7 +88,13 @@ Architecture capture: <what the wave preflight must record, or "none">
 - Goal: one or two sentences.
 - Scope: what is in, what is explicitly out.
 - Files: the source and test files it creates or changes.
-- Spec sections / Design docs: links.
+- Spec sections / Design docs: links. Link a spec section by its anchor;
+  name definition-of-done items as "items 2, 11". After a design document's
+  link, name its sections or labelled items in parentheses, exactly as the
+  document writes them, separated by semicolons:
+  `(Notation Contract: Seventh chord symbols; States)`. `doc-get pack`
+  reads exactly these, so a prose description there ("where the level never
+  moves") resolves to nothing.
 - Atoms (or intent entries): the governing IDs known when the plan was written.
 - Data: `@data` IDs and adopted measures, when the project has a data register.
 - Revisions: intent changes the wave sync applies once this chunk is merged

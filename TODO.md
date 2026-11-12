@@ -19,6 +19,12 @@
   - tested on infinite_flow: `compare 68a04c4^1 88caa03` finds the D339–D341 collision and the O177 clash; renumber and the duplicate flow on a scratch clone
   - infinite_flow's lint warnings to settle by its writers: stale "continues from" lines in both decisions logs; spec D400–D414 cited bare in `ui_ux/`; the wave log's "Next free IDs" lines can go
   - maybe: a pre-commit hook running `doc-ids lint` in projects with a spec tree
+- [ ] `doc-get` (targeted reading of the trees, the plan and the intent record): written and wired, to try on a real wave.
+  - done: `scripts/doc-get.py` (`chunk`, `spec`, `section`, `decision`, `question`, `intent`, `ui`, `toc`, `pack`), linked by hookup; `doc-tree-conventions.md` "Reading"; `build-plan-model.md` (how a chunk names design items); `wave-execution` brief; coding-leader chunk mode (both ports)
+  - tested on infinite_flow: every v3.2 and v3.3 chunk packs; 15 design references stay unresolved (prose, class names, misnamed items), listed, not guessed
+  - why: v3.3 wave 1's agents read the docs through grep windows (`sed -n 5283,5318p`, `| head -60`); the goal is clean context, not tokens
+  - maybe: ux-writer gives every handoff item a bold label (some are unlabelled), and spec-writer cites design items by exact label; then `pack` resolves every chunk
+  - maybe: point documentalist, spec-writer, ux-writer and coding-executor at it too
 - [ ] `security-advisor` agent and `cve-watch`: drafted and wired, to review and try.
   - done: agent (Claude and OpenCode), `references/dependency-security.md`, skills `tech-cold-start`, `dependency-check`, `vuln-triage`, leaders' skill `dependency-gating-protocol`; bound into coding-leader, coordination-leader, coding-executor, reviewer, wave-execution; `scripts/cve-watch.py`, `systemd/cve-watch.{service,timer}` installed by setup; osv-scanner 2.7.0 in `~/.local/bin`; README section
   - run the cold start over `~/work` (`.tech` everywhere); `cours` needs `[scan].exclude` for `devops/exo_compose/db_peppermint_data` (unreadable Docker volume fails its scan), `llmward` probably for `security/skill-audit/scripts/ecosystem-stubs` (fixture lockfiles)

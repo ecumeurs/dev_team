@@ -27,6 +27,10 @@
 # (next free ID, duplicate lint, cross-branch compare, renumber):
 # ~/.local/bin/doc-ids -> scripts/doc-ids.py. hookoff.sh leaves it in place.
 #
+# Also installs doc-get, the reading side of the same trees (one chunk, spec
+# section, register entry, atom or design item, or a chunk's pack):
+# ~/.local/bin/doc-get -> scripts/doc-get.py. hookoff.sh leaves it in place.
+#
 # Deliberately does NOT touch opencode.jsonc / the llmward provider lock —
 # that's a separate, permanent DLP-routing boundary, not "team presence".
 set -euo pipefail
@@ -80,6 +84,9 @@ fi
 
 # doc-ids: the command the writers take register IDs from.
 ensure_link "$REPO_DIR/scripts/doc-ids.py"       "$HOME/.local/bin/doc-ids"                     "doc-ids"         || failed=1
+
+# doc-get: the command every agent reads the trees' targeted pieces with.
+ensure_link "$REPO_DIR/scripts/doc-get.py"       "$HOME/.local/bin/doc-get"                     "doc-get"         || failed=1
 
 # cve-watch: the command the advisor's skills call, and the daily timer.
 ensure_link "$REPO_DIR/scripts/cve-watch.py"     "$HOME/.local/bin/cve-watch"                   "cve-watch"       || failed=1

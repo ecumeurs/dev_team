@@ -139,6 +139,15 @@ worktree of the repo, `lint` finds an ID defined twice, `compare main
 `renumber` moves an entry and its citations to a new number on one branch.
 The rules are in `references/doc-tree-conventions.md` ("Numbering").
 
+Agents read those trees, the build plan and the intent record through
+`doc-get` (`scripts/doc-get.py`, linked as `~/.local/bin/doc-get`), never a
+grep window: it prints exactly one chunk, spec section, register entry,
+atom section or design item, from its heading to the next one at its level,
+or nothing and the candidates when the target is missing or ambiguous.
+`doc-get pack <chunk>` gathers what a chunk's Spec sections, Design docs and
+Atoms lines point to; chunk owners start from it. The commands are in
+`references/doc-tree-conventions.md` ("Reading").
+
 ## Intent guardrail: ATD or the intent register
 
 The leaders check every change against declared business intent. There is a

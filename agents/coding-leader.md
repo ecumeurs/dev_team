@@ -268,10 +268,15 @@ session acting as wave driver. The model is
 "Verification levels" and "Branches" sections, then the chunk in full, the
 plan's read-first section and its workflow deltas. Normally the brief embeds
 the chunk's text, the read-first lines and the deltas: work from those and
-don't open the plan file. Open it only for a detail the brief doesn't carry,
-and then read a narrow window (search for the heading, read that section),
-never the whole file: build plans run to thousands of lines, and every extra
-turn re-reads your whole context. Then it changes your workflow like this:
+don't open the plan file. Then run `doc-get pack <id> --refs-only` in your
+worktree: it prints the spec sections, design items and intent entries the
+chunk's lines point to, and only those. Read any other piece of the plan,
+the spec, the design set, the registers or the intent record with `doc-get`
+(`doc-get chunk <id> -f <field>`, `doc-get spec <section>`, `doc-get toc
+<file>` first when you don't know the heading), never a grep window or the
+whole file: a window brings in what surrounds the target, and every extra
+turn re-reads your whole context. Report what the pack lists as unresolved;
+don't search for it. Then it changes your workflow like this:
 
 - **The chunk is the plan.** Its Goal, Scope, Files, Done when and
   Verification are settled, and so are the spec and the design it points

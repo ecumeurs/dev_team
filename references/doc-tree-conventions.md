@@ -168,6 +168,34 @@ another branch or worktree may already hold the next number.
   origin and every citation. Renumber the newer one with
   `--def FILE:LINE`, and `--take` each citation that means it.
 
+## Reading: `doc-get`
+
+Read a targeted piece of either tree, the build plan or the intent record
+with the `doc-get` command, not with grep and a window of lines. A grep
+window brings in whatever surrounds the hit, and a reader can't tell the
+target from its neighbours. `doc-get` prints the target from its own
+heading or entry to where the next one at the same level begins, after a
+`==> path:lines · what <==` marker to cite it by. When the target is missing
+or ambiguous, it prints nothing and exits 1, naming the candidates.
+
+| Need | Command |
+|---|---|
+| A chunk, or some of its fields | `doc-get chunk 10`, `doc-get chunk 10 -f files -f "done when"` |
+| A master spec section, or items of a numbered list | `doc-get spec D7.1`, `doc-get spec D15 --item 11` |
+| Any document's section | `doc-get section plan "Workflow deltas"`, `doc-get section docs/x.md some-anchor` |
+| A register entry, live or archived | `doc-get decision D527`, `doc-get decision ux D459`, `doc-get question O267` |
+| An atom or intent entry, whole or by section | `doc-get intent rule_x -s rule -s expectation` |
+| A design section or labelled item | `doc-get ui phrase-workspace "Notation Contract: Seventh chord symbols"` |
+| What a document holds, before reading any of it | `doc-get toc spec`, `doc-get toc --ui flows/jam` |
+| A chunk with every spec section, design item and intent entry its lines point to | `doc-get pack 10` (`--refs-only` leaves the chunk's own text out) |
+
+A design item is addressed by its heading or the bold label that opens its
+list item (`- **[v3.3 new]** **Seventh chord symbols.**`), scoped with
+`Heading: label` or `Item: sub-item` when a label repeats. `pack` resolves
+what the plan names exactly; anything it can't resolve it lists under
+"Unresolved references" rather than guess, and a reader reports those
+instead of searching for them.
+
 ## The intent record is not a third tree
 
 The declared-intent record — ATD's `docs/` or, without ATD, the intent
