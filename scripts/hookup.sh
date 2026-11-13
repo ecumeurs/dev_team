@@ -36,6 +36,11 @@
 # and activity): ~/.local/bin/agent-stats -> scripts/agent-stats.py.
 # hookoff.sh leaves it in place.
 #
+# Also installs fedit, the editing side: exact old/new replacements that write
+# nothing unless every one matched (a python .replace or sed -i reports
+# success on a miss): ~/.local/bin/fedit -> scripts/fedit.py. hookoff.sh
+# leaves it in place.
+#
 # Deliberately does NOT touch opencode.jsonc / the llmward provider lock —
 # that's a separate, permanent DLP-routing boundary, not "team presence".
 set -euo pipefail
@@ -95,6 +100,9 @@ ensure_link "$REPO_DIR/scripts/doc-get.py"       "$HOME/.local/bin/doc-get"     
 
 # agent-stats: the wave driver's figures for each chunk and wave.
 ensure_link "$REPO_DIR/scripts/agent-stats.py"   "$HOME/.local/bin/agent-stats"                 "agent-stats"     || failed=1
+
+# fedit: the command agents edit a file with when they read it through Bash.
+ensure_link "$REPO_DIR/scripts/fedit.py"         "$HOME/.local/bin/fedit"                       "fedit"           || failed=1
 
 # cve-watch: the command the advisor's skills call, and the daily timer.
 ensure_link "$REPO_DIR/scripts/cve-watch.py"     "$HOME/.local/bin/cve-watch"                   "cve-watch"       || failed=1

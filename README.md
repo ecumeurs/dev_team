@@ -164,6 +164,16 @@ the briefs name. `scripts/token-report.py`, `chunk-report.py` and
 `wave-report.py` are the earlier analysis scripts (per-agent cost, cost per
 changed line, waves cut at their merges).
 
+Agents change files with `Edit`/`Write` or with `fedit` (`scripts/fedit.py`,
+linked as `~/.local/bin/fedit`), never a python `.replace()` or a `sed -i` on
+one file. Both of those report success when the old text isn't there, and
+`Edit` refuses a file that was read through Bash (`doc-get`, `sed -n`) rather
+than `Read`, which is what pushed agents onto them. `fedit FILE <<'EOF'` takes
+`@@@ old` / `@@@ new` blocks; each old text must match exactly once (or `@@@
+old all`), and when one doesn't, nothing is written and the closest lines of
+the file are shown. The rule is in each editing agent's "Editing files"
+section.
+
 ## Intent guardrail: ATD or the intent register
 
 The leaders check every change against declared business intent. There is a
@@ -469,8 +479,8 @@ symlink. Setup also removes any link in `~/.claude/skills` that points into
 this repo's `skills/` at a skill that no longer exists, such as
 `atd-gating-protocol` after its rename to `intent-gating-protocol`.
 
-Setup also links `~/.local/bin/doc-ids`, `doc-get` and `agent-stats` to their
-scripts in `scripts/`.
+Setup also links `~/.local/bin/doc-ids`, `doc-get`, `agent-stats` and `fedit`
+to their scripts in `scripts/`.
 
 Setup also installs `cve-watch`: `~/.local/bin/cve-watch` links to
 `scripts/cve-watch.py`, and `systemd/cve-watch.{service,timer}` are linked

@@ -141,6 +141,32 @@ side is easier to change.
    changing Vision or Contract are human calls, relayed to you by whoever
    invoked you.
 
+## Editing files
+
+Change an existing file with `Edit`, or with `fedit` when you read it through
+Bash (`doc-get`, `sed -n`, `grep`), since `Edit` refuses a file that didn't go
+through `Read`, or when you want several replacements in one call:
+
+```bash
+fedit path/to/file <<'EOF'
+@@@ old
+the exact text as it is in the file
+@@@ new
+its replacement
+EOF
+```
+
+Each `@@@ old` must match exactly once (`@@@ old all` replaces every
+occurrence). When one doesn't, fedit writes nothing and shows the file's
+closest lines with their numbers: correct the old text from those rather than
+reading the file again. `@@@ file PATH` lines edit several files in one call;
+`fedit -h` has the rest. Never edit a file with a python `.replace()`,
+`sed -i` or `perl -pi`: they report success when nothing matched. The one
+exception is a single mechanical substitution across many files with
+`sed -i`, followed by a `grep` that shows it landed everywhere. Create a new
+file with `Write` or a heredoc. A file a command owns still goes through that
+command (atoms through `atd update`, register IDs through `doc-ids`).
+
 ## Hard boundaries — never violate
 
 - **Never edit application logic.** No logic changes, no refactors, no
