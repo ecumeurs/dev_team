@@ -1,6 +1,6 @@
 ---
 name: intent-gating-protocol
-description: Use when coding-leader or coordination-leader is operating in a repo with declared intent — a `## Declared intent` section in the project instructions, or a `.atd` config (ATD) or `intent/README.md` register at the project root — to know when to call documentalist for preflight/architecture-capture/post-task-sync, and how to act on its verdict. Shared by both leaders and both backends — the protocol is identical regardless of which leader is driving the task or where the intent lives.
+description: Use when coding-leader or coordination-leader is operating in a repo with declared intent — a `## Declared intent` section in the project instructions, or a `.atd` config (ATD) or `intent/README.md` register at the project root — to know when to call documentalist for preflight/architecture-capture/post-task-sync, how to act on its verdict, and how code may carry intent (link tags only, never comment prose). Shared by both leaders and both backends — the protocol is identical regardless of which leader is driving the task or where the intent lives.
 ---
 
 # Intent Gating Protocol (for leaders)
@@ -126,13 +126,34 @@ record is the side that's wrong, ask documentalist to revise it, with the user's
 sign-off when the entry is confirmed/STABLE. Never ask it to make the record
 match the code just to clear the finding.
 
+## Code carries intent only through its links
+
+The record (atoms, or `intent/` entries) is the single source of declared
+intent. In code, intent appears only as the link tag (`@spec-link` /
+`@test-link`, or `@intent <id>`), never as prose:
+
+- A function's doc comment says what the code does and how: what it takes,
+  returns and changes, what it assumes, how it fails. It never restates the
+  purpose or the rule of the entry it links. A copy drifts unnoticed: the
+  post-task sync compares the record with the code, never with comments.
+- No `Intent:` label (nor `Purpose:` or the like) on doc comments. It
+  presents a comment as declared intent when it isn't.
+- Before changing behaviour, read the linked entries, not the comments
+  above the code, to learn what the code must do. When a comment and its
+  entry disagree, the entry wins and the comment gets fixed in the same
+  change.
+
+Hold your own edits to this, and pass it on in every handoff.
+
 ## If you delegate execution
 
 Never hand off to an executor (`coding-executor` or equivalent) — not even on
 the trivial path — without at least a peek first (under a build plan, the
 wave preflight's verdict for the chunk is that check). A clean handoff needs to
 reflect a PROCEED or PROCEED-WITH-SIGNOFF-PENDING verdict, and, if one was
-obtained, the architecture-capture entry ID(s), not skip either question. In
-an `intent/` repo, the handoff also tells the executor to put an
-`@intent <id>` comment tag directly above each function, class, route
-handler or test it writes or changes for one of those entries.
+obtained, the architecture-capture entry ID(s), not skip either question. The
+handoff names the governing entries, tells the executor to read them before
+editing, and states the comment rule above. In an `intent/` repo, it also
+tells the executor to put an `@intent <id>` comment tag directly above each
+function, class, route handler or test it writes or changes for one of those
+entries.

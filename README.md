@@ -192,6 +192,9 @@ picks one with a marker at its project root. The ATD-less backend, the
 
 The leaders' side of the protocol (when to call `documentalist`, how to act
 on its verdict) is one shared skill, `intent-gating-protocol`, for both backends.
+It also sets that code carries intent only through its link tags: doc
+comments describe what the code does, never restate an entry's purpose or
+rule, and carry no `Intent:` label.
 The verdict scale is the same in both: `PROCEED`,
 `PROCEED-WITH-SIGNOFF-PENDING`, `HALT-NEEDS-USER-INPUT` and
 `HALT-NEEDS-CONTRACT-VISION-DECISION`.
