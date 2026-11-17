@@ -13,9 +13,16 @@ Record), --json, --project DIR (the repo; default: the current one), --top N.
 Where the numbers come from. Claude Code writes each session to
 ~/.claude/projects/<path>/<session>.jsonl and each subagent to
 <session>/subagents/agent-*.jsonl with a .meta.json (role, the tool call that
-started it, its depth). Every model turn carries its token usage. A turn split
-over several lines repeats its usage, so turns are counted once by message id,
-and tool calls once by tool-use id.
+started it, its parent agent, its depth). Every model turn carries its token
+usage. A turn split over several lines repeats its usage, so turns are counted
+once by message id, and tool calls once by tool-use id.
+
+Copied history. A fork's transcript repeats its parent's conversation, and a
+session continued in another one ("continued-in") is repeated at the start of
+the new one, with the same message and tool-use ids. Each turn, tool call and
+brief line is counted once, in the transcript it first appears in: lower depth
+first, then earlier in a continued-in chain, then the earlier-ending session.
+A chain of continued sessions counts as one driver.
 
 How agents are attributed. The git branch stamped on transcript lines is the
 session's starting branch, not where an agent worked, so it can't be used.
@@ -122,8 +129,13 @@ class Agent:
         self.role = self.meta.get("agentType") or "driver"
         self.depth = self.meta.get("spawnDepth", 0)
         self.description = self.meta.get("description", "")
+        self.id = session if meta is None else os.path.basename(path)[len("agent-"):-len(".jsonl")]
         self.parent = None
         self.brief = ""
+        self.user_texts = []     # (uuid, text) of its non-meta user messages, for the brief
+        self.continued_in = None # the session this one was continued in
+        self.lineage = session   # the first session of its continued-in chain
+        self.chain_pos = 0       # its place in that chain
         self.turns = {}          # message id -> (timestamp, model, usage)
         self.calls = {}          # tool-use id -> (name, input, timestamp)
         self.results = {}        # tool-use id -> result size
@@ -137,7 +149,6 @@ class Agent:
 
 def load(dirs):
     agents = []
-    owner_of_call = {}
     for d in dirs:
         for f in sorted(glob.glob(os.path.join(d, "*.jsonl"))):
             agents.append(read_agent(f, os.path.basename(f)[:-6], None))
@@ -145,18 +156,57 @@ def load(dirs):
             m = f[:-6] + ".meta.json"
             meta = json.load(open(m)) if os.path.exists(m) else {"agentType": "unknown", "spawnDepth": 1}
             agents.append(read_agent(f, f.split(os.sep)[-3], meta))
+    chain(agents)
+    dedupe(agents)
+    drivers = {a.session: a for a in agents if a.is_driver}
+    by_id = {(a.session, a.id): a for a in agents if not a.is_driver}
+    owner_of_call = {cid: a for a in agents for cid in a.calls}
     for a in agents:
-        for cid in a.calls:
-            owner_of_call[cid] = a
+        if a.is_driver:
+            continue
+        pid = a.meta.get("parentAgentId")
+        parent = by_id.get((a.session, pid)) if pid else drivers.get(a.session) if a.depth <= 1 else None
+        if parent is None:
+            parent = owner_of_call.get(a.meta.get("toolUseId"))
+        a.parent = parent if parent is not a else None
     for a in agents:
-        if not a.is_driver:
-            a.parent = owner_of_call.get(a.meta.get("toolUseId"))
-    for a in agents:
-        t = a
-        while t.parent is not None and not t.parent.is_driver and t.depth > 1:
+        t, seen = a, {id(a)}
+        while t.parent is not None and not t.parent.is_driver and t.depth > 1 and id(t.parent) not in seen:
             t = t.parent
+            seen.add(id(t))
         a.top = t
     return agents
+
+
+def chain(agents):
+    """Link sessions continued in one another: each driver's lineage and place in it."""
+    drivers = {a.session: a for a in agents if a.is_driver}
+    source = {a.continued_in: a for a in drivers.values() if a.continued_in in drivers}
+    for a in drivers.values():
+        t, pos, seen = a, 0, {a.session}
+        while t.session in source and source[t.session].session not in seen:
+            t = source[t.session]
+            seen.add(t.session)
+            pos += 1
+        a.lineage, a.chain_pos = t.session, pos
+    for a in agents:
+        if not a.is_driver and a.session in drivers:
+            a.lineage = drivers[a.session].lineage
+
+
+def dedupe(agents):
+    """Keep each turn, call and brief line in the first transcript that has it."""
+    rank = lambda a: (a.depth, a.chain_pos, max_time(a) or "", a.session, a.id)
+    seen_turns, seen_calls, seen_texts = set(), set(), set()
+    for a in sorted(agents, key=rank):
+        turns, calls = a.turns, a.calls
+        a.turns = {k: v for k, v in turns.items() if k not in seen_turns}
+        a.calls = {k: v for k, v in calls.items() if k not in seen_calls}
+        seen_turns.update(turns)
+        seen_calls.update(calls)
+        a.brief = next((t for u, t in a.user_texts if u not in seen_texts), "")
+        seen_texts.update(u for u, _ in a.user_texts)
+        a.user_texts = []
 
 
 def read_agent(path, session, meta):
@@ -168,11 +218,15 @@ def read_agent(path, session, meta):
             except ValueError:
                 continue
             kind = d.get("type")
-            if kind == "user":
+            if kind == "continued-in":
+                a.continued_in = d.get("continuedInSessionId")
+            elif kind == "user":
                 msg = d.get("message") or {}
                 content = msg.get("content")
-                if not a.brief and meta is not None and not d.get("isMeta"):
-                    a.brief = text_of(content)
+                if meta is not None and not d.get("isMeta"):
+                    text = text_of(content)
+                    if text:
+                        a.user_texts.append((d.get("uuid"), text))
                 if isinstance(content, list):
                     for b in content:
                         if isinstance(b, dict) and b.get("type") == "tool_result":
@@ -489,7 +543,7 @@ def select_wave(agents, release, wave, repo):
     if not tagged_tops:
         return [], [], None, None, [], []
     tops = set(id(a) for a in tagged_tops)
-    sessions = set(a.session for a in tagged_tops)
+    sessions = set(a.lineage for a in tagged_tops)
     starts = [min_time(a) for a in tagged_tops if min_time(a)]
     ends = [max_time(a) for a in tagged_tops if max_time(a)]
     lo = ts(min(starts))
@@ -507,14 +561,14 @@ def select_wave(agents, release, wave, repo):
         if a.is_driver:
             if not any(d_within(t) for t, _, _ in a.turns.values()):
                 continue
-            if a.session in sessions:
+            if a.lineage in sessions:
                 selection.append((a, d_within))
             else:
                 others.append(a)
             continue
         if id(a.top) in tops:
             selection.append((a, None))
-        elif a.top.tag is None and a.top.session in sessions and min_time(a.top) and within(min_time(a.top)):
+        elif a.top.tag is None and a.top.lineage in sessions and min_time(a.top) and within(min_time(a.top)):
             selection.append((a, None))
             if a.depth == 1:
                 untagged.append(a)
