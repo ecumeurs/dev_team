@@ -174,6 +174,25 @@ Rules:
     finding on internal content reaches the host anyway (a privileged
     container, a mounted Docker socket, a host path, a kernel-facing
     feature) is judged at triage, by hand.
+  - **A host component needs its own entry to be watched.** A kernel,
+    containerd or runc only named in the Docker Engine entry's notes is
+    never matched against NVD. When a project relies on the host's engine,
+    give each its own `[[platform]]` with `host = true`, a CPE and the
+    version read on that host. A remote host's versions (a VPS) go stale:
+    record when they were read in the entry's `source`, and re-read them
+    at the next dependency check that touches that host.
+  - **A runtime shared by the host and the images** (a python3 that runs
+    the project's host tooling and is also inside its images) is one
+    entry with `host = true`: every finding on it then carries *reaches
+    the host*, the images' included, and triage says which path a finding
+    actually reaches. Splitting it into a host entry and an image entry
+    duplicates every finding and every `[[ignore]]`; do that only when the
+    two run different versions. Say in the entry's notes which host tools
+    use it.
+  - **A package finding follows its source**: the same advisory in an
+    exposed SBOM and an internal one stays exposed. A fixture SBOM that
+    yields no finding is left alone; `[scan].exclude` is only for
+    directories whose findings are not real dependency sets.
 
 `cve-watch lint [dir…]` checks all of this, and the skills run it after every
 edit.

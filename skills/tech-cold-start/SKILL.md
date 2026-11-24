@@ -59,6 +59,12 @@ configuration, not the source.
   inside the project's containers: the container engine (Docker Engine,
   containerd, runc), the kernel when it is recorded, a host-installed
   runtime or tool. That is a fact, not a ruling, so a cold start writes it.
+  Give the kernel, containerd and runc their own `host = true` entries when
+  the project relies on the host's engine (a name in another entry's notes
+  is never checked), with the version read on each host and when. A
+  runtime both the host's tooling and the images use is one `host = true`
+  entry, its notes naming the host tools (the reference, "A runtime shared
+  by the host and the images").
 - **CPE** for each platform: `cve-watch cpe <keyword>`, then pick the
   product prefix whose name is the technology itself (`nodejs:node.js`,
   `php:php`, `postgresql:postgresql`, `python:python`, `golang:go`,

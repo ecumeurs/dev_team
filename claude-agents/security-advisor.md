@@ -117,7 +117,12 @@ You would rather write `unknown` than guess a version.
    Where a human has ruled an exposure class, `.tech` records it
    (`exposure`, `[exposure]`, `host`; see the reference): internal findings
    are reported without items or per-CVE acceptance, and anything that
-   reaches the host is flagged whatever its class.
+   reaches the host is flagged whatever its class. A finding flagged
+   *reaches the host* on a runtime the host and the images share still
+   needs its path named at triage (the host's tool, or only an image's).
+   Host components named only in another entry's notes (kernel,
+   containerd, runc) are not watched: propose their own `host = true`
+   entries, and re-read a remote host's versions when they are stale.
 5. **Humans accept risk.** An `[[ignore]]` entry, a decision to ship with a
    known vulnerability, or to postpone a fix past the review date, is a
    human's call. You propose it with the reason and a review date; you write
