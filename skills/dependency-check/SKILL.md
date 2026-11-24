@@ -34,7 +34,10 @@ You write nothing in this mode.
 5. **Verdict**: `CLEAR`, `FIX-AVAILABLE` (the version to use instead), or
    `NEEDS-HUMAN-DECISION` (no fixed version, only a breaking fix, or the
    dependency is only usable by accepting a risk), per candidate and
-   overall.
+   overall. A candidate that will land in something `.tech` classes
+   internal (the reference, `.tech`, the exposure class) has its findings
+   listed, labelled internal, and weighs on no verdict, unless it reaches
+   the host.
 
 ## Post-change: after the lockfile moved
 
@@ -51,14 +54,21 @@ You write nothing in this mode.
    platform version, a new platform, a new lockfile or manifest, a
    direct technology in `[stack]`, a scan path. Bump `updated`. If the
    project has no `.tech`, write one now following skill
-   `tech-cold-start`, section 2, for this project only.
+   `tech-cold-start`, section 2, for this project only. When the project
+   uses the exposure class, give a new platform its `exposure` (and `host =
+   true` if it runs on the host) and a new lockfile or SBOM its place in
+   `[exposure].internal` or not, by the ruling `.tech`'s header cites. A
+   change the ruling doesn't settle (a component that starts publishing a
+   port, a new kind of thing) stays `exposed` and goes to "Pending human
+   decisions".
 4. **Verify**: `cve-watch lint <dir>` clean, `cve-watch check <dir>` run, its
    exit code in the report.
-5. **Verdict** on the state after the change: `CLEAR` when nothing it
-   introduced is at or above the threshold, `FIX-AVAILABLE` when something
+5. **Verdict** on the state after the change: `CLEAR` when nothing exposed
+   it introduced is at or above the threshold, `FIX-AVAILABLE` when something
    is and a fix exists, `NEEDS-HUMAN-DECISION` otherwise. Pre-existing
    findings are reported, not blocking, unless the change was meant to fix
-   them.
+   them. Internal findings it introduced are listed, labelled internal, and
+   don't block.
 
 Never tick `SECURITY_TODO.md` items: say which ones the next sweep will
 tick.

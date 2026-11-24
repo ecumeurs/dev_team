@@ -389,15 +389,18 @@ runs? `security-advisor` owns it, `cve-watch` does the mechanical work.
 
 | Piece | What it is |
 |---|---|
-| `.tech` (project root) | TOML: the stack overview, the platforms no lockfile pins (runtime, server, engine, base image) with version and NVD CPE, scan narrowing, and accepted risks approved by a human. Never a copy of the dependency list: lockfiles are the truth for packages. |
+| `.tech` (project root) | TOML: the stack overview, the platforms no lockfile pins (runtime, server, engine, base image) with version and NVD CPE, scan narrowing, accepted risks approved by a human, and optionally an exposure class (`exposure = "internal"` on a platform, `[exposure].internal` for lockfiles and SBOMs, `host = true` for what runs on the host). Never a copy of the dependency list: lockfiles are the truth for packages. |
 | `SECURITY_TODO.md` (project root) | One item per advisory and package at or above `medium`, written by the sweep, ticked by it when the scan no longer finds it; the advisor adds triage lines. |
-| `cve-watch` (`scripts/cve-watch.py`, linked as `~/.local/bin/cve-watch`) | osv-scanner against OSV.dev for packages, NVD by CPE for platforms. `check`, `query`, `latest`, `cpe`, `sweep`, `projects`, `lint`. Standard library Python. |
+| `cve-watch` (`scripts/cve-watch.py`, linked as `~/.local/bin/cve-watch`) | osv-scanner against OSV.dev for packages, NVD by CPE for platforms. `check`, `query`, `latest`, `cpe`, `sweep`, `projects`, `lint`. Standard library Python; offline tests in `tests/test_cve_watch.py` (`python3 -m unittest discover -s tests`). |
 | `cve-watch.timer` (`systemd/`, user unit) | The daily sweep at 07:30: every git project under `~/work` (worktrees skipped), new findings into `SECURITY_TODO.md`, a report in `~/.local/state/cve-watch/reports/latest.md`, a desktop notification. No agent runs. |
 
 A finding is *new*, and gets an item, when it was published in the last 7
 days or first detected since the previous sweep; the first sweep of a
 project only applies the date window, so an old backlog lands in the
-report, not in the file (`cve-watch sweep --all` writes it). Raw scan
+report, not in the file (`cve-watch sweep --all` writes it). A finding
+`.tech` classes internal is reported but never gets an item and never
+fails `cve-watch check`; one on a `host = true` platform is always exposed
+and flagged *reaches the host*. Raw scan
 results are cached for 30 days, and `cve-watch sweep --from-run <id>
 --dry-run` replays one offline. The format, the sources' limits and what
 "fixed" means are in `references/dependency-security.md`.

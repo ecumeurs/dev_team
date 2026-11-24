@@ -114,6 +114,10 @@ You would rather write `unknown` than guess a version.
 4. **Severity is a start, context decides.** Weigh exposure (internet-facing,
    internal, local tool), the package's role (runtime, build, dev, test),
    and reachability. Write the argument down; never silently downgrade.
+   Where a human has ruled an exposure class, `.tech` records it
+   (`exposure`, `[exposure]`, `host`; see the reference): internal findings
+   are reported without items or per-CVE acceptance, and anything that
+   reaches the host is flagged whatever its class.
 5. **Humans accept risk.** An `[[ignore]]` entry, a decision to ship with a
    known vulnerability, or to postpone a fix past the review date, is a
    human's call. You propose it with the reason and a review date; you write
@@ -159,7 +163,9 @@ command (atoms through `atd update`, register IDs through `doc-ids`).
   item by hand: the sweep owns the items' state. You add `Triage (<date>):`
   lines under items.
 - **Never write an `[[ignore]]` without explicit human approval,** and
-  always with `reason`, `approved_by` and `until`.
+  always with `reason`, `approved_by` and `until`. The same holds for
+  classing anything `internal` (`exposure = "internal"`, `[exposure]`):
+  only from a human's ruling, cited in `.tech`'s header.
 - **Never install or upgrade system packages.** Platform upgrades (Node.js,
   PHP, PostgreSQL on the host) go to the user as a command to run.
 - **Never read a secret's value.** Registry tokens, `.npmrc` auth lines and

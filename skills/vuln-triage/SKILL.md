@@ -17,6 +17,15 @@ triage lines and nothing else; the items' state belongs to the sweep.
   no `Triage` line, or all of them if asked.
 - Refresh first: `cve-watch check <dir> --json`. An item the check no longer
   reports is already fixed; say so and skip it (the next sweep ticks it).
+  An item whose finding the check now gives `"exposure": "internal"` is out
+  of scope too: the next sweep ticks it `internal in .tech`.
+- **Internal findings** (`.tech`'s exposure class; the reference, `.tech`)
+  get no item and no per-CVE triage: the ruling the class cites covers
+  them. Don't propose an `[[ignore]]` for one. Look at them only for two
+  things: one that reaches the host (below), and a class that no longer
+  holds (the component now publishes a port, a web route reaches it): say
+  which entry to move to `exposed`, as a `.tech` change for a human to
+  confirm.
 
 ## 2. Classify each item
 
@@ -29,7 +38,14 @@ Look at the package's place in the project, then the advisory:
   `cargo tree -i` to see which direct dependency pulls it.
 - **Exposure**: what the project is (a public web app, an internal service,
   a local CLI, a course exercise) as `.tech`, the README and the project
-  instructions say.
+  instructions say, and where the finding sits within it.
+- **Host reach**: a finding flagged *reaches the host* (a `host = true`
+  platform) is triaged as exposed and named in the hand-back. `cve-watch` has no
+  other host signal: when a finding, exposed or internal, is a container
+  escape or otherwise reaches the host through how the component runs (a
+  privileged container, a mounted Docker socket or host path, a
+  kernel-facing feature), you judge it by hand and say so in the triage
+  line, internal findings included.
 - **Reachability**: Go's call analysis (`not reachable per call
   analysis`); otherwise whether the vulnerable feature is used, when that
   can be read in a minute from the advisory and a search of the code. Don't
@@ -64,4 +80,6 @@ would build it, per project: one line per upgrade (`package from → to`, path,
 items it closes, breaking or not), `fix-now` first. List `accept-risk?`
 items under "Pending human decisions". Platform findings (NVD) that need a
 host upgrade go under "Platform actions for the user" as the command to
-run. A large backlog is fine to triage in passes: say what is left.
+run. Internal findings get one summary line per project (counts, and any
+that reaches the host or whose class no longer holds), not a line each. A
+large backlog is fine to triage in passes: say what is left.

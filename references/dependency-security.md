@@ -93,6 +93,17 @@ name = "PostgreSQL"
 version = "17.2"               # the version actually run; exact when known
 cpe = "cpe:2.3:a:postgresql:postgresql"
 source = "docker-compose.yml"  # where that version is pinned, or "host"
+exposure = "internal"          # optional: "exposed" (default) or "internal"
+
+[[platform]]
+name = "Docker Engine"
+version = "29.0.1"
+cpe = "cpe:2.3:a:docker:engine"
+source = "host: docker version"
+host = true                    # optional: runs on the host itself; always exposed, findings flagged
+
+[exposure]                     # optional: lockfiles and SBOMs whose findings are internal
+internal = ["services/worker/requirements.txt", "images/exporter/sbom/"]
 
 [[ignore]]                     # an accepted risk: a human approved it
 id = "GHSA-xxxx-xxxx-xxxx"     # the advisory ID or any alias (CVE-…)
@@ -132,6 +143,37 @@ Rules:
 - `[[ignore]]`: `id`, `reason`, `approved_by` and `until` are required. The
   advisor never writes one without a human's explicit approval, relayed by
   whoever invoked it. An expired entry stops applying; lint warns.
+- **The exposure class.** Every finding is `exposed` unless `.tech` says
+  otherwise, and an exposed finding gets the full treatment described below.
+  An `internal` finding is still found, listed and reported, but it writes no
+  `SECURITY_TODO.md` item, it does not count toward `check`'s exit code, and
+  it needs no per-CVE `[[ignore]]`: one human ruling covers the whole class.
+  Use it for what an attacker can only reach from inside something already
+  trusted (a throwaway environment's internal containers that publish no
+  port and that no web route reaches), never because a finding is
+  inconvenient. Classing something internal is a risk decision, like an
+  `[[ignore]]`: the advisor writes it only from a human's ruling, and
+  `.tech`'s header comment cites the ruling and says what is in each class.
+  - `exposure` on a `[[platform]]`: `"exposed"` (the default when absent) or
+    `"internal"`; anything else is a lint error. An entry that spans
+    something exposed (a package installed in an exposed image as well) is
+    exposed as a whole.
+  - `[exposure].internal` classes package findings, by the lockfile or SBOM
+    they come from: a list of paths relative to the root, each an exact
+    file, a directory (every lockfile below it) or a glob (`*`, `?`, `[…]`;
+    `*` also matches `/`). A finding is internal only when every lockfile it
+    was found in matches; one exposed source makes it exposed. An entry must
+    stay inside the project (lint error); a literal path that doesn't exist
+    gets a lint warning.
+  - `host = true` on a `[[platform]]` marks what runs on the host itself:
+    the kernel, the container engine (Docker Engine, containerd, runc), a
+    tool installed on the host. Its findings are always exposed (`host =
+    true` with `exposure = "internal"` is a lint error) and flagged *reaches
+    the host* in `check`, the sweep's report and the item. This is the only
+    host signal `cve-watch` has: it never reads a CVE's text. Whether a
+    finding on internal content reaches the host anyway (a privileged
+    container, a mounted Docker socket, a host path, a kernel-facing
+    feature) is judged at triage, by hand.
 
 `cve-watch lint [dir…]` checks all of this, and the skills run it after every
 edit.
@@ -155,7 +197,10 @@ item per advisory and package:
   item's identity. Never edit or remove it on an open item.
 - The sweep appends new items, ticks an item `· gone <date>` when the scan
   no longer finds it, `· accepted risk in .tech <date>` when an `[[ignore]]`
-  now covers it, and unticks it `· back <date>` when it returns. It only
+  now covers it, `· internal in .tech <date>` when `.tech` now classes it
+  internal, and unticks it `· back <date>` when it returns (or turns
+  exposed again). An item on a host platform ends with `· reaches the
+  host`. It only
   ticks what the part of the scan that would find it actually checked: a
   failed scan closes nothing.
 - Triage notes go on indented lines under the item, starting with
@@ -168,7 +213,7 @@ item per advisory and package:
 
 | Command | Does | Network |
 |---|---|---|
-| `cve-watch check [dir] [--package NAME] [--json] [-v]` | Scans one project now (packages and platforms) and prints every finding, `!` at or above the threshold. Exit 0 clean, 1 findings at or above threshold, 2 the scan failed. Writes nothing. Also works in a worktree. | OSV, NVD |
+| `cve-watch check [dir] [--package NAME] [--json] [-v]` | Scans one project now (packages and platforms) and prints every finding, `!` at or above the threshold, `[reaches the host]` on a host platform's; internal findings follow under their own heading, `i` at or above the threshold. Exit 0 clean, 1 exposed findings at or above threshold (internal ones never count), 2 the scan failed. `--json` gives each finding its `exposure` and `host`. Writes nothing. Also works in a worktree. | OSV, NVD |
 | `cve-watch query <ecosystem> <package> [version]` | Is this version affected, and what fixes it? Without a version, every advisory for the package. Exit 1 if anything at or above threshold affects it. | OSV |
 | `cve-watch latest <ecosystem/package or cpe> [--version V] [--limit N]` | The most recent advisories for a package or a technology, newest first, no date bound. With `--version`, only those affecting it. | OSV or NVD |
 | `cve-watch cpe <keyword>` | Candidate CPE product prefixes for a technology, for a `[[platform]]` entry. | NVD |
@@ -191,16 +236,19 @@ involved), or by hand.
    `exclude`.
 2. **Scan**: osv-scanner over the project (narrowed by `[scan]`), and NVD for
    each `[[platform]]` with a CPE. Findings an `[[ignore]]` covers are set
-   aside.
-3. **New findings** at or above the threshold (default `medium`) get a
+   aside; the rest take their exposure class from `.tech`.
+3. **New exposed findings** at or above the threshold (default `medium`) get a
    `SECURITY_TODO.md` item: those published in the last `days` (default 7),
    and those first detected since the previous sweep whatever their date (a
    dependency added without a check, an advisory whose range widened). The
    first sweep of a project only applies the date window, so an old backlog
-   doesn't flood the file; `--all` writes the whole backlog.
+   doesn't flood the file; `--all` writes the whole backlog. Internal
+   findings never get an item and are not recorded as seen, so one whose
+   class turns exposed counts as newly detected then.
 4. **Report**: `~/.local/state/cve-watch/reports/<date>.md` and `.json`,
    `latest.md` pointing at the newest: new findings across projects,
-   resolved ones, every open finding per project, problems (failed scans,
+   resolved ones, every open finding per project (internal ones in their
+   own collapsed table, counted apart), problems (failed scans,
    lint, projects without `.tech`), skipped directories. A desktop
    notification announces new findings.
 
@@ -222,7 +270,9 @@ involved), or by hand.
 
 ## Verdicts
 
-The advisor's dependency check ends in one of:
+The advisor's dependency check ends in one of the three below. They weigh
+exposed findings only (host-flagged ones included): an internal finding is
+listed in the report, labelled internal, and never needs an acceptance.
 
 - `CLEAR`: nothing at or above the threshold affects the versions checked.
 - `FIX-AVAILABLE`: something does, and a version that fixes it exists; the

@@ -9,7 +9,8 @@ Read `~/.local/share/dev_team/references/dependency-security.md`, section
 `.tech`, before writing. The output is one honest `.tech` per project: what
 the project runs on, pinned where the code pins it, `unknown` where it
 doesn't. Accepted risks are never inferred: a cold start writes no
-`[[ignore]]`.
+`[[ignore]]`, and no `exposure = "internal"` or `[exposure]` table either
+(the exposure class is a human's ruling too; everything starts exposed).
 
 ## 1. Scope
 
@@ -54,6 +55,10 @@ configuration, not the source.
   When only "host" applies (a CLI that runs on the machine's Node.js), you
   may record the host's version with `source = "host"`: `node --version`,
   `psql --version`, `php --version`.
+  Give `host = true` to a platform that runs on the host itself rather than
+  inside the project's containers: the container engine (Docker Engine,
+  containerd, runc), the kernel when it is recorded, a host-installed
+  runtime or tool. That is a fact, not a ruling, so a cold start writes it.
 - **CPE** for each platform: `cve-watch cpe <keyword>`, then pick the
   product prefix whose name is the technology itself (`nodejs:node.js`,
   `php:php`, `postgresql:postgresql`, `python:python`, `golang:go`,
